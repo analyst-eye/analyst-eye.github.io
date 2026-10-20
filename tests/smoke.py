@@ -12,7 +12,7 @@ class Q(http.server.SimpleHTTPRequestHandler):
     def log_message(s, *a): pass
 srv = socketserver.TCPServer(("127.0.0.1", 0), Q); port = srv.server_address[1]
 threading.Thread(target=srv.serve_forever, daemon=True).start()
-BASE = f"http://127.0.0.1:{port}"
+BASE = os.environ.get("AE_BASE", f"http://127.0.0.1:{port}").rstrip("/")   # AE_BASE=https://analyst-eye.github.io to test live
 errors, fails = [], []
 def check(cond, msg):
     print(("  ok   " if cond else "  FAIL ") + msg)
@@ -151,6 +151,12 @@ with sync_playwright() as p:
     page.screenshot(path=f"{SHOTS}/v2-sandbox-round2.png")
     ctx.close()
 
+    # ---------- real "today" (no overrides) ----------
+    ctx = b.new_context(viewport={"width": 390, "height": 844}); page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append("today: " + str(e)))
+    page.goto(f"{BASE}/"); page.wait_for_timeout(1500)
+    check(page.locator("#go").count() == 1, "today's puzzle loads at " + BASE + "/ : " + page.locator(".kicker").first.inner_text())
+    ctx.close()
     # ---------- practice + difficulty selector + prelaunch ----------
     ctx = b.new_context(viewport={"width": 1100, "height": 900}); page = ctx.new_page()
     page.on("pageerror", lambda e: errors.append("practice: " + str(e)))
