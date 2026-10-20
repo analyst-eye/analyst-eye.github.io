@@ -48,6 +48,13 @@
    "wastewater",
    "roundabout",
    "slipway"
+  ],
+  "2026-10-26": [
+   "stadium",
+   "soccer",
+   "tennis",
+   "water_tower",
+   "lighthouse"
   ]
  },
  "used": {
@@ -90,6 +97,11 @@
    "cat": "football",
    "date": "2026-10-20",
    "key": null
+  },
+  "way/1173737020": {
+   "cat": "lighthouse",
+   "date": "2026-10-26",
+   "key": "lighthouse:port pontchartrain light station"
   },
   "way/1174012053": {
    "cat": "bridge",
@@ -176,6 +188,11 @@
    "date": "2026-10-25",
    "key": "roundabout:bridgeport drive"
   },
+  "way/212448632": {
+   "cat": "water_tower",
+   "date": "2026-10-26",
+   "key": null
+  },
   "way/266446769": {
    "cat": "runway",
    "date": "2026-10-22",
@@ -201,6 +218,11 @@
    "date": "2026-10-21",
    "key": null
   },
+  "way/479370765": {
+   "cat": "soccer",
+   "date": "2026-10-26",
+   "key": null
+  },
   "way/544605821": {
    "cat": "roundabout",
    "date": "2026-10-20",
@@ -220,6 +242,16 @@
    "cat": "water_tower",
    "date": "2026-10-19",
    "key": null
+  },
+  "way/827569375": {
+   "cat": "tennis",
+   "date": "2026-10-26",
+   "key": null
+  },
+  "way/971209187": {
+   "cat": "stadium",
+   "date": "2026-10-26",
+   "key": "stadium:john ryan stadium"
   },
   "way/97157126": {
    "cat": "pool",
