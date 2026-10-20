@@ -88,6 +88,19 @@ python3 -m http.server 8000                            # then open http://localh
 ```
 `?today=YYYY-MM-DD` simulates a date for testing; `?date=YYYY-MM-DD` plays a past day as practice.
 
+### Decoy rounds
+The first Medium round and the Hard round try to be "pick the right one" rounds: the photo is framed to include a
+look-alike of a different type (tennis vs basketball/pickleball courts, baseball vs softball fields, putting green vs
+tee box, runway vs taxiway, water tower vs ground tank, and football vs soccer when yard lines are verifiably visible).
+Only the named type scores; a pin on a decoy scores 0 and shows a one-line clue. Decoys must pass the same visibility
+check as targets, a plausible-size check and a separation check. The search is capped at `decoy_photo_budget` photo
+fetches per round; if nothing qualifies, a normal round is used. Review with `python3 tools/contact_sheet.py --decoys`.
+
+### Curated aircraft (draft, disabled)
+`generator/curated/aircraft_draft.json` holds hand-checked aircraft labels (museum aircraft, confidence-ranked; >=95 only
+when a documented source and NAIP measurements agree). Nothing uses it while `curated_aircraft_enabled` is false.
+`python3 tools/aircraft_review_sheet.py` rebuilds the review sheet of the items that need AJ's call.
+
 ### Change the region
 Edit `region.bbox` (`[south, west, north, east]`) in `generator/settings.json`. Imagery is US-only (NAIP). Review `blocklist.json` for the new area.
 

@@ -197,6 +197,41 @@ with sync_playwright() as p:
           return [r.label, AE_DEBUG.score(s.alts[0].answer, s, r.radius_px, 3, false).score, AE_DEBUG.score(s.answer, s, r.radius_px, 3, false).score]; } } return null; }""")
     if alt: check(alt[1] >= 90 and alt[2] >= 90, f"alternate {alt[0]} scores {alt[1]} (main {alt[2]})")
     page.goto(f"{BASE}/index.html?today=2026-10-18"); page.wait_for_timeout(400); check("No puzzle" in page.locator(".task").first.inner_text(), "pre-launch screen")
+    ctx.close()
+    # ---------- decoy rounds: a pin on a look-alike scores 0 and explains the difference ----------
+    found = None
+    for d in json.load(open(os.path.join(ROOT, "puzzles/index.json")))["dates"]:
+        if not (LOCAL or d <= REAL_TODAY): continue
+        for r in json.load(open(os.path.join(ROOT, f"puzzles/{d}.json")))["rounds"]:
+            if r.get("caution"): found = (d, r["round"]); break
+        if found: break
+    if not found: print("  skip decoy checks: no decoy round reachable on", BASE)
+    for vp, tag, embed in (({"width": 390, "height": 844}, "mobile", False), ({"width": 640, "height": 480}, "embed", True)):
+        if not found: break
+        d, n = found
+        ctx = b.new_context(viewport=vp, device_scale_factor=2 if not embed else 1, has_touch=not embed, is_mobile=not embed); page = ctx.new_page()
+        page.on("pageerror", lambda e: errors.append(f"decoy-{tag}: " + str(e)))
+        prev = [{"d": 0, "acc": 80, "speed": 10, "hint": False, "score": 90, "t": 6, "ti": 0, "click": [100, 100], "dk": -1}] * (n - 1)
+        page.add_init_script(f"localStorage.setItem('ae:howto','1'); localStorage.setItem('ae:day:{d}', JSON.stringify({json.dumps({'results': prev, 'done': False})}));")
+        page.goto(f"{BASE}/{'embed' if embed else 'index'}.html?today={d}"); page.locator("#lock").wait_for()
+        page.locator("#img").evaluate("i => i.complete || new Promise(r => i.onload = r)"); page.wait_for_timeout(300)
+        cau = page.locator(".caution").inner_text(); check(cau.startswith("Careful:"), f"{tag}: decoy round shows caution line: {cau!r}")
+        page.screenshot(path=f"{SHOTS}/v7-{tag}-decoy-round.png")
+        box = page.locator("#scope").bounding_box()
+        st = page.evaluate("() => { const g = AE_DEBUG.state, r = g.P.rounds[g.i]; return {a: r.s.decoys[0].answer, size: g.P.size, clue: r.s.decoys[0].clue}; }")
+        x = box["x"] + st["a"][0] / st["size"] * box["width"]; y = box["y"] + st["a"][1] / st["size"] * box["height"]
+        (page.touchscreen.tap if not embed else page.mouse.click)(x, y); page.wait_for_timeout(200)
+        page.locator("#lock").click(); page.locator("#next").wait_for(); page.wait_for_timeout(400)
+        word = page.locator(".verdict .word").inner_text(); sc = int(page.locator(".verdict .big").inner_text())
+        check(word == "Decoy!" and sc == 0 and st["clue"] in page.locator(".side").inner_text(), f"{tag}: tapping the decoy -> {word} {sc} with clue")
+        page.screenshot(path=f"{SHOTS}/v7-{tag}-decoy-hit.png")
+        ctx.close()
+    # the real target still scores in a decoy round (pure function check)
+    ctx = b.new_context(); page = ctx.new_page(); page.goto(f"{BASE}/index.html?today={found[0] if found else DATE}"); page.wait_for_timeout(500)
+    if found:
+        res = page.evaluate(f"""() => {{ const P = AE_PUZZLES['{found[0]}'], r = P.rounds[{found[1] - 1}], s = AE_DEBUG.decode(r.secret, '{found[0]}');
+            return [AE_DEBUG.score(s.answer, s, r.radius_px, 3, false), AE_DEBUG.score(s.decoys[0].answer, s, r.radius_px, 3, false)]; }}""")
+        check(res[0]["score"] >= 90 and res[0]["dk"] == -1 and res[1]["score"] == 0 and res[1]["dk"] == 0, f"decoy round: target scores {res[0]['score']}, decoy scores {res[1]['score']}")
     # daily sets ramp easy -> medium -> hard and are the same file for everyone
     for d in json.load(open(os.path.join(ROOT, "puzzles/index.json")))["dates"]:
         t = [r["tier"] for r in json.load(open(os.path.join(ROOT, f"puzzles/{d}.json")))["rounds"]]
