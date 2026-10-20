@@ -78,6 +78,11 @@
    "date": "2026-10-19",
    "key": null
   },
+  "node/9910673055": {
+   "cat": "mast",
+   "date": "2026-10-20",
+   "key": null
+  },
   "relation/14470282": {
    "cat": "stadium",
    "date": "2026-10-22",
@@ -118,6 +123,11 @@
    "date": "2026-10-25",
    "key": null
   },
+  "way/1158035346": {
+   "cat": "football",
+   "date": "2026-10-20",
+   "key": null
+  },
   "way/1173737020": {
    "cat": "lighthouse",
    "date": "2026-10-26",
@@ -138,6 +148,11 @@
    "date": "2026-10-24",
    "key": null
   },
+  "way/1283477693": {
+   "cat": "golf",
+   "date": "2026-10-24",
+   "key": null
+  },
   "way/1283477708": {
    "cat": "golf",
    "date": "2026-10-21",
@@ -148,10 +163,20 @@
    "date": "2026-10-23",
    "key": null
   },
+  "way/1291758665": {
+   "cat": "marina",
+   "date": "2026-10-20",
+   "key": "marina:river yacht basin marina"
+  },
   "way/1307322535": {
    "cat": "stadium",
    "date": "2026-10-19",
    "key": "stadium:saint stanislaus football fieild and track"
+  },
+  "way/139587269": {
+   "cat": "water_tower",
+   "date": "2026-10-20",
+   "key": null
   },
   "way/1411388288": {
    "cat": "wastewater",
@@ -203,6 +228,11 @@
    "date": "2026-10-22",
    "key": null
   },
+  "way/544605821": {
+   "cat": "roundabout",
+   "date": "2026-10-20",
+   "key": null
+  },
   "way/547559778": {
    "cat": "bridge",
    "date": "2026-10-21",
@@ -212,6 +242,11 @@
    "cat": "pool",
    "date": "2026-10-25",
    "key": "pool:one club gulf shores"
+  },
+  "way/625901824": {
+   "cat": "storage_tank",
+   "date": "2026-10-20",
+   "key": null
   },
   "way/705835950": {
    "cat": "storage_tank",
@@ -238,6 +273,11 @@
    "date": "2026-10-26",
    "key": null
   },
+  "way/929034250": {
+   "cat": "cemetery",
+   "date": "2026-10-20",
+   "key": "cemetery:spring hill memorial gardens"
+  },
   "way/97157126": {
    "cat": "pool",
    "date": "2026-10-24",
@@ -247,41 +287,6 @@
    "cat": "soccer",
    "date": "2026-10-19",
    "key": null
-  },
-  "node/9910673055": {
-   "cat": "mast",
-   "date": "2026-10-20",
-   "key": null
-  },
-  "way/1158035346": {
-   "cat": "football",
-   "date": "2026-10-20",
-   "key": null
-  },
-  "way/1291758665": {
-   "cat": "marina",
-   "date": "2026-10-20",
-   "key": "marina:river yacht basin marina"
-  },
-  "way/139587269": {
-   "cat": "water_tower",
-   "date": "2026-10-20",
-   "key": null
-  },
-  "way/544605821": {
-   "cat": "roundabout",
-   "date": "2026-10-20",
-   "key": null
-  },
-  "way/625901824": {
-   "cat": "storage_tank",
-   "date": "2026-10-20",
-   "key": null
-  },
-  "way/929034250": {
-   "cat": "cemetery",
-   "date": "2026-10-20",
-   "key": "cemetery:spring hill memorial gardens"
   }
  }
 }
