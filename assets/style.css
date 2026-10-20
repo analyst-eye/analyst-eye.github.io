@@ -185,3 +185,6 @@ body[data-mode=embed] .ititle{font-size:20px}
 body[data-mode=embed] .lineup{max-width:250px}
 @media (max-width:559px){ body[data-mode=embed] .side.intro{padding:10px 6px;gap:10px} }
 .imeta{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
+/* v6: header hugs the photo; stats/countdown balanced in the space below the strip */
+body[data-mode=full] .intro{justify-content:flex-start;gap:20px;padding:18px 8px 12px}
+body[data-mode=full] .intro .imeta{flex:1;justify-content:center;gap:14px;padding:28px 0 16px}
