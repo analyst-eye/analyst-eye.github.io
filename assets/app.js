@@ -313,7 +313,7 @@ function intro() {
        <div class="ihead">
          <div class="kicker">${kicker}</div>
          <h1 class="ititle">${N} Things to Spy from the Sky</h1>
-         <p class="isub">${G.practice ? "Practice games don't change your stats." : "Easy first, hardest last. New puzzle every midnight (US Central)."}</p>
+         <p class="isub">${G.practice ? "Practice games don't change your stats." : "New puzzle every midnight"}</p>
        </div>
        ${G.tier ? "" : `<ol class="lineup" aria-label="Rounds by difficulty">${lineup}</ol>`}
        ${tierPicker()}
