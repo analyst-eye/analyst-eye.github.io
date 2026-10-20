@@ -12,7 +12,7 @@
    "cemetery",
    "roundabout",
    "water_tower",
-   "storage_tank"
+   "slipway"
   ],
   "2026-10-21": [
    "marina",
@@ -333,6 +333,11 @@
   "way/972361149": {
    "cat": "soccer",
    "date": "2026-10-19",
+   "key": null
+  },
+  "way/979399126": {
+   "cat": "slipway",
+   "date": "2026-10-20",
    "key": null
   }
  }
