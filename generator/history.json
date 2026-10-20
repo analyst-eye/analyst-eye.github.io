@@ -8,11 +8,11 @@
    "lighthouse"
   ],
   "2026-10-20": [
-   "baseball",
-   "track",
+   "marina",
+   "cemetery",
+   "roundabout",
    "water_tower",
-   "tennis",
-   "golf"
+   "storage_tank"
   ],
   "2026-10-21": [
    "marina",
@@ -88,11 +88,6 @@
    "date": "2026-10-21",
    "key": "marina:bear point harbor"
   },
-  "way/1085708073": {
-   "cat": "golf",
-   "date": "2026-10-20",
-   "key": null
-  },
   "way/1088042262": {
    "cat": "tennis",
    "date": "2026-10-21",
@@ -143,11 +138,6 @@
    "date": "2026-10-24",
    "key": null
   },
-  "way/1251788398": {
-   "cat": "track",
-   "date": "2026-10-20",
-   "key": null
-  },
   "way/1283477708": {
    "cat": "golf",
    "date": "2026-10-21",
@@ -166,11 +156,6 @@
   "way/1411388288": {
    "cat": "wastewater",
    "date": "2026-10-23",
-   "key": null
-  },
-  "way/1429688777": {
-   "cat": "baseball",
-   "date": "2026-10-20",
    "key": null
   },
   "way/1441715492": {
@@ -193,19 +178,9 @@
    "date": "2026-10-24",
    "key": null
   },
-  "way/165669260": {
-   "cat": "water_tower",
-   "date": "2026-10-20",
-   "key": null
-  },
   "way/251370422": {
    "cat": "lighthouse",
    "date": "2026-10-19",
-   "key": null
-  },
-  "way/361967837": {
-   "cat": "tennis",
-   "date": "2026-10-20",
    "key": null
   },
   "way/36778915": {
@@ -272,6 +247,41 @@
    "cat": "soccer",
    "date": "2026-10-19",
    "key": null
+  },
+  "node/9910673055": {
+   "cat": "mast",
+   "date": "2026-10-20",
+   "key": null
+  },
+  "way/1158035346": {
+   "cat": "football",
+   "date": "2026-10-20",
+   "key": null
+  },
+  "way/1291758665": {
+   "cat": "marina",
+   "date": "2026-10-20",
+   "key": "marina:river yacht basin marina"
+  },
+  "way/139587269": {
+   "cat": "water_tower",
+   "date": "2026-10-20",
+   "key": null
+  },
+  "way/544605821": {
+   "cat": "roundabout",
+   "date": "2026-10-20",
+   "key": null
+  },
+  "way/625901824": {
+   "cat": "storage_tank",
+   "date": "2026-10-20",
+   "key": null
+  },
+  "way/929034250": {
+   "cat": "cemetery",
+   "date": "2026-10-20",
+   "key": "cemetery:spring hill memorial gardens"
   }
  }
 }
