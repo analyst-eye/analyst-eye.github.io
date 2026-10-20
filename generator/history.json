@@ -55,6 +55,13 @@
    "bridge",
    "storage_tank",
    "lighthouse"
+  ],
+  "2026-10-27": [
+   "track",
+   "baseball",
+   "water_tower",
+   "solar",
+   "golf"
   ]
  },
  "used": {
@@ -93,9 +100,24 @@
    "date": "2026-10-21",
    "key": "marina:bear point harbor"
   },
+  "way/1049911181": {
+   "cat": "golf",
+   "date": "2026-10-27",
+   "key": null
+  },
+  "way/1088042257": {
+   "cat": "tennis",
+   "date": "2026-10-27",
+   "key": null
+  },
   "way/1088042262": {
    "cat": "tennis",
    "date": "2026-10-21",
+   "key": null
+  },
+  "way/1088042263": {
+   "cat": "tennis",
+   "date": "2026-10-27",
    "key": null
   },
   "way/1105441669": {
@@ -148,6 +170,11 @@
    "date": "2026-10-24",
    "key": null
   },
+  "way/1251788401": {
+   "cat": "track",
+   "date": "2026-10-27",
+   "key": null
+  },
   "way/1283477693": {
    "cat": "golf",
    "date": "2026-10-24",
@@ -188,6 +215,11 @@
    "date": "2026-10-24",
    "key": null
   },
+  "way/1463232546": {
+   "cat": "solar",
+   "date": "2026-10-27",
+   "key": null
+  },
   "way/1482917357": {
    "cat": "storage_tank",
    "date": "2026-10-26",
@@ -217,6 +249,11 @@
    "cat": "runway",
    "date": "2026-10-23",
    "key": "runway:17/35"
+  },
+  "way/405695269": {
+   "cat": "baseball",
+   "date": "2026-10-27",
+   "key": null
   },
   "way/406270280": {
    "cat": "tennis",
@@ -263,6 +300,11 @@
    "date": "2026-10-19",
    "key": null
   },
+  "way/832844362": {
+   "cat": "tennis",
+   "date": "2026-10-27",
+   "key": "tennis:tennis court"
+  },
   "way/895461714": {
    "cat": "runway",
    "date": "2026-10-22",
@@ -277,6 +319,11 @@
    "cat": "cemetery",
    "date": "2026-10-20",
    "key": "cemetery:spring hill memorial gardens"
+  },
+  "way/937491302": {
+   "cat": "water_tower",
+   "date": "2026-10-27",
+   "key": null
   },
   "way/97157126": {
    "cat": "pool",
