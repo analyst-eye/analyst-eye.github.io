@@ -9,6 +9,12 @@ const qs = new URLSearchParams(location.search);
 const ROUND_S = C.ROUND_SECONDS || 30, HINT_PEN = C.HINT_PENALTY || 25;
 const SITE = (C.SITE_URL || location.href.replace(/[^/]*$/, ""));
 
+/* ---------- layout: photo beside the panel in wide, short frames (style.css body.split) ---------- */
+const SPLIT_MQ = matchMedia(EMBED ? "(min-aspect-ratio: 1/1) and (min-width: 560px)" : "(orientation: landscape) and (max-height: 560px) and (min-width: 560px)");
+const setSplit = () => document.body.classList.toggle("split", SPLIT_MQ.matches);
+setSplit();
+if (SPLIT_MQ.addEventListener) SPLIT_MQ.addEventListener("change", setSplit); else if (SPLIT_MQ.addListener) SPLIT_MQ.addListener(setSplit);
+
 /* ---------- storage (falls back to memory when sandboxed) ---------- */
 const mem = {};
 const store = {
@@ -236,7 +242,11 @@ function setupScope(r, onTap, getRevealed) {
   const Z = { k: 1, tx: 0, ty: 0, onChange: null };
   const W = () => scope.clientWidth, H = () => scope.clientHeight;
   const clampT = () => { Z.tx = Math.min(0, Math.max(W() - W() * Z.k, Z.tx)); Z.ty = Math.min(0, Math.max(H() - H() * Z.k, Z.ty)); };
+  let lastW = 0, lastH = 0;
   function apply() {
+    const w = W(), hh = H();
+    if (lastW && w && (w !== lastW || hh !== lastH)) { Z.tx *= w / lastW; Z.ty *= hh / lastH; }
+    lastW = w; lastH = hh;
     clampT(); stage.style.transform = `translate(${Z.tx}px,${Z.ty}px) scale(${Z.k})`;
     scope.classList.toggle("zoomed", Z.k > 1.01);
     const pxPerM = W() / (G.P.size * r.gsd_m) * Z.k;
@@ -298,6 +308,7 @@ function setupScope(r, onTap, getRevealed) {
   scope.addEventListener("pointerup", up); scope.addEventListener("pointercancel", up);
   scope.addEventListener("wheel", e => { e.preventDefault(); const p = rel(e); zoomAt(p.x, p.y, Z.k * Math.exp(-e.deltaY * 0.0015)); }, { passive: false });
   apply();
+  if (window.ResizeObserver) new ResizeObserver(() => { if (document.body.contains(scope) && (scope.clientWidth !== lastW || scope.clientHeight !== lastH)) apply(); }).observe(scope);
   if (window.AE_DEBUG) window.AE_DEBUG.zoom = Z;
   return Z;
 }
@@ -308,12 +319,12 @@ function intro() {
   // today's lineup: difficulty only, never the targets
   const lineup = G.P.rounds.map(x => isTier(x.tier) ? `<li class="t-${x.tier}"><i></i>${TIER_SHORT[x.tier]}</li>` : "<li><i></i></li>").join("");
   let extras = "";
-  if (!EMBED && !G.practice) {
+  if (!G.practice) {
     const st = loadStats(), hasPast = avail.some(d => d < TODAY);
     const stats = st.played > 0
       ? `<div class="istats"><div><b>${st.streak}</b><span>Streak</span></div><div><b>${st.best}</b><span>Best</span></div><div><b>${st.played}</b><span>Played</span></div></div>`
       : `<p class="istart">Start your streak today</p>`;
-    extras = `<div class="imeta">${stats}<p class="inext"><span id="nextin">Next puzzle in ${untilMidnight()}</span>${hasPast ? ` · <a href="${esc(practiceLink("easy"))}" target="_self">Practice</a>` : ""}</p></div>`;
+    extras = `<div class="imeta">${stats}<p class="inext"><span id="nextin">Next puzzle in ${untilMidnight()}</span>${EMBED ? ` <span>· <a href="${esc(SITE)}" target="_blank" rel="noopener">Full site ↗</a></span>` : hasPast ? ` <span>· <a href="${esc(practiceLink("easy"))}" target="_self">Practice</a></span>` : ""}</p></div>`;
   }
   h(`${hud()}<div class="play intro-play">
      ${scopeHTML(r, `<div class="cover"><button class="btn primary big-btn" id="go">▶ Play</button></div>`)}
@@ -326,7 +337,7 @@ function intro() {
        ${G.tier ? "" : `<ol class="lineup" aria-label="Rounds by difficulty">${lineup}</ol>`}
        ${tierPicker()}
        ${extras}
-       ${EMBED ? `<a class="dim small" href="${esc(SITE)}" target="_blank" rel="noopener">Open full site ↗</a>` : ""}
+       ${EMBED && G.practice ? `<a class="dim small" href="${esc(SITE)}" target="_blank" rel="noopener">Open full site ↗</a>` : ""}
      </div></div>`);
   app.classList.add("is-intro");
   bindHelp();
@@ -439,7 +450,7 @@ function reveal(res, Z) {
     <details class="more"><summary>Details</summary><div>${res.d === 0 ? "Right on it" : `${meters} m away`} · closeness ${res.acc}/80 · speed +${res.speed}${res.hint ? ` · hint −${HINT_PEN}` : ""}</div></details>
     <div class="row"><button class="btn primary grow" id="next">${last ? "See results ▶" : "Next ▶"}</button></div>`;
   document.getElementById("next").onclick = () => { G.i++; last ? end() : round(); };
-  if (!EMBED) side.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  if (!EMBED && !document.body.classList.contains("split")) side.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 function recordStats() {

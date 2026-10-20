@@ -12,7 +12,7 @@ a{color:var(--cyan)}
 .brand small{color:var(--dim);font-weight:400;letter-spacing:.06em}
 .task{font-size:18px;font-weight:650;margin:2px 0 8px}
 .task .lbl{font-family:var(--mono);font-size:11px;color:var(--cyan);letter-spacing:.12em;text-transform:uppercase;display:block;font-weight:500}
-.scope{position:relative;width:100%;aspect-ratio:1/1;max-height:70vh;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#05080b;touch-action:none;cursor:crosshair;margin:0 auto;-webkit-user-select:none;user-select:none}
+.scope{position:relative;width:100%;aspect-ratio:1/1;max-width:70vh;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#05080b;touch-action:none;cursor:crosshair;margin:0 auto;-webkit-user-select:none;user-select:none}
 .stage{position:absolute;inset:0;transform-origin:0 0;will-change:transform}
 .stage.anim{transition:transform .25s ease}
 .scope.zoomed{cursor:grab}
@@ -59,19 +59,7 @@ pre.share{white-space:pre-wrap;font:13px var(--mono);background:#071017;border:1
 body[data-mode=embed]{background-size:24px 24px}
 body[data-mode=embed] .app{max-width:none;padding:8px}
 body[data-mode=embed] .foot{padding:4px 8px;font-size:10px}
-@media (min-width:560px){
- body[data-mode=embed] .play{display:grid;grid-template-columns:320px 1fr;gap:10px;align-items:start}
- body[data-mode=embed] .scope{width:320px;height:320px;max-height:none}
- body[data-mode=embed] .side{height:320px;overflow:auto;display:flex;flex-direction:column;gap:6px}
- body[data-mode=embed] .side .task{font-size:16px;margin:0}
- body[data-mode=embed] .side .note{font-size:12px;margin:2px 0}
- body[data-mode=embed] .side .btn{padding:8px 12px;min-height:38px;font-size:14px}
- body[data-mode=embed] .side .big{font-size:30px}
- body[data-mode=embed] .side .grid{font-size:20px;margin:2px 0}
- body[data-mode=embed] .hud{margin-bottom:4px}
-}
 @media (max-width:559px){
- body[data-mode=embed] .scope{max-height:46vh;width:auto;max-width:100%}
  body[data-mode=embed] .task{font-size:15px}
 }
 /* ---------- v2: clean UI ---------- */
@@ -176,21 +164,57 @@ body[data-mode=embed] .results .btn{min-height:38px;padding:8px 12px}
 .istart{margin:0;font:500 13px var(--sans);color:var(--amber)}
 .inext{margin:0;font:12px var(--mono);color:var(--dim)}
 .inext a{color:var(--cyan);text-decoration:none}
+.inext span{white-space:nowrap}
 .inext a:hover{text-decoration:underline}
-body[data-mode=full] .app.is-intro{display:flex;flex-direction:column}
-body[data-mode=full] .intro-play{flex:1;display:flex;flex-direction:column}
-body[data-mode=full] .intro{flex:1;display:flex;flex-direction:column;justify-content:center;gap:22px;padding:22px 8px 18px}
-body[data-mode=embed] .side.intro{justify-content:center;gap:14px;padding:0 6px}
-body[data-mode=embed] .ititle{font-size:20px}
-body[data-mode=embed] .lineup{max-width:250px}
-@media (max-width:559px){ body[data-mode=embed] .side.intro{padding:10px 6px;gap:10px} }
+body:not(.split) .app.is-intro{display:flex;flex-direction:column}
+body:not(.split) .intro-play{flex:1;display:flex;flex-direction:column}
+body:not(.split) .intro{flex:1;display:flex;flex-direction:column;justify-content:center;gap:22px;padding:22px 8px 18px}
 .imeta{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
 /* v6: header hugs the photo; stats/countdown balanced in the space below the strip */
-body[data-mode=full] .intro{justify-content:flex-start;gap:20px;padding:18px 8px 12px}
-body[data-mode=full] .intro .imeta{flex:1;justify-content:center;gap:14px;padding:28px 0 16px}
+body:not(.split) .intro{justify-content:flex-start;gap:20px;padding:18px 8px 12px}
+body:not(.split) .intro .imeta{flex:1;justify-content:center;gap:14px;padding:28px 0 16px}
 
 /* decoy rounds */
 .caution{margin:-4px 0 8px;font-size:13px;color:#ff8a8a}
 body[data-mode=embed] .caution{font-size:12px;margin:2px 0 4px}
 .verdict.decoy .word{color:#ff5c5c}
 .dkey{display:inline-block;width:14px;height:0;border-top:2px dashed #ff5c5c;vertical-align:middle;margin-right:6px}
+
+/* ---------- v7: split layout (photo left, panel right) ----------
+   app.js adds body.split for: the embed in any landscape frame >=560px wide (X player 640x480, desktop 560x420, phone landscape),
+   and the full site in short landscape windows (phones turned sideways). --s is the photo's side length. */
+body.split{--chrome:62px;--s:min(calc(100vh - var(--chrome)),58vw)}
+@supports (height:100dvh){body.split{--s:min(calc(100dvh - var(--chrome)),58vw)}}
+body.split .app{max-width:calc(var(--s) + 470px);padding:10px 14px 8px;display:flex;flex-direction:column}
+body.split .hud{margin-bottom:6px;min-height:30px}
+body.split .app .play{display:grid;grid-template-columns:var(--s) minmax(0,1fr);gap:16px;align-items:start;flex:none}
+body.split .scope{width:var(--s);height:var(--s);max-width:none;margin:0}
+body.split .side{height:var(--s);overflow:auto;display:flex;flex-direction:column;gap:8px;justify-content:center;min-width:0;width:100%;max-width:420px;justify-self:center}
+body.split .side>*{margin-top:0;margin-bottom:0}
+body.split .side .row{flex-wrap:nowrap}
+body.split .side .task{font-size:17px}
+body.split .side.intro{align-items:center;text-align:center;gap:14px;padding:0}
+body.split .intro .imeta{gap:10px;padding:4px 0 0}
+body.split .ititle{font-size:21px}
+body.split .lineup{max-width:270px}
+body.split .istats{max-width:270px;padding:8px 0}
+body.split .istats b{font-size:18px}
+/* embed: the frame is fixed (no scrolling), so the footer's height comes out of the photo's */
+body.split[data-mode=embed]{--chrome:96px;height:100vh;height:100dvh;min-height:0;overflow:hidden}
+body.split[data-mode=embed] .app{padding:8px 10px 0;max-width:calc(var(--s) + 420px);min-height:0;overflow:auto}
+body.split[data-mode=embed] .foot{font:10px/14px var(--sans);padding:6px 8px 8px}
+body.split[data-mode=embed] .app .play{gap:12px}
+body.split[data-mode=embed] .side{max-width:380px;gap:6px}
+body.split[data-mode=embed] .side.intro{gap:12px}
+body.split[data-mode=embed] .side .btn{padding:8px 12px;min-height:40px;font-size:14px}
+body.split[data-mode=embed] .side .task{font-size:16px}
+body.split[data-mode=embed] .side .note{font-size:13px}
+body.split[data-mode=embed] .ititle{font-size:19px}
+@media (max-height:400px){
+ body.split .istats{display:none}
+ body.split[data-mode=embed] .ititle{font-size:18px}
+}
+/* end screen in split mode: keep it a single centered column */
+body.split .results{width:100%}
+/* embed portrait: the start screen matches the site's */
+body[data-mode=embed]:not(.split) .app{max-width:640px;margin:0 auto;padding:12px 12px 4px}

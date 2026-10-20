@@ -273,6 +273,56 @@ with sync_playwright() as p:
     check(st["played"] == 2 and st["streak"] == 2 and st["last"] == "2026-10-20", f"legacy Oct 19 stats carry on: played {st['played']} streak {st['streak']}")
     check("#0 " not in page.locator("body").inner_text(), "no #0 in the results page text")
     ctx.close()
+    # ---------- v9 layout: landscape split (photo beside panel), square photo everywhere ----------
+    VIS = """sel => { const el = document.querySelector(sel); if (!el) return false; const b = el.getBoundingClientRect();
+        return b.width > 0 && b.top >= 0 && b.left >= 0 && b.bottom <= innerHeight + 0.5 && b.right <= innerWidth + 0.5; }"""
+    OVER = "() => ({sw: document.documentElement.scrollWidth, sh: document.documentElement.scrollHeight, vw: innerWidth, vh: innerHeight, split: document.body.classList.contains('split')})"
+    SQ = "() => { const b = document.getElementById('scope').getBoundingClientRect(); return [b.width, b.height]; }"
+    for kind, w, h, mob, want_split in [("embed", 640, 480, False, True), ("embed", 560, 420, False, True), ("embed", 915, 412, True, True), ("embed", 844, 390, True, True),
+                                        ("embed", 412, 860, True, False), ("site", 844, 390, True, True), ("site", 915, 412, True, True),
+                                        ("site", 412, 860, True, False), ("site", 1280, 800, False, False)]:
+        kw = dict(viewport={"width": w, "height": h})
+        if mob: kw.update(has_touch=True, is_mobile=True)
+        ctx = b.new_context(**kw); page = ctx.new_page(); tag = f"{kind} {w}x{h}"
+        page.on("pageerror", lambda e, tag=tag: errors.append(tag + ": " + str(e)))
+        page.add_init_script("localStorage.setItem('ae:howto','1')")
+        page.goto(f"{BASE}/{'embed' if kind == 'embed' else 'index'}.html?today={REAL_TODAY if not LOCAL else '2026-10-20'}")
+        page.locator("#go").wait_for(); page.locator("#img").evaluate("i => i.complete || new Promise(r => i.onload = r)"); page.wait_for_timeout(250)
+        o = page.evaluate(OVER); sw, sh = page.evaluate(SQ)
+        check(o["split"] == want_split, f"{tag}: {'split' if want_split else 'stacked'} layout")
+        check(o["sw"] <= o["vw"], f"{tag}: no horizontal overflow ({o['sw']} <= {o['vw']})")
+        if kind == "embed" and want_split: check(o["sh"] <= o["vh"], f"{tag}: fills the frame, no vertical scroll ({o['sh']} <= {o['vh']})")
+        check(abs(sw - sh) < 1.5, f"{tag}: photo is square ({sw:.0f}x{sh:.0f})")
+        check(page.evaluate(VIS, "#go"), f"{tag}: Play button visible without scrolling")
+        if kind == "embed" and not want_split:
+            lb = page.locator(".lineup").bounding_box(); check(abs(lb["x"] + lb["width"] / 2 - w / 2) < 3, f"{tag}: difficulty strip centered")
+        if want_split:
+            check(page.evaluate(VIS, ".lineup") and page.evaluate(VIS, ".ititle"), f"{tag}: title + strip visible")
+            sd = page.evaluate("() => { const s = document.querySelector('.side'); return [s.scrollWidth, s.clientWidth, s.scrollHeight, s.clientHeight]; }")
+            check(sd[0] <= sd[1] and sd[2] <= sd[3], f"{tag}: start panel content fits, nothing clipped ({sd})")
+            page.locator("#go").click(); page.locator("#lock").wait_for(); page.locator("#img").evaluate("i => i.complete || new Promise(r => i.onload = r)"); page.wait_for_timeout(300)
+            check(all(page.evaluate(VIS, s_) for s_ in ("#scope", "#lock", "#hint", ".timer")), f"{tag}: round: photo, timer, Hint, Lock in all on screen")
+            bx = page.locator("#scope").bounding_box(); cx, cy = bx["x"] + bx["width"] / 2, bx["y"] + bx["height"] / 2
+            if mob: pinch(page, cx, cy); page.wait_for_timeout(150)
+            else:
+                page.mouse.move(cx, cy)
+                for _ in range(3): page.mouse.wheel(0, -200); page.wait_for_timeout(40)
+            check(zoomstate(page)["k"] > 1.5, f"{tag}: zoom works ({zoomstate(page)['k']:.2f}x)")
+            page.click("[data-z=reset]"); page.wait_for_timeout(350)
+            (x, y), st = target_xy(page, bx); (page.touchscreen.tap if mob else page.mouse.click)(x, y); page.wait_for_timeout(200)
+            check(not locked_disabled(page), f"{tag}: tap drops a pin")
+            if (kind, w) == ("site", 844): page.screenshot(path=f"{SHOTS}/v9-site-844x390-round-zoomed.png")
+            page.locator("#lock").click(); page.locator("#next").wait_for(); page.wait_for_timeout(300)
+            sc = int(page.locator(".verdict .big").inner_text())
+            check(sc >= 80 and page.evaluate(VIS, "#next"), f"{tag}: result {sc} with Next on screen")
+            for _ in range(4):
+                page.locator("#next").click(); page.locator("#lock").wait_for(); page.locator("#img").evaluate("i => i.complete || new Promise(r => i.onload = r)")
+                bx = page.locator("#scope").bounding_box(); page.mouse.click(bx["x"] + bx["width"] / 2, bx["y"] + bx["height"] / 2)
+                page.locator("#lock").click(); page.locator("#next").wait_for()
+            page.locator("#next").click(); page.locator("#sharex").wait_for(); page.wait_for_timeout(200)
+            o = page.evaluate(OVER)
+            check(page.locator(".rtable li").count() == 5 and o["sw"] <= o["vw"] and page.evaluate(VIS, "#sharex"), f"{tag}: end screen 5 rows, Share visible, no sideways scroll")
+        ctx.close()
     # daily sets ramp easy -> medium -> hard and are the same file for everyone
     for d in json.load(open(os.path.join(ROOT, "puzzles/index.json")))["dates"]:
         t = [r["tier"] for r in json.load(open(os.path.join(ROOT, f"puzzles/{d}.json")))["rounds"]]
