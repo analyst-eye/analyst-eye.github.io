@@ -23,7 +23,8 @@ function cleanResult(r) {
   if (!r || typeof r !== "object") return null;
   const c = Array.isArray(r.click) && r.click.length === 2 ? r.click.map(v => num(v, -1e4, 1e4)) : [0, 0];
   return { d: num(r.d, 0, 1e5), acc: num(r.acc, 0, 80), speed: num(r.speed, 0, 20), hint: r.hint === true,
-    score: Math.round(num(r.score, 0, 100)), t: num(r.t, 0, 1e4), ti: Math.round(num(r.ti, 0, 999)), click: c };
+    score: Math.round(num(r.score, 0, 100)), t: num(r.t, 0, 1e4), ti: Math.round(num(r.ti, 0, 999)), click: c,
+    dk: Number.isInteger(r.dk) && r.dk >= 0 && r.dk < 20 ? r.dk : -1 };
 }
 function loadDay(ds, n) {
   const v = store.get("ae:day:" + ds);
@@ -108,12 +109,19 @@ function nearest(p, s) {
   return best;
 }
 function distance(p, s) { return nearest(p, s).d; }
+// decoy rounds: look-alikes of another type are in the photo; a pin on one (and nearer to it than to any target) scores 0
+function decoyHit(p, s, dTarget) {
+  let hit = -1, best = Infinity;
+  (s.decoys || []).forEach((dc, i) => { const d = distOne(p, dc, dc.halfwidth_px); if (d <= (dc.r || 8) && d < dTarget && d < best) { best = d; hit = i; } });
+  return hit;
+}
 function score(p, s, R, t, hint) {
-  const nb = nearest(p, s), d = nb.d;
+  const nb = nearest(p, s), d = nb.d, dk = decoyHit(p, s, d);
+  if (dk >= 0) return { d: Math.round(d), acc: 0, speed: 0, hint: !!hint, score: 0, t: Math.round(t * 10) / 10, ti: nb.i, dk };
   const acc = d <= R ? 80 : Math.max(0, 80 * (1 - (d - R) / (5 * R)));
   const speed = acc > 0 ? 20 * Math.max(0, Math.min(1, (ROUND_S - t) / (ROUND_S - 5))) * (acc / 80) : 0;
   const total = Math.max(0, Math.round(acc + speed - (hint ? HINT_PEN : 0)));
-  return { d: Math.round(d), acc: Math.round(acc), speed: Math.round(speed), hint: !!hint, score: Math.min(100, total), t: Math.round(t * 10) / 10, ti: nb.i };
+  return { d: Math.round(d), acc: Math.round(acc), speed: Math.round(speed), hint: !!hint, score: Math.min(100, total), t: Math.round(t * 10) / 10, ti: nb.i, dk: -1 };
 }
 const sq = s => s >= 80 ? "🟦" : s >= 40 ? "🟧" : "⬛";
 const cls = s => s >= 80 ? "good" : s >= 40 ? "ok" : "miss";
@@ -344,6 +352,7 @@ function round() {
   h(`${hud()}<div class="play">${scopeHTML(r)}
      <div class="side">
        <div class="task">${r.tier ? `<span class="tier t-${esc(r.tier)}">${TIER_NAME[r.tier] || ""}</span>` : ""}${esc(r.task)}</div>
+       ${r.caution ? `<p class="caution">${esc(r.caution)}</p>` : ""}
        <div class="timer"><i id="bar"></i></div>
        <div class="row"><button class="btn ghost" id="hint">💡 Hint <small>−${HINT_PEN}</small></button>
          <button class="btn primary grow" id="lock" disabled>Lock in</button></div>
@@ -383,8 +392,22 @@ function round() {
   };
 }
 
+function decoySVG(s, res, u) {
+  let svg = "";
+  (s.decoys || []).forEach((dc, i) => {
+    const g = dc.geom || [], hit = res && res.dk === i, w = (hit ? 3 : 2) * u, op = hit ? 1 : .75;
+    if (g.length > 1) {
+      const pts = g.map(p => p.join(",")).join(" ");
+      svg += dc.gtype === "polygon" ? `<polygon points="${pts}" fill="rgba(255,92,92,${hit ? .22 : .1})" stroke="#ff5c5c" stroke-opacity="${op}" stroke-width="${w}" stroke-dasharray="${6 * u} ${4 * u}"/>`
+        : `<polyline points="${pts}" fill="none" stroke="#ff5c5c" stroke-opacity="${op * .6}" stroke-width="${Math.max(3, (dc.halfwidth_px || 2) * 2)}" stroke-dasharray="${8 * u} ${6 * u}"/>`;
+    } else svg += `<circle cx="${dc.answer[0]}" cy="${dc.answer[1]}" r="${Math.max(9 * u, dc.r || 8)}" fill="none" stroke="#ff5c5c" stroke-opacity="${op}" stroke-width="${w}" stroke-dasharray="${5 * u} ${4 * u}"/>`;
+    const [x, y] = dc.answer, a = 5 * u;
+    svg += `<path d="M${x - a} ${y - a}L${x + a} ${y + a}M${x + a} ${y - a}L${x - a} ${y + a}" stroke="#ff5c5c" stroke-width="${2.2 * u}" stroke-linecap="round"/>`;
+  });
+  return svg;
+}
 function answerSVG(r, res, k, u0) {
-  const s = r.s, u = u0 || unitPx(k), T = targets(s); let svg = "";
+  const s = r.s, u = u0 || unitPx(k), T = targets(s); let svg = decoySVG(s, res, u);
   const near = T[res && res.ti != null ? res.ti : (res ? nearest(res.click, s).i : 0)] || s;
   T.forEach(t => {
     const g = t.geom || [];
@@ -409,8 +432,10 @@ function reveal(res, Z) {
   document.querySelector(".hud").outerHTML = hud(); bindHelp();
   const meters = Math.round(res.d * r.gsd_m), last = G.i >= G.P.rounds.length - 1;
   const side = document.querySelector(".side");
-  side.innerHTML = `<div class="verdict ${cls(res.score)}"><span class="word">${verdict(res.score)}</span> <span class="big">${res.score}</span></div>
-    <p class="note">${esc(s.note)}</p>${(s.alts || []).length ? `<p class="dim small">There were ${targets(s).length} in this photo. Any of them counts.</p>` : ""}
+  const dc = res.dk >= 0 && (s.decoys || [])[res.dk];
+  side.innerHTML = `<div class="verdict ${dc ? "decoy" : cls(res.score)}"><span class="word">${dc ? "Decoy!" : verdict(res.score)}</span> <span class="big">${res.score}</span></div>
+    ${dc ? `<p class="note">${esc(dc.clue)}</p>` : `<p class="note">${esc(s.note)}</p>`}${(s.alts || []).length ? `<p class="dim small">There were ${targets(s).length} in this photo. Any of them counts.</p>` : ""}
+    ${(s.decoys || []).length ? `<p class="dim small"><span class="dkey"></span>Decoys</p>` : ""}
     <details class="more"><summary>Details</summary><div>${res.d === 0 ? "Right on it" : `${meters} m away`} · closeness ${res.acc}/80 · speed +${res.speed}${res.hint ? ` · hint −${HINT_PEN}` : ""}</div></details>
     <div class="row"><button class="btn primary grow" id="next">${last ? "See results ▶" : "Next ▶"}</button></div>`;
   document.getElementById("next").onclick = () => { G.i++; last ? end() : round(); };
@@ -480,7 +505,7 @@ function end() {
     if (open) return;
     const i = +btn.dataset.i, r = G.P.rounds[i], res = G.results[i], det = btn.nextElementSibling;
     det.innerHTML = `<div class="rthumb"><img src="puzzles/${esc(r.image)}" alt="Answer for round ${i + 1}"><svg viewBox="0 0 ${G.P.size} ${G.P.size}" preserveAspectRatio="none"></svg></div>
-      <p>${esc(r.s.note)}${(r.s.alts || []).length ? ` <span class="dim">(${targets(r.s).length} in the photo; any counted.)</span>` : ""}</p>`;
+      <p>${res && res.dk >= 0 && (r.s.decoys || [])[res.dk] ? esc(r.s.decoys[res.dk].clue) : esc(r.s.note)}${(r.s.alts || []).length ? ` <span class="dim">(${targets(r.s).length} in the photo; any counted.)</span>` : ""}</p>`;
     det.hidden = false; btn.setAttribute("aria-expanded", "true");
     const th = det.querySelector(".rthumb");
     det.querySelector("svg").innerHTML = answerSVG(r, res, 1, G.P.size / (th.clientWidth || 150));

@@ -188,3 +188,9 @@ body[data-mode=embed] .lineup{max-width:250px}
 /* v6: header hugs the photo; stats/countdown balanced in the space below the strip */
 body[data-mode=full] .intro{justify-content:flex-start;gap:20px;padding:18px 8px 12px}
 body[data-mode=full] .intro .imeta{flex:1;justify-content:center;gap:14px;padding:28px 0 16px}
+
+/* decoy rounds */
+.caution{margin:-4px 0 8px;font-size:13px;color:#ff8a8a}
+body[data-mode=embed] .caution{font-size:12px;margin:2px 0 4px}
+.verdict.decoy .word{color:#ff5c5c}
+.dkey{display:inline-block;width:14px;height:0;border-top:2px dashed #ff5c5c;vertical-align:middle;margin-right:6px}

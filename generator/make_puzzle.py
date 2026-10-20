@@ -54,7 +54,43 @@ CATS = {
  "substation":   dict(sel=['way["power"="substation"]'], label="Power substation", task="Find a power substation.", gsd=0.6, r_m=15, diff=3),
  "slipway":      dict(sel=['nwr["leisure"="slipway"]'], label="Boat ramp", task="Find a boat ramp.", gsd=0.6, r_m=15, diff=3),
  "lighthouse":   dict(sel=['nwr["man_made"="lighthouse"]'], label="Lighthouse", task="Find a lighthouse.", gsd=0.6, r_m=15, diff=3),
+ # decoy rounds only: a football field whose yard lines are verifiably visible, next to a soccer field (see yardlines())
+ "football_field": dict(sel=[], label="Football field", task="Find the football field.", gsd=0.6, r_m=18, diff=2, decoy_only=True),
 }
+
+# ---------------------------------------------------------------- decoys
+# Look-alike classes that DON'T score. In Medium/Hard rounds the photo is framed to include them; tapping one
+# gives 0 points plus a one-line clue. Pairs were picked because they are reliably tagged in OSM *and* tellable at ~0.6 m.
+# size: allowed outline extent (m) so a mis-tagged feature can't pose as a decoy (e.g. a full-size "softball" field).
+DCLS = {
+ "basketball": dict(sel='way["leisure"="pitch"]["sport"="basketball"]', one="basketball court", many="basketball courts", r_m=8, size=(18, 45)),
+ "pickleball": dict(sel='way["leisure"="pitch"]["sport"="pickleball"]', one="pickleball court", many="pickleball courts", r_m=5, size=(9, 30)),
+ "softball":   dict(sel='way["leisure"="pitch"]["sport"="softball"]', one="softball field", many="softball fields", r_m=14, size=(45, 100)),
+ "tee":        dict(sel='way["golf"="tee"]', one="tee box", many="tee boxes", r_m=6, size=(10, 70)),
+ "taxiway":    dict(sel='way["aeroway"="taxiway"]', one="taxiway", many="taxiways", r_m=12, halfwidth_m=9, size=(120, 6000)),
+ # these three come from the main candidate set
+ "soccer":       dict(one="soccer field", many="soccer fields", r_m=16, size=(80, 170)),
+ "storage_tank": dict(one="storage tank", many="storage tanks", r_m=8, size=(6, 50)),
+}
+DECOYS = {   # target category -> [(decoy class, max distance from target in m, clue shown when a player taps it)]
+ "tennis": [("basketball", 150, "That's a basketball court. Tennis courts are longer and narrower, with a net line across the middle."),
+            ("pickleball", 150, "That's a pickleball court, about a third the size of a tennis court.")],
+ "baseball": [("softball", 220, "That's a softball field. Baseball fields are bigger, with a grass infield inside the dirt base paths.")],
+ "golf": [("tee", 110, "That's a tee box, where each hole starts: a flat strip with straight edges. Putting greens are rounder, often hugged by sand traps.")],
+ "runway": [("taxiway", 450, "That's a taxiway, the road planes use to reach the runway. The runway is wider, with white stripes and numbers at each end.")],
+ "water_tower": [("storage_tank", 200, "That's a ground-level tank. A water tower stands tall, so look for its long shadow.")],
+ "football_field": [("soccer", 250, "That's a soccer field. Football fields have white yard lines striped across them every 5 yards.")],
+}
+DECOY_TARGET_SIZE = {"baseball": (110, 260)}   # decoy rounds only: a "baseball" target must be full-size to contrast with softball
+MAX_DECOYS = 4
+
+def dclass_of(t):
+    sport = t.get("sport"); lp = t.get("leisure") == "pitch"
+    if lp and sport in ("basketball", "pickleball", "softball", "soccer"): return sport
+    if t.get("golf") == "tee": return "tee"
+    if t.get("aeroway") == "taxiway": return "taxiway"
+    if t.get("man_made") == "storage_tank": return "storage_tank"
+    return None
 
 def cat_of(t):
     mm = t.get("man_made"); sport = t.get("sport")
@@ -100,6 +136,7 @@ NOTES = {
  "substation": ["A fenced gravel yard packed with metal equipment where power lines meet.", "Follow the cleared power-line path through the trees to a yard full of gear."],
  "slipway": ["A short paved ramp running straight into the water, usually beside a parking lot.", "Look for a strip of pavement that dips right into the water."],
  "lighthouse": ["A small round tower by the water with a long, thin shadow.", "Look along the shore for a small tower and its long shadow."],
+ "football_field": ["A green rectangle striped with white yard lines, with end zones at both ends.", "Look for the white lines running across the grass every few steps: that's a football field."],
 }
 
 # ---------------------------------------------------------------- helpers
@@ -163,7 +200,10 @@ def fetch_osm():
     os.makedirs(CACHE, exist_ok=True)
     cpath = os.path.join(CACHE, "overpass.json")
     if os.path.exists(cpath) and time.time() - os.path.getmtime(cpath) < 20 * 3600:
-        return json.load(open(cpath))
+        data = json.load(open(cpath))
+        if "dcands" not in data:   # cache from before decoys existed
+            data["dcands"] = fetch_decoys(); json.dump(data, open(cpath, "w"))
+        return data
     s, w, n, e = S["region"]["bbox"]
     slices = S.get("query_slices", 3); step = (e - w) / slices
     els, seen = [], set()
@@ -193,10 +233,29 @@ def fetch_osm():
             sensitive = sensitive or bool(rx.search(" ".join([t.get("name", ""), t.get("operator", ""), t.get("operator:type", "")])))
         if sensitive: bad.append(x)
         elif cat_of(t): cands.append(x)
-    data = {"fetched": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "cands": cands, "bad": bad}
+    data = {"fetched": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "cands": cands, "bad": bad,
+            "dcands": fetch_decoys()}
     json.dump(data, open(cpath, "w"))
-    log(f"  OSM: {len(cands)} candidates, {len(bad)} sensitive features")
+    log(f"  OSM: {len(cands)} candidates, {len(bad)} sensitive features, {len(data['dcands'])} decoy features")
     return data
+
+def fetch_decoys():
+    """Decoy-only classes (basketball/pickleball/softball, golf tees, taxiways). Best effort: a failure here only
+    means no decoys today, never a failed puzzle."""
+    s, w, n, e = S["region"]["bbox"]
+    slices = S.get("query_slices", 3); step = (e - w) / slices; out, seen = [], set()
+    sels = [c["sel"] for c in DCLS.values() if c.get("sel")]
+    try:
+        for i in range(slices):
+            bb = f"({s},{w + i * step:.4f},{n},{w + (i + 1) * step:.4f})"
+            q = "[out:json][timeout:180];\n( " + "".join(f"{sel}{bb};" for sel in sels) + " );\nout tags center geom;"
+            for x in overpass(q):
+                key = (x["type"], x["id"])
+                if key not in seen and dclass_of(x.get("tags", {})): seen.add(key); out.append(x)
+            time.sleep(3)
+    except Exception as ex:
+        log(f"  decoy fetch failed ({ex}); continuing without decoys"); return []
+    return out
 
 def bad_shapes(bad):
     """-> list of (name, rings[list of [(lat,lon)]], points[(lat,lon)])"""
@@ -237,7 +296,9 @@ def chip_is_clear(shapes, lat_c, lon_c, half_m, margin_m):
     return True, None
 
 # ---------------------------------------------------------------- imagery
+FETCHES = [0]   # photos requested so far (decoy search is budgeted on this)
 def naip_chip(xmin, ymin, xmax, ymax):
+    FETCHES[0] += 1
     p = dict(bbox=f"{xmin},{ymin},{xmax},{ymax}", bboxSR=3857, imageSR=3857, size=f"{SIZE},{SIZE}",
              format="jpg", f="image", interpolation="RSP_BilinearInterpolation")
     r = get(f"{S['naip_service']}/exportImage", params=p)
@@ -406,6 +467,9 @@ def build_pool(data, hist):
         k = f"{c}:{t.get('name','').lower()}" if t.get("name") else None
         if k and k in names_used: continue
         pool.setdefault(c, []).append((x, cen, k))
+        if c == "field" and t.get("sport") == "american_football":   # also a decoy-round football target
+            kf = f"football_field:{t.get('name','').lower()}" if t.get("name") else None
+            if not (kf and kf in names_used): pool.setdefault("football_field", []).append((x, cen, kf))
     for c in pool: pool[c].sort(key=lambda z: (z[0]["type"], z[0]["id"]))
     return pool, names_used, used
 
@@ -423,17 +487,21 @@ def build_day(date, data, shapes, hist):
         for c0 in hist["days"].get((date - dt.timedelta(days=i)).isoformat(), []): recent[c0] = recent.get(c0, 0) + 1
     rounds, chosen = [], set()
     center = {"easy": 0.0, "medium": 0.5, "hard": 1.0}
-    for tier in SLOTS:
+    for si, tier in enumerate(SLOTS):
         lo, hi = TIERS[tier]; got = None
-        for cap, widen in ((cap0, 0), (cap0, 5), (cap0 + 1, 5), (cap0 + 1, 10)):
+        dmode = None if tier == "easy" else ("need" if si in NEED_DECOY else "attach")
+        if dmode == "need":   # first Medium and the Hard round: try a decoy round first, fall back to a normal one
+            got = decoy_round(ds, len(rounds) + 1, pool, recent, chosen, cap0, lo, hi, shapes, rng, data, used, names_used)
+        for cap, widen in (() if got else ((cap0, 0), (cap0, 5), (cap0 + 1, 5), (cap0 + 1, 10))):
             band = (max(0, lo - widen), min(100, hi + widen))
-            ok_cats = [c for c in cats if recent.get(c, 0) < cap and c not in chosen]
+            ok_cats = [c for c in cats if recent.get(c, 0) < cap and c not in chosen and not CATS[c].get("decoy_only")
+                       and not (c == "field" and "football_field" in chosen)]
             rng.shuffle(ok_cats)   # likely types first (by prior), random within
             ok_cats.sort(key=lambda c: abs((CATS[c]["diff"] - 1) / 2 - center[tier]) + rng.random() * 0.6)
             for c in ok_cats:
                 cand_list = pool[c][:]; rng.shuffle(cand_list)
                 for x, cen, k in cand_list[:40]:
-                    r = make_round(ds, len(rounds) + 1, c, CATS[c], x, cen, shapes, rng, data, band)
+                    r = make_round(ds, len(rounds) + 1, c, CATS[c], x, cen, shapes, rng, data, band, decoy=dmode and "attach")
                     if r:
                         got = r; used[f"{x['type']}/{x['id']}"] = {"date": ds, "key": k, "cat": c}
                         if k: names_used.add(k)
@@ -463,13 +531,106 @@ def build_day(date, data, shapes, hist):
     log(f"[{ds}] OK: " + ", ".join(r["category"] for r in rounds))
     return puzzle
 
+NEED_DECOY = {2, 4}   # slot indexes: first Medium round and the Hard round
+
+def decoy_round(ds, idx, pool, recent, chosen, cap0, lo, hi, shapes, rng, data, used, names_used):
+    """Try to build a 'find the X, not the look-alike' round. -> round dict or None (caller falls back)."""
+    if not data: return None
+    stop_at = FETCHES[0] + S.get("decoy_photo_budget", 14)   # photos this search may fetch: keeps the nightly run fast
+    for cap, widen in ((cap0, 0), (cap0, 10), (cap0 + 1, 10)):
+        band = (max(0, lo - widen), min(100, hi + widen))
+        cats = [c for c in DECOYS if c in pool and recent.get(c, 0) < cap and c not in chosen
+                and not (c == "football_field" and "field" in chosen) and not (c == "field" and "football_field" in chosen)]
+        rng.shuffle(cats)
+        for c in cats:
+            cand = []
+            for x, cen, k in pool[c]:
+                near = decoy_near(data, c, x, cen)
+                if near: cand.append((x, cen, k, near))
+            rng.shuffle(cand)
+            for x, cen, k, near in cand[:25]:
+                if FETCHES[0] >= stop_at: log("  decoy photo budget used up; normal round instead"); return None
+                r = make_round(ds, idx, c, CATS[c], x, cen, shapes, rng, data, band, decoy="need", near=near)
+                if r:
+                    used[f"{x['type']}/{x['id']}"] = {"date": ds, "key": k, "cat": c}
+                    if k: names_used.add(k)
+                    log(f"  decoy round: {c} vs {r['secret_plain']['decoys'][0]['cls']} ({len(r['secret_plain']['decoys'])} decoys)")
+                    return r
+        log(f"  no decoy round in {band} with weekly cap {cap}")
+    return None
+
 _BYCAT = {}
 def same_type(data, c):
     if not _BYCAT:
         for y in data["cands"]:
             cc = cat_of(y.get("tags", {}))
             if cc: _BYCAT.setdefault(cc, []).append(y)
+            if cc == "field" and y.get("tags", {}).get("sport") == "american_football": _BYCAT.setdefault("football_field", []).append(y)
     return _BYCAT.get(c, [])
+
+_DBY = {}
+def decoy_feats(data, dc):
+    if not _DBY:
+        _DBY["_"] = []
+        for y in data.get("dcands", []) + data["cands"]:
+            cc = dclass_of(y.get("tags", {}))
+            if cc and (y.get("type"), y.get("id")) not in _DBY.setdefault("_ids_" + cc, set()):
+                _DBY["_ids_" + cc].add((y.get("type"), y.get("id"))); _DBY.setdefault(cc, []).append(y)
+    return _DBY.get(dc, [])
+
+def decoy_near(data, c, x, cen):
+    """-> [(decoy class, feature, point, clue)] for the look-alike classes of c within their max distance of the target."""
+    out = []
+    if not data or c not in DECOYS: return out
+    proj = local_m(cen["lat"], cen["lon"])
+    for dc, maxd, clue in DECOYS[c]:
+        for y in decoy_feats(data, dc):
+            if y.get("type") == x.get("type") and y.get("id") == x.get("id"): continue
+            pt = feature_point(y, dc)
+            if not pt: continue
+            d = math.hypot(*proj(pt["lat"], pt["lon"]))
+            if 8 < d < maxd: out.append((d, dc, y, pt, clue))
+    out.sort(key=lambda z: z[0])
+    return [z[1:] for z in out]
+
+def dist_to(p, ans, geom, gtype, hw=0):
+    d = math.dist(p, ans)
+    if gtype == "polygon" and len(geom) > 2 and point_in_ring(tuple(p), geom): return 0.0
+    if len(geom) > 1:
+        m = min(seg_dist(p, a, b) for a, b in zip(geom, geom[1:]))
+        if gtype == "line": m = max(0.0, m - hw)
+        d = min(d, m)
+    return d
+
+YARD_MIN = 20.0   # yard-line periodicity score a football field must reach (calibrated on 14 football + 5 soccer chips: soccer 0-12, clear yard lines 14-1500)
+YARD_MAX_SOCCER = 8.0   # a "soccer" decoy above this may really be a striped football field: drop it
+def yardlines(img, geom, gsd):
+    """Are football yard lines (white stripes every 5 yd = 4.57 m) visible? Ratio of profile power at that
+    spatial period vs. nearby periods along the field's long axis. ~1 = no stripes; >3 = clearly striped."""
+    import numpy as np
+    P = [tuple(q) for q in geom]
+    if len(P) > 1 and P[0] == P[-1]: P = P[:-1]
+    if len(P) < 4: return 0.0
+    P = np.array(P, float); c = P.mean(0)
+    _, _, Vt = np.linalg.svd(P - c); ax, ay = Vt[0], Vt[1]
+    pu, pv = (P - c) @ ax, (P - c) @ ay; L, Wd = pu.max() - pu.min(), pv.max() - pv.min()
+    if L * gsd < 60 or Wd * gsd < 25: return 0.0
+    G = np.asarray(img.convert("L"), dtype=np.float32)
+    us = np.arange(pu.min() + 0.1 * L, pu.max() - 0.1 * L, 0.5); vs = np.linspace(pv.min() + 0.2 * Wd, pv.max() - 0.2 * Wd, 25)
+    X = c[0] + us[:, None] * ax[0] + vs[None, :] * ay[0]; Y = c[1] + us[:, None] * ax[1] + vs[None, :] * ay[1]
+    ok = (X >= 0) & (X < SIZE - 1) & (Y >= 0) & (Y < SIZE - 1)
+    if ok.mean() < 0.9: return 0.0
+    X = np.clip(X, 0, SIZE - 1.001); Y = np.clip(Y, 0, SIZE - 1.001); x0 = X.astype(int); y0 = Y.astype(int); fx = X - x0; fy = Y - y0
+    v = (G[y0, x0] * (1 - fx) * (1 - fy) + G[y0, x0 + 1] * fx * (1 - fy) + G[y0 + 1, x0] * (1 - fx) * fy + G[y0 + 1, x0 + 1] * fx * fy)
+    prof = v.mean(1); k = 31
+    prof = prof - np.convolve(prof, np.ones(k) / k, mode="same"); prof = prof[k:-k]
+    if len(prof) < 64: return 0.0
+    prof = prof * np.hanning(len(prof))
+    pw = np.abs(np.fft.rfft(prof)) ** 2; f = np.fft.rfftfreq(len(prof), d=0.5)   # cycles per px
+    per = 4.572 / gsd; band = (f > 1 / (per * 1.12)) & (f < 1 / (per * 0.88))
+    ref = (f > 1 / 25) & (f < 1 / 3) & ~band
+    if not band.any() or not ref.any(): return 0.0
+    return round(float(pw[band].max() / (np.median(pw[ref]) + 1e-6)), 2)
 
 def alternates(data, c, x, px):
     """Other OSM features of the same type visible in the chip -> also accepted as correct."""
@@ -512,6 +673,7 @@ NODE_SIZE_M = {"water_tower": 14, "lighthouse": 8, "storage_tank": 15, "slipway"
 TIERS = {"easy": (0, 29), "medium": (30, 49), "hard": (50, 100)}   # calibrated on the Gulf Coast pool
 SLOTS = ["easy", "easy", "medium", "medium", "hard"]
 W_SIZE, W_ZOOM, W_DISTR, W_VIS, W_PRIOR = .28, .18, .18, .16, .20
+W_DECOY = .16          # verified decoys in the photo make a round harder
 clamp = lambda v, a=0.0, b=1.0: max(a, min(b, v))
 
 def target_size_m(x, c):
@@ -597,16 +759,29 @@ MIN_DISTINCT = 0.3   # below this the target doesn't stand out from its surround
 def combine(parts, vis=None):
     lowvis = 0.5 if vis is None else 1 - vis
     v = (W_SIZE * parts["size"] + W_ZOOM * parts["zoom"] + W_DISTR * parts["distract"] + W_VIS * lowvis
-         + W_PRIOR * parts["prior"] - parts["bonus"])
+         + W_PRIOR * parts["prior"] + W_DECOY * parts.get("decoy", 0) - parts["bonus"])
     return round(100 * clamp(v))
    # more look-alikes than this in one photo = trivial round -> pick another chip
 
-def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None):
+def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None, decoy=None, near=None):
+    """decoy: None (easy rounds), "attach" (mark any verified look-alikes that happen to be in frame) or
+       "need" (frame the photo to include a look-alike; fail unless at least one verified decoy is in it)."""
     lat, lon = cen["lat"], cen["lon"]; gsd = cfg["gsd"]
     k = 1 / math.cos(math.radians(lat))
     half_merc = SIZE / 2 * gsd * k
-    fx, fy = rng.uniform(0.18, 0.82), rng.uniform(0.18, 0.82)
     tx, ty = merc(lat, lon)
+    if decoy and c in DECOY_TARGET_SIZE and not DECOY_TARGET_SIZE[c][0] <= extent_m(x) <= DECOY_TARGET_SIZE[c][1]:
+        if decoy == "need": return None
+        decoy = None
+    if decoy and near is None: near = decoy_near(data, c, x, cen)
+    if decoy == "need" and not near: return None
+    fx, fy = rng.uniform(0.18, 0.82), rng.uniform(0.18, 0.82)
+    if decoy == "need":   # frame so the target AND one nearby look-alike are comfortably inside the photo
+        dX, dY = merc(near[0][2]["lat"], near[0][2]["lon"]); W = 2 * half_merc
+        ax_lo, ax_hi = max(0.18, 0.12 - (dX - tx) / W), min(0.82, 0.88 - (dX - tx) / W)
+        ay_lo, ay_hi = max(0.18, 0.12 + (dY - ty) / W), min(0.82, 0.88 + (dY - ty) / W)
+        if ax_lo > ax_hi or ay_lo > ay_hi: return None
+        fx, fy = rng.uniform(ax_lo, ax_hi), rng.uniform(ay_lo, ay_hi)
     xmin = tx - fx * 2 * half_merc; xmax = xmin + 2 * half_merc
     ymax = ty + fy * 2 * half_merc; ymin = ymax - 2 * half_merc
     clat, clon = unmerc((xmin + xmax) / 2, (ymin + ymax) / 2)
@@ -630,8 +805,30 @@ def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None):
     if sites > MAX_SITES or raw > MAX_ALTS:
         log(f"    skip {c} {x['type']}/{x['id']}: {raw} look-alikes in frame ({sites} sites)"); return None
     parts = pre_difficulty(c, x, gsd, alts, ans, lookalikes(data, c, px) if data else 0)
+    dgeo = []   # look-alikes that pass the geometry checks (in frame, plausible size, clearly apart from targets)
+    if decoy:
+        R_t = cfg["r_m"] / gsd; hw_t = cfg.get("halfwidth_m", 0) / gsd
+        scoring = [(ans, geom, gtype)] + [(t["answer"], t["geom"], t["gtype"]) for t in alts]
+        for dc, y, pt, clue in near:
+            if len(dgeo) >= MAX_DECOYS: break
+            dcfg = DCLS[dc]; a = px(pt["lat"], pt["lon"])
+            if not (24 <= a[0] <= SIZE - 24 and 24 <= a[1] <= SIZE - 24): continue
+            ext = extent_m(y); lo_m, hi_m = dcfg.get("size", (0, 1e9))
+            if ext and not lo_m <= ext <= hi_m: continue   # implausible size for that class: probably mis-tagged
+            dg, dgt = [], "point"
+            if y["type"] == "way" and y.get("geometry"):
+                dg = [px(q["lat"], q["lon"]) for q in y["geometry"] if q]
+                dgt = "polygon" if len(dg) > 3 and y["geometry"][0] == y["geometry"][-1] and dc != "taxiway" else "line"
+            dr = dcfg["r_m"] / gsd; dhw = dcfg.get("halfwidth_m", 0) / gsd
+            # a decoy must be clearly separate from every scoring feature, both ways round
+            if any(dist_to(sa, a, dg, dgt, dhw) <= dr + 4 or dist_to(a, sa, sg, sgt, hw_t) <= R_t for sa, sg, sgt in scoring): continue
+            if any(math.dist(a, d0["answer"]) < 10 for d0 in dgeo): continue
+            dgeo.append({"answer": a, "geom": dg, "gtype": dgt, "halfwidth_px": round(dhw, 1), "r": round(dr, 1),
+                         "cls": dc, "label": dcfg["one"], "clue": clue, "_size_px": (ext or 20) / gsd})
+        if decoy == "need" and not dgeo: return None
+    parts["decoy"] = min(1.0, len(dgeo) / 2)
     if band:   # cheap pre-check: visibility can move the score by at most +/- W_VIS*50
-        lo_s, hi_s = combine(parts, 1.0), combine(parts, 0.0)
+        lo_s, hi_s = combine({**parts, "decoy": 0.0}, 1.0), combine(parts, 0.0)
         if hi_s < band[0] or lo_s > band[1]: return None
     try:
         img = naip_chip(xmin, ymin, xmax, ymax)
@@ -643,6 +840,20 @@ def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None):
     dist_v = distinctness(img, ans, geom, gtype, parts["size_m"] / gsd, cfg.get("halfwidth_m", 0) / gsd)
     if dist_v < MIN_DISTINCT:
         log(f"    skip {c} {x['type']}/{x['id']}: target not visually distinct ({dist_v})"); return None
+    if c == "football_field":   # markings must be verifiably visible, or it's just a "sports field"
+        yl = yardlines(img, geom, gsd)
+        if yl < YARD_MIN:
+            log(f"    skip {c} {x['type']}/{x['id']}: yard lines not visible ({yl})"); return None
+    decs = []
+    if decoy:
+        for d0 in dgeo:
+            dv = distinctness(img, d0["answer"], d0["geom"], d0["gtype"], d0.pop("_size_px"), d0["halfwidth_px"])
+            if dv < MIN_DISTINCT: continue   # same visibility bar as targets: decoys must be real look-alikes
+            if d0["cls"] == "soccer" and yardlines(img, d0["geom"], gsd) >= YARD_MAX_SOCCER: continue   # striped = probably football
+            decs.append(d0)
+        if decoy == "need" and not decs:
+            log(f"    skip {c} {x['type']}/{x['id']}: no verified decoy in frame"); return None
+    parts["decoy"] = min(1.0, len(decs) / 2)
     vis = visibility(img, ans, parts["size_m"] / gsd)
     dscore = combine(parts, vis)
     if band and not band[0] <= dscore <= band[1]:
@@ -662,12 +873,16 @@ def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None):
               "halfwidth_px": round(cfg.get("halfwidth_m", 0) / gsd, 1), "hint": hint,
               "name": t.get("name"), "lat": round(lat, 5), "lon": round(lon, 5),
               "osm": f"https://www.openstreetmap.org/{x['type']}/{x['id']}", "note": note,
-              "naip": meta, "alts": alts,
+              "naip": meta, "alts": alts, "decoys": decs,
               "chip_merc": [round(v, 2) for v in (xmin, ymin, xmax, ymax)]}
-    return {"round": idx, "category": c, "label": cfg["label"], "task": cfg["task"], "image": tmp,
+    many = []
+    for d0 in decs:
+        if DCLS[d0["cls"]]["many"] not in many: many.append(DCLS[d0["cls"]]["many"])
+    extra = {"caution": f"Careful: {' or '.join(many)} don't count."} if decs else {}
+    return {"round": idx, "category": c, "label": cfg["label"], "task": cfg["task"], "image": tmp, **extra,
             "gsd_m": gsd, "radius_px": r_px, "difficulty": cfg["diff"],
             "dscore": dscore, "tier": next(k for k, (a, b) in TIERS.items() if a <= dscore <= b),
-            "dparts": {**{k: (round(v, 2) if isinstance(v, float) else v) for k, v in parts.items()}, "visibility": round(vis, 2), "distinct": dist_v},
+            "dparts": {**{k: (round(v, 2) if isinstance(v, float) else v) for k, v in parts.items()}, "visibility": round(vis, 2), "distinct": dist_v, "decoys": len(decs)},
             "imagery_date": (meta or {}).get("acquired"), "secret_plain": secret, "_tie": rng.random()}
 
 def replace_round(spec, data, shapes, hist, any_type=False):
@@ -691,7 +906,8 @@ def replace_round(spec, data, shapes, hist, any_type=False):
     cand = [(cc, x, cen, k) for cc in cats for (x, cen, k) in rng.sample(pool.get(cc, []), min(25, len(pool.get(cc, []))))]
     if any_type: cand.sort(key=lambda z: abs((CATS[z[0]]["diff"] - 1) / 2 - {"easy": 0, "medium": .5, "hard": 1}.get(tier, .5)) + rng.random() * .6)
     for c, x, cen, k in cand:
-        r = make_round(ds, n, c, CATS[c], x, cen, shapes, rng, data, band)
+        dm = None if tier == "easy" else ("need" if old.get("caution") and c == c0 else "attach")
+        r = make_round(ds, n, c, CATS[c], x, cen, shapes, rng, data, band, decoy=dm)
         if not r: continue
         r["tier"] = tier or r["tier"]
         os.replace(os.path.join(PUZ, r["image"]), os.path.join(PUZ, old["image"]))
