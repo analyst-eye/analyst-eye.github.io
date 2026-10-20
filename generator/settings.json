@@ -1,0 +1,26 @@
+{
+ "launch_date": "2026-10-19",
+ "timezone": "America/Chicago",
+ "region": {
+  "name": "Northern Gulf Coast (LA / MS / AL)",
+  "bbox": [
+   29.85,
+   -90.35,
+   30.75,
+   -87.45
+  ]
+ },
+ "rounds_per_day": 5,
+ "image_size": 768,
+ "jpeg_quality": 82,
+ "chip_margin_m": 150,
+ "days_ahead": 7,
+ "overpass_mirrors": [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter"
+ ],
+ "naip_service": "https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer",
+ "user_agent": "AnalystEye/1.0 (daily geo puzzle; https://x.com/A_is_A)",
+ "max_per_week": 2
+}

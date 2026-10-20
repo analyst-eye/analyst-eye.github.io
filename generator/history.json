@@ -1,0 +1,235 @@
+{
+ "days": {
+  "2026-10-19": [
+   "soccer",
+   "stadium",
+   "water_tower",
+   "bridge",
+   "mast"
+  ],
+  "2026-10-20": [
+   "marina",
+   "football",
+   "roundabout",
+   "water_tower",
+   "mast"
+  ],
+  "2026-10-21": [
+   "soccer",
+   "baseball",
+   "golf",
+   "bridge",
+   "substation"
+  ],
+  "2026-10-22": [
+   "runway",
+   "marina",
+   "pool",
+   "wastewater",
+   "slipway"
+  ],
+  "2026-10-23": [
+   "track",
+   "runway",
+   "pool",
+   "pier",
+   "substation"
+  ],
+  "2026-10-24": [
+   "stadium",
+   "track",
+   "solar",
+   "tennis",
+   "lighthouse"
+  ],
+  "2026-10-25": [
+   "football",
+   "baseball",
+   "wastewater",
+   "roundabout",
+   "slipway"
+  ]
+ },
+ "used": {
+  "node/4065659413": {
+   "cat": "lighthouse",
+   "date": "2026-10-24",
+   "key": "lighthouse:tchefuncte river range rear light"
+  },
+  "node/5214879206": {
+   "cat": "slipway",
+   "date": "2026-10-22",
+   "key": null
+  },
+  "node/7833232651": {
+   "cat": "mast",
+   "date": "2026-10-19",
+   "key": null
+  },
+  "node/9910673055": {
+   "cat": "mast",
+   "date": "2026-10-20",
+   "key": null
+  },
+  "relation/14470282": {
+   "cat": "stadium",
+   "date": "2026-10-24",
+   "key": "stadium:ocean springs greyhound stadium"
+  },
+  "relation/7765336": {
+   "cat": "marina",
+   "date": "2026-10-22",
+   "key": "marina:gcrl harbor"
+  },
+  "way/1118446619": {
+   "cat": "football",
+   "date": "2026-10-25",
+   "key": null
+  },
+  "way/1158035346": {
+   "cat": "football",
+   "date": "2026-10-20",
+   "key": null
+  },
+  "way/1174012053": {
+   "cat": "bridge",
+   "date": "2026-10-21",
+   "key": null
+  },
+  "way/1174078854": {
+   "cat": "substation",
+   "date": "2026-10-23",
+   "key": null
+  },
+  "way/1174311181": {
+   "cat": "bridge",
+   "date": "2026-10-19",
+   "key": null
+  },
+  "way/1232444525": {
+   "cat": "golf",
+   "date": "2026-10-21",
+   "key": null
+  },
+  "way/1235137622": {
+   "cat": "track",
+   "date": "2026-10-23",
+   "key": null
+  },
+  "way/1235293253": {
+   "cat": "track",
+   "date": "2026-10-24",
+   "key": null
+  },
+  "way/1254390389": {
+   "cat": "slipway",
+   "date": "2026-10-25",
+   "key": null
+  },
+  "way/1291758665": {
+   "cat": "marina",
+   "date": "2026-10-20",
+   "key": "marina:river yacht basin marina"
+  },
+  "way/1307322535": {
+   "cat": "stadium",
+   "date": "2026-10-19",
+   "key": "stadium:saint stanislaus football fieild and track"
+  },
+  "way/1372413748": {
+   "cat": "pool",
+   "date": "2026-10-22",
+   "key": "pool:coastal curl"
+  },
+  "way/139587269": {
+   "cat": "water_tower",
+   "date": "2026-10-20",
+   "key": null
+  },
+  "way/1411388288": {
+   "cat": "wastewater",
+   "date": "2026-10-25",
+   "key": null
+  },
+  "way/1462496331": {
+   "cat": "tennis",
+   "date": "2026-10-24",
+   "key": null
+  },
+  "way/1463232546": {
+   "cat": "solar",
+   "date": "2026-10-24",
+   "key": null
+  },
+  "way/1466182508": {
+   "cat": "pier",
+   "date": "2026-10-23",
+   "key": "pier:bisso marine co."
+  },
+  "way/1485090987": {
+   "cat": "substation",
+   "date": "2026-10-21",
+   "key": null
+  },
+  "way/191760762": {
+   "cat": "roundabout",
+   "date": "2026-10-25",
+   "key": "roundabout:bridgeport drive"
+  },
+  "way/266446769": {
+   "cat": "runway",
+   "date": "2026-10-22",
+   "key": null
+  },
+  "way/300728509": {
+   "cat": "soccer",
+   "date": "2026-10-21",
+   "key": null
+  },
+  "way/388760809": {
+   "cat": "baseball",
+   "date": "2026-10-25",
+   "key": null
+  },
+  "way/43240567": {
+   "cat": "wastewater",
+   "date": "2026-10-22",
+   "key": null
+  },
+  "way/473268136": {
+   "cat": "baseball",
+   "date": "2026-10-21",
+   "key": null
+  },
+  "way/544605821": {
+   "cat": "roundabout",
+   "date": "2026-10-20",
+   "key": null
+  },
+  "way/633806410": {
+   "cat": "pool",
+   "date": "2026-10-23",
+   "key": "pool:bumper boats"
+  },
+  "way/72108363": {
+   "cat": "runway",
+   "date": "2026-10-23",
+   "key": null
+  },
+  "way/807369923": {
+   "cat": "water_tower",
+   "date": "2026-10-19",
+   "key": null
+  },
+  "way/97157126": {
+   "cat": "pool",
+   "date": "2026-10-23",
+   "key": "pool:cornerstone swimming pool"
+  },
+  "way/972361149": {
+   "cat": "soccer",
+   "date": "2026-10-19",
+   "key": null
+  }
+ }
+}

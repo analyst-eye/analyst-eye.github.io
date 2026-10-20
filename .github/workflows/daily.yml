@@ -1,0 +1,81 @@
+name: Daily puzzle + deploy
+
+on:
+  schedule:
+    - cron: "0 5 * * *"        # 05:00 UTC = midnight CDT / 11pm CST
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Generate a specific date (YYYY-MM-DD). Leave blank to fill today..today+7."
+        required: false
+      force:
+        description: "Regenerate even if the puzzle exists"
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths-ignore: ["README.md"]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: analyst-eye
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install requests pillow
+      - name: Generate puzzles
+        env:
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}   # optional; leave unset to use template notes
+        run: |
+          if [ -n "${{ inputs.date }}" ]; then
+            python generator/make_puzzle.py --date "${{ inputs.date }}" ${{ inputs.force && '--force' || '' }}
+          else
+            python generator/make_puzzle.py
+          fi
+      - name: Commit
+        run: |
+          git config user.name "analyst-eye-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add puzzles generator/history.json
+          git diff --cached --quiet && echo "no changes" || (git commit -m "Puzzles $(date -u +%F)" && git push)
+
+  deploy:
+    needs: [generate]
+    if: always() && (needs.generate.result == 'success' || needs.generate.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - id: pages
+        uses: actions/configure-pages@v5
+      - name: Write public URL into config + meta tags
+        run: |
+          URL="${{ vars.SITE_URL }}"
+          [ -z "$URL" ] && URL="${{ steps.pages.outputs.base_url }}/"
+          python tools/set_site_url.py "$URL"
+      - name: Stage site
+        run: |
+          mkdir _site
+          cp -r index.html embed.html config.js assets puzzles .nojekyll _site/
+          rm -f _site/puzzles/*.json.bak
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: _site }
+      - id: deployment
+        uses: actions/deploy-pages@v4
