@@ -237,6 +237,42 @@ with sync_playwright() as p:
     r20 = page.evaluate("() => { const P = AE_PUZZLES['2026-10-20']; if (!P) return null; const r = P.rounds[0], s = AE_DEBUG.decode(r.secret, '2026-10-20'); return [P.rounds.length, AE_DEBUG.score(s.answer, s, r.radius_px, 3, false).score, (s.decoys || []).length]; }")
     check(bool(r20) and r20[0] == 5 and r20[1] >= 90 and r20[2] == 0, f"Oct 20 old-format puzzle loads and scores: {r20}")
     ctx.close()
+    # ---------- relaunch: Oct 20 is Puzzle #1 (start, embed, result title, share text); old Oct 19 saves don't break stats ----------
+    L = json.load(open(os.path.join(ROOT, "puzzles/index.json")))
+    check(L["launch"] == "2026-10-20" and L["dates"][0] == "2026-10-20" and "2026-10-19" not in L["dates"], f"index launch {L['launch']}, first {L['dates'][0]}")
+    for d in L["dates"]:
+        n = json.load(open(os.path.join(ROOT, f"puzzles/{d}.json")))["number"]
+        want = (datetime.date.fromisoformat(d) - datetime.date(2026, 10, 20)).days + 1
+        check(n == want, f"{d} number {n} (want {want})")
+    ctx = b.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, has_touch=True, is_mobile=True); page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append("n1: " + str(e)))
+    page.add_init_script("localStorage.setItem('ae:howto','1')")
+    page.goto(f"{BASE}/index.html?today=2026-10-20"); page.locator("#go").wait_for(); page.wait_for_timeout(500)
+    k = page.locator(".kicker").first.inner_text(); check(k.upper().startswith("PUZZLE #1 ·"), f"start kicker {k!r}")
+    page.screenshot(path=f"{SHOTS}/n1-today.png")
+    ctx.close()
+    ctx = b.new_context(viewport={"width": 640, "height": 480}); page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append("n1-embed: " + str(e)))
+    page.goto(f"{BASE}/embed.html?today=2026-10-20"); page.locator("#go").wait_for(); page.wait_for_timeout(300)
+    k = page.locator(".kicker").first.inner_text(); check(k.upper().startswith("PUZZLE #1 ·"), f"embed kicker {k!r}")
+    ctx.close()
+    # a player who played the never-announced Oct 19 set: saved stats + day record, then finishes Oct 20
+    legacy = {"played": 1, "streak": 1, "maxStreak": 1, "best": 320, "bestDate": "2026-10-19", "last": "2026-10-19", "hist": {"2026-10-19": 320}}
+    res = [{"d": 0, "acc": 80, "speed": 10, "hint": False, "score": 90, "t": 6, "ti": 0, "click": [100, 100], "dk": -1}] * 4
+    ctx = b.new_context(viewport={"width": 390, "height": 844}); page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append("n1-legacy: " + str(e)))
+    page.add_init_script(f"if (!sessionStorage.getItem('seeded')) {{ sessionStorage.setItem('seeded','1'); localStorage.setItem('ae:howto','1'); localStorage.setItem('ae:stats', {json.dumps(json.dumps(legacy))}); localStorage.setItem('ae:day:2026-10-19', JSON.stringify({{results: [], done: true}})); localStorage.setItem('ae:day:2026-10-20', JSON.stringify({{results: {json.dumps(res)}, done: false}})); }}")
+    page.goto(f"{BASE}/index.html?today=2026-10-20"); page.locator("#lock").wait_for()   # resumes at round 5
+    page.locator("#img").evaluate("i => i.complete || new Promise(r => i.onload = r)"); page.wait_for_timeout(300)
+    box = page.locator("#scope").bounding_box(); page.mouse.click(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2); page.wait_for_timeout(200)
+    page.locator("#lock").click(); page.locator("#next").wait_for(); page.locator("#next").click(); page.locator(".rhead .kicker").wait_for()
+    t = page.locator(".rhead .kicker").inner_text(); check(t.upper().startswith("ANALYST EYE #1 ·"), f"result title {t!r}")
+    href = page.locator("#sharex").get_attribute("href"); from urllib.parse import unquote
+    check("Analyst Eye #1 " in unquote(href) and "#0" not in unquote(href), f"share text {unquote(href).split('text=')[1].splitlines()[0]!r}")
+    st = page.evaluate("() => JSON.parse(localStorage.getItem('ae:stats'))")
+    check(st["played"] == 2 and st["streak"] == 2 and st["last"] == "2026-10-20", f"legacy Oct 19 stats carry on: played {st['played']} streak {st['streak']}")
+    check("#0 " not in page.locator("body").inner_text(), "no #0 in the results page text")
+    ctx.close()
     # daily sets ramp easy -> medium -> hard and are the same file for everyone
     for d in json.load(open(os.path.join(ROOT, "puzzles/index.json")))["dates"]:
         t = [r["tier"] for r in json.load(open(os.path.join(ROOT, f"puzzles/{d}.json")))["rounds"]]

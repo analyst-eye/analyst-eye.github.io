@@ -1,12 +1,5 @@
 {
  "days": {
-  "2026-10-19": [
-   "field",
-   "stadium",
-   "water_tower",
-   "bridge",
-   "lighthouse"
-  ],
   "2026-10-20": [
    "marina",
    "cemetery",
@@ -78,11 +71,6 @@
   "node/6721757408": {
    "cat": "slipway",
    "date": "2026-10-23",
-   "key": null
-  },
-  "node/7833232651": {
-   "cat": "mast",
-   "date": "2026-10-19",
    "key": null
   },
   "node/9910673055": {
@@ -160,11 +148,6 @@
    "date": "2026-10-26",
    "key": null
   },
-  "way/1174311181": {
-   "cat": "bridge",
-   "date": "2026-10-19",
-   "key": null
-  },
   "way/1251560570": {
    "cat": "track",
    "date": "2026-10-24",
@@ -194,11 +177,6 @@
    "cat": "marina",
    "date": "2026-10-20",
    "key": "marina:river yacht basin marina"
-  },
-  "way/1307322535": {
-   "cat": "stadium",
-   "date": "2026-10-19",
-   "key": "stadium:saint stanislaus football fieild and track"
   },
   "way/139587269": {
    "cat": "water_tower",
@@ -233,11 +211,6 @@
   "way/1551336384": {
    "cat": "golf",
    "date": "2026-10-24",
-   "key": null
-  },
-  "way/251370422": {
-   "cat": "lighthouse",
-   "date": "2026-10-19",
    "key": null
   },
   "way/36778915": {
@@ -295,11 +268,6 @@
    "date": "2026-10-25",
    "key": null
   },
-  "way/807369923": {
-   "cat": "water_tower",
-   "date": "2026-10-19",
-   "key": null
-  },
   "way/832844362": {
    "cat": "tennis",
    "date": "2026-10-27",
@@ -329,11 +297,6 @@
    "cat": "pool",
    "date": "2026-10-24",
    "key": "pool:cornerstone swimming pool"
-  },
-  "way/972361149": {
-   "cat": "soccer",
-   "date": "2026-10-19",
-   "key": null
   },
   "way/979399126": {
    "cat": "slipway",

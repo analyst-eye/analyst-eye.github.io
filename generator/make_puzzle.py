@@ -9,7 +9,7 @@ Builds N rounds/day from free, openly licensed data only:
 Usage:
   python generator/make_puzzle.py                     # ensure today..today+days_ahead exist (US Central)
   python generator/make_puzzle.py --date 2026-10-25   # one specific day
-  python generator/make_puzzle.py --start 2026-10-19 --days 7 [--force]
+  python generator/make_puzzle.py --start 2026-10-20 --days 7 [--force]
 
 Optional: XAI_API_KEY (and AE_GROK_MODEL) -> polish analyst notes with Grok; falls back to templates.
 """

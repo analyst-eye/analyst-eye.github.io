@@ -84,7 +84,7 @@ pip install requests pillow
 python3 generator/make_puzzle.py                       # fill today..+7 (US Central)
 python3 generator/make_puzzle.py --date 2026-11-01 --force
 python3 tools/contact_sheet.py 2026-11-01              # eyeball the answers
-python3 -m http.server 8000                            # then open http://localhost:8000/?today=2026-10-19
+python3 -m http.server 8000                            # then open http://localhost:8000/?today=2026-10-20
 ```
 `?today=YYYY-MM-DD` simulates a date for testing; `?date=YYYY-MM-DD` plays a past day as practice.
 

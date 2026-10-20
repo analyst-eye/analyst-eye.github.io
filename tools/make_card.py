@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Make assets/card.png (the poster X shows before the player loads). 1200x900 = 640x480 aspect.
-   python3 tools/make_card.py [puzzles/img/2026-10-19-1.jpg]"""
+   python3 tools/make_card.py [puzzles/img/2026-10-20-1.jpg]"""
 import glob, os, sys
 from PIL import Image, ImageDraw, ImageFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
