@@ -31,7 +31,7 @@
   "2026-10-23": [
    "runway",
    "marina",
-   "baseball",
+   "wastewater",
    "roundabout",
    "slipway"
   ],
@@ -162,6 +162,11 @@
    "cat": "stadium",
    "date": "2026-10-19",
    "key": "stadium:saint stanislaus football fieild and track"
+  },
+  "way/1411388288": {
+   "cat": "wastewater",
+   "date": "2026-10-23",
+   "key": null
   },
   "way/1429688777": {
    "cat": "baseball",
