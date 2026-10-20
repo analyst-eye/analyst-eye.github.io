@@ -903,7 +903,11 @@ def replace_round(spec, data, shapes, hist, any_type=False):
     else:
         cats = [c0] if c0 in CATS else []
     tier = old.get("tier"); band = TIERS.get(tier)
-    cand = [(cc, x, cen, k) for cc in cats for (x, cen, k) in rng.sample(pool.get(cc, []), min(25, len(pool.get(cc, []))))]
+    def src(cc):   # same-type replacement of a decoy round: only candidates that have a look-alike nearby
+        L = pool.get(cc, [])
+        if not any_type and old.get("caution") and tier != "easy": L = [z for z in L if decoy_near(data, cc, z[0], z[1])]
+        return rng.sample(L, min(25, len(L)))
+    cand = [(cc, x, cen, k) for cc in cats for (x, cen, k) in src(cc)]
     if any_type: cand.sort(key=lambda z: abs((CATS[z[0]]["diff"] - 1) / 2 - {"easy": 0, "medium": .5, "hard": 1}.get(tier, .5)) + rng.random() * .6)
     for c, x, cen, k in cand:
         dm = None if tier == "easy" else ("need" if old.get("caution") and c == c0 else "attach")
