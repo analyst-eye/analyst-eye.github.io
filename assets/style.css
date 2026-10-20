@@ -155,3 +155,6 @@ body[data-mode=embed] .rdetail{padding:0 12px 8px 36px}
 body[data-mode=embed] .quiet{margin-top:6px}
 body[data-mode=embed] .results .btn{min-height:38px;padding:8px 12px}
 .results .btn.x{justify-content:center}
+
+.foot .foot-line { display: block; }
+.foot .foot-line + .foot-line { margin-top: 2px; }
