@@ -1,0 +1,1293 @@
+{
+ "_comment": "DRAFT hand-curated aircraft labels for possible 'find the X among several aircraft' rounds. NOT used by the daily generator (settings.json curated_aircraft_enabled=false).",
+ "generated": "2026-10-19",
+ "rules": {
+  "cut": "confidence < 80 removed entirely",
+  "auto_approved": ">= 95 and BOTH a documented source places that type at the spot AND NAIP length+span match published specs within 8% (plus visual features)",
+  "needs_aj": "80-94, on generator/curated/aircraft_review.png"
+ },
+ "counts": {
+  "auto_approved": 14,
+  "needs_aj": 13,
+  "cut": 16
+ },
+ "objects": [
+  {
+   "id": "pima-11899622985",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "747",
+   "osm_name": "Boeing 747-121",
+   "osm": "https://www.openstreetmap.org/node/11899622985",
+   "lat": 32.13843,
+   "lon": -110.864237,
+   "size_m": 70.6,
+   "confidence": 97,
+   "tier": "AUTO-APPROVED",
+   "evidence": {
+    "documented": [
+     "OSM node/11899622985 tagged 'Boeing 747-121' at this spot",
+     "Wikipedia lists N747GE (a 747-121) on display"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 68.6,
+     "span_m": 59.3,
+     "spec_length_m": 70.6,
+     "spec_span_m": 59.6,
+     "length_err_pct": -2.8,
+     "span_err_pct": -0.5,
+     "fuselage_axis_deg": 21,
+     "symmetry": 0.85,
+     "method": "GrabCut mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "747: length 70.6 m, span 59.6 m (Wikipedia type article); features: 4 engines, longest airliner here, upper-deck hump at the nose"
+   },
+   "why_not_higher": null,
+   "policy": {
+    "nearest_sensitive_m": 729,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": true
+   },
+   "approved_by_aj": null,
+   "rank": 1
+  },
+  {
+   "id": "pima-11899622986",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "777",
+   "osm_name": "Boeing 777-200",
+   "osm": "https://www.openstreetmap.org/node/11899622986",
+   "lat": 32.137904,
+   "lon": -110.864553,
+   "size_m": 63.7,
+   "confidence": 97,
+   "tier": "AUTO-APPROVED",
+   "evidence": {
+    "documented": [
+     "OSM node/11899622986 tagged 'Boeing 777-200' at this spot",
+     "Wikipedia lists 777-200 B-HNL on display"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 61.7,
+     "span_m": 59.3,
+     "spec_length_m": 63.7,
+     "spec_span_m": 60.9,
+     "length_err_pct": -3.1,
+     "span_err_pct": -2.6,
+     "fuselage_axis_deg": 26,
+     "symmetry": 0.88,
+     "method": "GrabCut mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "777: length 63.7 m, span 60.9 m (Wikipedia type article); features: 2 very large engines, long fuselage"
+   },
+   "why_not_higher": null,
+   "policy": {
+    "nearest_sensitive_m": 719,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": true
+   },
+   "approved_by_aj": null,
+   "rank": 2
+  },
+  {
+   "id": "pima-767448943",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "787",
+   "osm_name": "Boeing 787-8 Dreamliner",
+   "osm": "https://www.openstreetmap.org/node/767448943",
+   "lat": 32.13987,
+   "lon": -110.868612,
+   "size_m": 60.1,
+   "confidence": 97,
+   "tier": "AUTO-APPROVED",
+   "evidence": {
+    "documented": [
+     "OSM node/767448943 tagged 'Boeing 787-8 Dreamliner' at this spot",
+     "Wikipedia lists the 787-8 (ZA002) on display"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 55.2,
+     "span_m": 57.8,
+     "spec_length_m": 56.7,
+     "spec_span_m": 60.1,
+     "length_err_pct": -2.6,
+     "span_err_pct": -3.8,
+     "fuselage_axis_deg": 34,
+     "symmetry": 0.86,
+     "method": "GrabCut mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "787-8: length 56.7 m, span 60.1 m (Wikipedia type article); features: 2 engines, long slender raked wing (span > length)"
+   },
+   "why_not_higher": null,
+   "policy": {
+    "nearest_sensitive_m": 301,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": true
+   },
+   "approved_by_aj": null,
+   "rank": 3
+  },
+  {
+   "id": "ussal-178566611",
+   "site": "USS Alabama Battleship Memorial Park, Mobile AL",
+   "label": "B-52",
+   "osm_name": "Boeing B-52D",
+   "osm": "https://www.openstreetmap.org/way/178566611",
+   "lat": 30.683066,
+   "lon": -88.016567,
+   "size_m": 56.4,
+   "confidence": 97,
+   "tier": "AUTO-APPROVED",
+   "evidence": {
+    "documented": [
+     "OSM way/178566611 tagged 'Boeing B-52D' at this spot",
+     "Wikipedia: the park displays B-52D 'Calamity Jane'"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Battleship_Memorial_Park",
+    "naip": {
+     "acquired": "2023-05-27",
+     "resolution_m": 0.6
+    },
+    "measured": {
+     "length_m": 47.4,
+     "span_m": 56.4,
+     "spec_length_m": 48.5,
+     "spec_span_m": 56.4,
+     "length_err_pct": -2.3,
+     "span_err_pct": 0.0,
+     "fuselage_axis_deg": 167,
+     "symmetry": 0.87,
+     "method": "GrabCut mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "B-52: length 48.5 m, span 56.4 m (Wikipedia type article); features: 8 jet engines in 4 paired pods, 35\u00b0 swept wing, outrigger wheels near tips"
+   },
+   "why_not_higher": null,
+   "policy": {
+    "nearest_sensitive_m": null,
+    "note": "no OSM military/prison features within 1.5 km",
+    "clear_for_230m_photo": true
+   },
+   "approved_by_aj": null,
+   "rank": 4
+  },
+  {
+   "id": "pima-767774602",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "B-52",
+   "osm_name": "Boeing B-52D Stratofortress",
+   "osm": "https://www.openstreetmap.org/node/767774602",
+   "lat": 32.141122,
+   "lon": -110.868983,
+   "size_m": 56.4,
+   "confidence": 96,
+   "tier": "AUTO-APPROVED",
+   "evidence": {
+    "documented": [
+     "OSM node/767774602 tagged 'Boeing B-52D Stratofortress' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 46.9,
+     "span_m": 55.6,
+     "spec_length_m": 48.5,
+     "spec_span_m": 56.4,
+     "length_err_pct": -3.3,
+     "span_err_pct": -1.4,
+     "fuselage_axis_deg": 51,
+     "symmetry": 0.55,
+     "method": "colour/shadow mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "B-52: length 48.5 m, span 56.4 m (Wikipedia type article); features: 8 jet engines in 4 paired pods, 35\u00b0 swept wing, outrigger wheels near tips"
+   },
+   "why_not_higher": null,
+   "policy": {
+    "nearest_sensitive_m": 261,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": false
+   },
+   "approved_by_aj": null,
+   "rank": 5
+  },
+  {
+   "id": "pima-767730192",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "Super Guppy",
+   "osm_name": "Aero Spacelines Super Guppy",
+   "osm": "https://www.openstreetmap.org/node/767730192",
+   "lat": 32.139909,
+   "lon": -110.87035,
+   "size_m": 47.6,
+   "confidence": 96,
+   "tier": "AUTO-APPROVED",
+   "evidence": {
+    "documented": [
+     "OSM node/767730192 tagged 'Aero Spacelines Super Guppy' at this spot",
+     "Wikipedia lists the Super Guppy on display"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 45.6,
+     "span_m": 51.1,
+     "spec_length_m": 43.8,
+     "spec_span_m": 47.6,
+     "length_err_pct": 4.1,
+     "span_err_pct": 7.4,
+     "fuselage_axis_deg": 117,
+     "symmetry": 0.64,
+     "method": "colour/shadow mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "Super Guppy: length 43.8 m, span 47.6 m (Wikipedia type article); features: 4 turboprops, huge bulbous upper fuselage"
+   },
+   "why_not_higher": null,
+   "policy": {
+    "nearest_sensitive_m": 139,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": false
+   },
+   "approved_by_aj": null,
+   "rank": 6
+  },
+  {
+   "id": "evergreen-6091692967",
+   "site": "Evergreen Aviation & Space Museum / Wings & Waves, McMinnville OR",
+   "label": "747",
+   "osm_name": "747-200 (model tag)",
+   "osm": "https://www.openstreetmap.org/node/6091692967",
+   "lat": 45.202251,
+   "lon": -123.143254,
+   "size_m": 70.6,
+   "confidence": 96,
+   "tier": "AUTO-APPROVED",
+   "evidence": {
+    "documented": [
+     "OSM node/6091692967 tagged '747-200 (model tag)' at this spot",
+     "Wikipedia: museum displays 747s (one on the Wings & Waves roof, one on the grounds)"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Evergreen_Aviation_%26_Space_Museum",
+    "naip": {
+     "acquired": "2022-07-11",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 69.0,
+     "span_m": 59.0,
+     "spec_length_m": 70.6,
+     "spec_span_m": 59.6,
+     "length_err_pct": -2.3,
+     "span_err_pct": -1.0,
+     "fuselage_axis_deg": 90,
+     "symmetry": 0.88,
+     "method": "GrabCut mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "747: length 70.6 m, span 59.6 m (Wikipedia type article); features: 4 engines, longest airliner here, upper-deck hump at the nose"
+   },
+   "why_not_higher": null,
+   "policy": {
+    "nearest_sensitive_m": null,
+    "note": "no OSM military/prison features within 1.5 km",
+    "clear_for_230m_photo": true
+   },
+   "approved_by_aj": null,
+   "rank": 7
+  },
+  {
+   "id": "pima-767778139",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "737",
+   "osm_name": "Boeing 737-300",
+   "osm": "https://www.openstreetmap.org/node/767778139",
+   "lat": 32.137547,
+   "lon": -110.864753,
+   "size_m": 33.4,
+   "confidence": 95,
+   "tier": "AUTO-APPROVED",
+   "evidence": {
+    "documented": [
+     "OSM node/767778139 tagged 'Boeing 737-300' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 32.4,
+     "span_m": 28.6,
+     "spec_length_m": 33.4,
+     "spec_span_m": 28.9,
+     "length_err_pct": -3.0,
+     "span_err_pct": -1.0,
+     "fuselage_axis_deg": 22,
+     "symmetry": 0.87,
+     "method": "GrabCut mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "737-300: length 33.4 m, span 28.9 m (Wikipedia type article); features: 2 engines under the wing, small airliner"
+   },
+   "why_not_higher": null,
+   "policy": {
+    "nearest_sensitive_m": 722,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": true
+   },
+   "approved_by_aj": null,
+   "rank": 8
+  },
+  {
+   "id": "pima-767730193",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "EC-121 Super Constellation",
+   "osm_name": "Lockheed EC-121T",
+   "osm": "https://www.openstreetmap.org/node/767730193",
+   "lat": 32.140593,
+   "lon": -110.86999,
+   "size_m": 37.5,
+   "confidence": 95,
+   "tier": "AUTO-APPROVED",
+   "evidence": {
+    "documented": [
+     "OSM node/767730193 tagged 'Lockheed EC-121T' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 34.0,
+     "span_m": 37.0,
+     "spec_length_m": 35.4,
+     "spec_span_m": 37.5,
+     "length_err_pct": -4.0,
+     "span_err_pct": -1.3,
+     "fuselage_axis_deg": 96,
+     "symmetry": 0.87,
+     "method": "GrabCut mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "EC-121 Super Constellation: length 35.4 m, span 37.5 m (Wikipedia type article); features: 4 piston props, triple tail, radome"
+   },
+   "why_not_higher": null,
+   "policy": {
+    "nearest_sensitive_m": 168,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": false
+   },
+   "approved_by_aj": null,
+   "rank": 9
+  },
+  {
+   "id": "pima-767780711",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "Constellation",
+   "osm_name": "Lockheed VC-121A Constellation",
+   "osm": "https://www.openstreetmap.org/node/767780711",
+   "lat": 32.140071,
+   "lon": -110.869785,
+   "size_m": 37.5,
+   "confidence": 95,
+   "tier": "AUTO-APPROVED",
+   "evidence": {
+    "documented": [
+     "OSM node/767780711 tagged 'Lockheed VC-121A Constellation' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 29.6,
+     "span_m": 37.4,
+     "spec_length_m": 29.0,
+     "spec_span_m": 37.5,
+     "length_err_pct": 2.1,
+     "span_err_pct": -0.3,
+     "fuselage_axis_deg": 9,
+     "symmetry": 0.66,
+     "method": "colour/shadow mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "Constellation (L-049/749): length 29.0 m, span 37.5 m (Wikipedia type article); features: 4 piston props, triple tail"
+   },
+   "why_not_higher": null,
+   "policy": {
+    "nearest_sensitive_m": 187,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": false
+   },
+   "approved_by_aj": null,
+   "rank": 10
+  },
+  {
+   "id": "pima-11899623037",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "Shackleton",
+   "osm_name": "Avro Shackleton AEW.2",
+   "osm": "https://www.openstreetmap.org/node/11899623037",
+   "lat": 32.140699,
+   "lon": -110.870419,
+   "size_m": 36.6,
+   "confidence": 95,
+   "tier": "AUTO-APPROVED",
+   "evidence": {
+    "documented": [
+     "OSM node/11899623037 tagged 'Avro Shackleton AEW.2' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 27.8,
+     "span_m": 35.8,
+     "spec_length_m": 26.6,
+     "spec_span_m": 36.6,
+     "length_err_pct": 4.5,
+     "span_err_pct": -2.2,
+     "fuselage_axis_deg": 93,
+     "symmetry": 0.73,
+     "method": "colour/shadow mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "Shackleton: length 26.6 m, span 36.6 m (Wikipedia type article); features: 4 piston engines, twin fins"
+   },
+   "why_not_higher": null,
+   "policy": {
+    "nearest_sensitive_m": 128,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": false
+   },
+   "approved_by_aj": null,
+   "rank": 11
+  },
+  {
+   "id": "ussal-5263602765",
+   "site": "USS Alabama Battleship Memorial Park, Mobile AL",
+   "label": "C-47",
+   "osm_name": "Douglas C-47 Skytrain",
+   "osm": "https://www.openstreetmap.org/node/5263602765",
+   "lat": 30.682786,
+   "lon": -88.014716,
+   "size_m": 29.0,
+   "confidence": 95,
+   "tier": "AUTO-APPROVED",
+   "evidence": {
+    "documented": [
+     "OSM node/5263602765 tagged 'Douglas C-47 Skytrain' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Battleship_Memorial_Park",
+    "naip": {
+     "acquired": "2023-05-27",
+     "resolution_m": 0.6
+    },
+    "measured": {
+     "length_m": 18.4,
+     "span_m": 28.4,
+     "spec_length_m": 19.4,
+     "spec_span_m": 29.0,
+     "length_err_pct": -5.2,
+     "span_err_pct": -2.1,
+     "fuselage_axis_deg": 179,
+     "symmetry": 0.82,
+     "method": "GrabCut mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "C-47/DC-3: length 19.4 m, span 29.0 m (Wikipedia type article); features: 2 radial engines, straight tapered wing, tail-dragger"
+   },
+   "why_not_higher": null,
+   "policy": {
+    "nearest_sensitive_m": null,
+    "note": "no OSM military/prison features within 1.5 km",
+    "clear_for_230m_photo": true
+   },
+   "approved_by_aj": null,
+   "rank": 12
+  },
+  {
+   "id": "castle-1187939776",
+   "site": "Castle Air Museum, Atwater CA (former Castle AFB, closed 1995)",
+   "label": "DC-9 / C-9",
+   "osm_name": "Douglas VC-9C",
+   "osm": "https://www.openstreetmap.org/way/1187939776",
+   "lat": 37.364351,
+   "lon": -120.577285,
+   "size_m": 36.4,
+   "confidence": 95,
+   "tier": "AUTO-APPROVED",
+   "evidence": {
+    "documented": [
+     "OSM way/1187939776 tagged 'Douglas VC-9C' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Castle_Air_Museum",
+    "naip": {
+     "acquired": "2022-06-15",
+     "resolution_m": 0.6
+    },
+    "measured": {
+     "length_m": 38.6,
+     "span_m": 28.4,
+     "spec_length_m": 36.4,
+     "spec_span_m": 28.5,
+     "length_err_pct": 6.0,
+     "span_err_pct": -0.4,
+     "fuselage_axis_deg": 171,
+     "symmetry": 0.75,
+     "method": "colour/shadow mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "DC-9/C-9: length 36.4 m, span 28.5 m (Wikipedia type article); features: 2 tail-mounted engines, T-tail"
+   },
+   "why_not_higher": null,
+   "policy": {
+    "nearest_sensitive_m": null,
+    "note": "no OSM military/prison features within 1.5 km",
+    "clear_for_230m_photo": true
+   },
+   "approved_by_aj": null,
+   "rank": 13
+  },
+  {
+   "id": "castle-178716514",
+   "site": "Castle Air Museum, Atwater CA (former Castle AFB, closed 1995)",
+   "label": "KC-97",
+   "osm_name": "KC-97L Stratotanker",
+   "osm": "https://www.openstreetmap.org/way/178716514",
+   "lat": 37.36478,
+   "lon": -120.578857,
+   "size_m": 43.1,
+   "confidence": 95,
+   "tier": "AUTO-APPROVED",
+   "evidence": {
+    "documented": [
+     "OSM way/178716514 tagged 'KC-97L Stratotanker' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Castle_Air_Museum",
+    "naip": {
+     "acquired": "2022-06-15",
+     "resolution_m": 0.6
+    },
+    "measured": {
+     "length_m": 32.8,
+     "span_m": 42.6,
+     "spec_length_m": 33.6,
+     "spec_span_m": 43.1,
+     "length_err_pct": -2.4,
+     "span_err_pct": -1.2,
+     "fuselage_axis_deg": 128,
+     "symmetry": 0.83,
+     "method": "GrabCut mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "C-97/KC-97: length 33.6 m, span 43.1 m (Wikipedia type article); features: 4 piston props, double-bubble fuselage"
+   },
+   "why_not_higher": null,
+   "policy": {
+    "nearest_sensitive_m": null,
+    "note": "no OSM military/prison features within 1.5 km",
+    "clear_for_230m_photo": true
+   },
+   "approved_by_aj": null,
+   "rank": 14
+  },
+  {
+   "id": "pima-767778140",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "C-133",
+   "osm_name": "Douglas C-133B Cargomaster",
+   "osm": "https://www.openstreetmap.org/node/767778140",
+   "lat": 32.139337,
+   "lon": -110.871175,
+   "size_m": 54.8,
+   "confidence": 92,
+   "tier": "NEEDS AJ",
+   "evidence": {
+    "documented": [
+     "OSM node/767778140 tagged 'Douglas C-133B Cargomaster' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 44.6,
+     "span_m": 53.7,
+     "spec_length_m": 48.0,
+     "spec_span_m": 54.8,
+     "length_err_pct": -7.1,
+     "span_err_pct": -2.0,
+     "fuselage_axis_deg": 137,
+     "symmetry": 0.84,
+     "method": "GrabCut mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "C-133: length 48.0 m, span 54.8 m (Wikipedia type article); features: 4 turboprops, high straight wing, long fuselage"
+   },
+   "why_not_higher": "Wingspan matches, but the measured length is 7.5% short because the tail runs into trees, so the outline isn't clean.",
+   "policy": {
+    "nearest_sensitive_m": 107,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": false
+   },
+   "approved_by_aj": null,
+   "rank": 15
+  },
+  {
+   "id": "pima-767782956",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "KC-135",
+   "osm_name": "Boeing KC-135A Stratotanker",
+   "osm": "https://www.openstreetmap.org/node/767782956",
+   "lat": 32.140376,
+   "lon": -110.870721,
+   "size_m": 41.5,
+   "confidence": 90,
+   "tier": "NEEDS AJ",
+   "evidence": {
+    "documented": [
+     "OSM node/767782956 tagged 'Boeing KC-135A Stratotanker' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 44.1,
+     "span_m": 40.4,
+     "spec_length_m": 41.5,
+     "spec_span_m": 39.9,
+     "length_err_pct": 6.3,
+     "span_err_pct": 1.3,
+     "fuselage_axis_deg": 44,
+     "symmetry": 0.71,
+     "method": "colour/shadow mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "C-135 family (KC-135/EC-135): length 41.5 m, span 39.9 m (Wikipedia type article); features: 4 engines on pylons, 35\u00b0 swept wing, 707-like but shorter"
+   },
+   "why_not_higher": "Size and 4-engine swept wing confirm the C-135/707 family, but a KC-135, EC-135 and 707 differ by under 3 m in length, inside our measuring error. The specific type rests on the OSM tag alone.",
+   "policy": {
+    "nearest_sensitive_m": 95,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": false
+   },
+   "approved_by_aj": null,
+   "rank": 16
+  },
+  {
+   "id": "pima-11899623049",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "C-130",
+   "osm_name": "Lockheed C-130D Hercules",
+   "osm": "https://www.openstreetmap.org/node/11899623049",
+   "lat": 32.139131,
+   "lon": -110.870671,
+   "size_m": 40.4,
+   "confidence": 90,
+   "tier": "NEEDS AJ",
+   "evidence": {
+    "documented": [
+     "OSM node/11899623049 tagged 'Lockheed C-130D Hercules' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 26.8,
+     "span_m": 40.4,
+     "spec_length_m": 29.8,
+     "spec_span_m": 40.4,
+     "length_err_pct": -10.1,
+     "span_err_pct": 0.0,
+     "fuselage_axis_deg": 140,
+     "symmetry": 0.72,
+     "method": "GrabCut mask",
+     "matches_spec_within_8pct": false
+    },
+    "published_spec": "C-130: length 29.8 m, span 40.4 m (Wikipedia type article); features: 4 turboprops, high straight wing, span > length"
+   },
+   "why_not_higher": "The 4-turboprop high wing is unmistakable, but the measured length is 10% short because the nose touches the next aircraft. Outside our 8% match limit.",
+   "policy": {
+    "nearest_sensitive_m": 156,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": false
+   },
+   "approved_by_aj": null,
+   "rank": 17
+  },
+  {
+   "id": "pima-767774358",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "B-52",
+   "osm_name": "Boeing B-52G Stratofortress",
+   "osm": "https://www.openstreetmap.org/node/767774358",
+   "lat": 32.141126,
+   "lon": -110.868312,
+   "size_m": 56.4,
+   "confidence": 90,
+   "tier": "NEEDS AJ",
+   "evidence": {
+    "documented": [
+     "OSM node/767774358 tagged 'Boeing B-52G Stratofortress' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 54.8,
+     "span_m": 95.8,
+     "spec_length_m": 48.5,
+     "spec_span_m": 56.4,
+     "length_err_pct": 13.0,
+     "span_err_pct": 69.9,
+     "fuselage_axis_deg": 89,
+     "symmetry": 0.28,
+     "method": "colour/shadow mask",
+     "matches_spec_within_8pct": false
+    },
+    "published_spec": "B-52: length 48.5 m, span 56.4 m (Wikipedia type article); features: 8 jet engines in 4 paired pods, 35\u00b0 swept wing, outrigger wheels near tips"
+   },
+   "why_not_higher": "Clearly a B-52 by eye (8 engines in 4 pods), but the automatic outline merged with the road. No valid measurement.",
+   "policy": {
+    "nearest_sensitive_m": 328,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": true
+   },
+   "approved_by_aj": null,
+   "rank": 18
+  },
+  {
+   "id": "pima-767774357",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "B-36",
+   "osm_name": "Convair B-36J",
+   "osm": "https://www.openstreetmap.org/node/767774357",
+   "lat": 32.141149,
+   "lon": -110.869914,
+   "size_m": 70.1,
+   "confidence": 90,
+   "tier": "NEEDS AJ",
+   "evidence": {
+    "documented": [
+     "OSM node/767774357 tagged 'Convair B-36J' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 55.8,
+     "span_m": 95.2,
+     "spec_length_m": 49.4,
+     "spec_span_m": 70.1,
+     "length_err_pct": 13.0,
+     "span_err_pct": 35.8,
+     "fuselage_axis_deg": 51,
+     "symmetry": 0.31,
+     "method": "colour/shadow mask",
+     "matches_spec_within_8pct": false
+    },
+    "published_spec": "B-36: length 49.4 m, span 70.1 m (Wikipedia type article); features: very long straight-tapered wing (70 m), 6 rear-facing propellers + 4 jet pods"
+   },
+   "why_not_higher": "The 70 m wing with 6 rear-facing propellers is distinctive by eye, but the outline merged with its neighbours. No valid measurement.",
+   "policy": {
+    "nearest_sensitive_m": 178,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": false
+   },
+   "approved_by_aj": null,
+   "rank": 19
+  },
+  {
+   "id": "evergreen-9979212080",
+   "site": "Evergreen Aviation & Space Museum / Wings & Waves, McMinnville OR",
+   "label": "747",
+   "osm_name": "747-100 (model tag)",
+   "osm": "https://www.openstreetmap.org/node/9979212080",
+   "lat": 45.204073,
+   "lon": -123.149636,
+   "size_m": 70.6,
+   "confidence": 90,
+   "tier": "NEEDS AJ",
+   "evidence": {
+    "documented": [
+     "OSM node/9979212080 tagged '747-100 (model tag)' at this spot",
+     "Wikipedia: a 747 sits on the Wings & Waves waterpark roof"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Evergreen_Aviation_%26_Space_Museum",
+    "naip": {
+     "acquired": "2022-07-11",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 87.0,
+     "span_m": 93.8,
+     "spec_length_m": 70.6,
+     "spec_span_m": 59.6,
+     "length_err_pct": 23.2,
+     "span_err_pct": 57.4,
+     "fuselage_axis_deg": 74,
+     "symmetry": 0.88,
+     "method": "GrabCut mask",
+     "matches_spec_within_8pct": false
+    },
+    "published_spec": "747: length 70.6 m, span 59.6 m (Wikipedia type article); features: 4 engines, longest airliner here, upper-deck hump at the nose"
+   },
+   "why_not_higher": "It's obviously a 747 by eye (4 engines, upper-deck hump), but the white roof underneath broke the measurement.",
+   "policy": {
+    "nearest_sensitive_m": null,
+    "note": "no OSM military/prison features within 1.5 km",
+    "clear_for_230m_photo": true
+   },
+   "approved_by_aj": null,
+   "rank": 20
+  },
+  {
+   "id": "pima-767782957",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "EC-135",
+   "osm_name": "Boeing EC-135J",
+   "osm": "https://www.openstreetmap.org/node/767782957",
+   "lat": 32.141168,
+   "lon": -110.871074,
+   "size_m": 41.5,
+   "confidence": 88,
+   "tier": "NEEDS AJ",
+   "evidence": {
+    "documented": [
+     "OSM node/767782957 tagged 'Boeing EC-135J' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 39.2,
+     "span_m": 39.4,
+     "spec_length_m": 41.5,
+     "spec_span_m": 39.9,
+     "length_err_pct": -5.5,
+     "span_err_pct": -1.3,
+     "fuselage_axis_deg": 47,
+     "symmetry": 0.81,
+     "method": "GrabCut mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "C-135 family (KC-135/EC-135): length 41.5 m, span 39.9 m (Wikipedia type article); features: 4 engines on pylons, 35\u00b0 swept wing, 707-like but shorter"
+   },
+   "why_not_higher": "Same family problem as the KC-135. An EC-135 looks like a KC-135 from above, so the type comes from the OSM tag alone.",
+   "policy": {
+    "nearest_sensitive_m": 66,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": false
+   },
+   "approved_by_aj": null,
+   "rank": 21
+  },
+  {
+   "id": "pima-767780017",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "707",
+   "osm_name": "Boeing VC-137B Stratoliner",
+   "osm": "https://www.openstreetmap.org/node/767780017",
+   "lat": 32.13937,
+   "lon": -110.869474,
+   "size_m": 44.2,
+   "confidence": 88,
+   "tier": "NEEDS AJ",
+   "evidence": {
+    "documented": [
+     "OSM node/767780017 tagged 'Boeing VC-137B Stratoliner' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 41.4,
+     "span_m": 39.8,
+     "spec_length_m": 44.2,
+     "spec_span_m": 39.9,
+     "length_err_pct": -6.3,
+     "span_err_pct": -0.3,
+     "fuselage_axis_deg": 162,
+     "symmetry": 0.69,
+     "method": "GrabCut mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "707 (VC-137B): length 44.2 m, span 39.9 m (Wikipedia type article); features: 4 engines on pylons, 35\u00b0 swept wing, longer than a KC-135"
+   },
+   "why_not_higher": "Same C-135/707 family problem. The 2.7 m length difference is too small to confirm at this resolution.",
+   "policy": {
+    "nearest_sensitive_m": 234,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": false
+   },
+   "approved_by_aj": null,
+   "rank": 22
+  },
+  {
+   "id": "castle-178716516",
+   "site": "Castle Air Museum, Atwater CA (former Castle AFB, closed 1995)",
+   "label": "SR-71",
+   "osm_name": "SR-71A Blackbird",
+   "osm": "https://www.openstreetmap.org/way/178716516",
+   "lat": 37.364023,
+   "lon": -120.577766,
+   "size_m": 32.7,
+   "confidence": 88,
+   "tier": "NEEDS AJ",
+   "evidence": {
+    "documented": [
+     "OSM way/178716516 tagged 'SR-71A Blackbird' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Castle_Air_Museum",
+    "naip": {
+     "acquired": "2022-06-15",
+     "resolution_m": 0.6
+    },
+    "measured": {
+     "length_m": 33.4,
+     "span_m": 17.6,
+     "spec_length_m": 32.7,
+     "spec_span_m": 16.9,
+     "length_err_pct": 2.1,
+     "span_err_pct": 4.1,
+     "fuselage_axis_deg": 28,
+     "symmetry": 0.49,
+     "method": "GrabCut mask",
+     "matches_spec_within_8pct": true
+    },
+    "published_spec": "SR-71: length 32.7 m, span 16.9 m (Wikipedia type article); features: long slender body with blended delta, 2 huge engine nacelles mid-wing"
+   },
+   "why_not_higher": "The size matches (+2%/+4%), but a black aircraft on a dark pad gives a weak outline that may include shadow.",
+   "policy": {
+    "nearest_sensitive_m": null,
+    "note": "no OSM military/prison features within 1.5 km",
+    "clear_for_230m_photo": true
+   },
+   "approved_by_aj": null,
+   "rank": 23
+  },
+  {
+   "id": "castle-809217068",
+   "site": "Castle Air Museum, Atwater CA (former Castle AFB, closed 1995)",
+   "label": "Vulcan",
+   "osm_name": "Vulcan B. Mk.2",
+   "osm": "https://www.openstreetmap.org/way/809217068",
+   "lat": 37.365064,
+   "lon": -120.579441,
+   "size_m": 33.8,
+   "confidence": 88,
+   "tier": "NEEDS AJ",
+   "evidence": {
+    "documented": [
+     "OSM way/809217068 tagged 'Vulcan B. Mk.2' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Castle_Air_Museum",
+    "naip": {
+     "acquired": "2022-06-15",
+     "resolution_m": 0.6
+    },
+    "measured": {
+     "length_m": 18.9,
+     "span_m": 30.2,
+     "spec_length_m": 30.5,
+     "spec_span_m": 33.8,
+     "length_err_pct": -38.0,
+     "span_err_pct": -10.7,
+     "fuselage_axis_deg": 170,
+     "symmetry": 0.55,
+     "method": "colour/shadow mask",
+     "matches_spec_within_8pct": false
+    },
+    "published_spec": "Vulcan: length 30.5 m, span 33.8 m (Wikipedia type article); features: large delta wing, no horizontal tail"
+   },
+   "why_not_higher": "The big delta wing is visible, but the camouflage broke the outline. No valid measurement.",
+   "policy": {
+    "nearest_sensitive_m": null,
+    "note": "no OSM military/prison features within 1.5 km",
+    "clear_for_230m_photo": true
+   },
+   "approved_by_aj": null,
+   "rank": 24
+  },
+  {
+   "id": "pima-11899623015",
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "label": "C-119",
+   "osm_name": "Fairchild C-119C Flying Boxcar",
+   "osm": "https://www.openstreetmap.org/node/11899623015",
+   "lat": 32.136653,
+   "lon": -110.867927,
+   "size_m": 33.3,
+   "confidence": 85,
+   "tier": "NEEDS AJ",
+   "evidence": {
+    "documented": [
+     "OSM node/11899623015 tagged 'Fairchild C-119C Flying Boxcar' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Pima_Air_%26_Space_Museum",
+    "naip": {
+     "acquired": "2023-10-15",
+     "resolution_m": 0.3
+    },
+    "measured": {
+     "length_m": 24.0,
+     "span_m": 35.8,
+     "spec_length_m": 26.4,
+     "spec_span_m": 33.3,
+     "length_err_pct": -9.1,
+     "span_err_pct": 7.5,
+     "fuselage_axis_deg": 134,
+     "symmetry": 0.36,
+     "method": "GrabCut mask",
+     "matches_spec_within_8pct": false
+    },
+    "published_spec": "C-119: length 26.4 m, span 33.3 m (Wikipedia type article); features: twin tail booms, 2 piston engines"
+   },
+   "why_not_higher": "The twin tail booms are visible, but my outline merged with the next aircraft, so there's no clean measurement.",
+   "policy": {
+    "nearest_sensitive_m": 532,
+    "nearest_sensitive": "Valencia Armory",
+    "clear_for_230m_photo": true
+   },
+   "approved_by_aj": null,
+   "rank": 25
+  },
+  {
+   "id": "castle-534766750",
+   "site": "Castle Air Museum, Atwater CA (former Castle AFB, closed 1995)",
+   "label": "B-25",
+   "osm_name": "B-25J Mitchell",
+   "osm": "https://www.openstreetmap.org/way/534766750",
+   "lat": 37.365019,
+   "lon": -120.578803,
+   "size_m": 20.6,
+   "confidence": 85,
+   "tier": "NEEDS AJ",
+   "evidence": {
+    "documented": [
+     "OSM way/534766750 tagged 'B-25J Mitchell' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Castle_Air_Museum",
+    "naip": {
+     "acquired": "2022-06-15",
+     "resolution_m": 0.6
+    },
+    "measured": {
+     "length_m": 13.4,
+     "span_m": 20.4,
+     "spec_length_m": 16.1,
+     "spec_span_m": 20.6,
+     "length_err_pct": -16.8,
+     "span_err_pct": -1.0,
+     "fuselage_axis_deg": 123,
+     "symmetry": 0.69,
+     "method": "colour/shadow mask",
+     "matches_spec_within_8pct": false
+    },
+    "published_spec": "B-25: length 16.1 m, span 20.6 m (Wikipedia type article); features: 2 engines, twin tail fins, gull-free straight wing"
+   },
+   "why_not_higher": "The span matches, but the length is 17% short. The twin tail is hard to see at 0.6 m.",
+   "policy": {
+    "nearest_sensitive_m": null,
+    "note": "no OSM military/prison features within 1.5 km",
+    "clear_for_230m_photo": true
+   },
+   "approved_by_aj": null,
+   "rank": 26
+  },
+  {
+   "id": "castle-808874111",
+   "site": "Castle Air Museum, Atwater CA (former Castle AFB, closed 1995)",
+   "label": "B-24",
+   "osm_name": "B-24M Liberator",
+   "osm": "https://www.openstreetmap.org/way/808874111",
+   "lat": 37.364729,
+   "lon": -120.57849,
+   "size_m": 33.5,
+   "confidence": 82,
+   "tier": "NEEDS AJ",
+   "evidence": {
+    "documented": [
+     "OSM way/808874111 tagged 'B-24M Liberator' at this spot"
+    ],
+    "site_reference": "https://en.wikipedia.org/wiki/Castle_Air_Museum",
+    "naip": {
+     "acquired": "2022-06-15",
+     "resolution_m": 0.6
+    },
+    "measured": {
+     "length_m": 12.8,
+     "span_m": 31.4,
+     "spec_length_m": 20.6,
+     "spec_span_m": 33.5,
+     "length_err_pct": -37.9,
+     "span_err_pct": -6.3,
+     "fuselage_axis_deg": 38,
+     "symmetry": 0.59,
+     "method": "colour/shadow mask",
+     "matches_spec_within_8pct": false
+    },
+    "published_spec": "B-24: length 20.6 m, span 33.5 m (Wikipedia type article); features: 4 engines on a very long narrow wing, twin tail fins"
+   },
+   "why_not_higher": "The long narrow wing is visible, but only part of the aircraft was outlined. 0.6 m photo.",
+   "policy": {
+    "nearest_sensitive_m": null,
+    "note": "no OSM military/prison features within 1.5 km",
+    "clear_for_230m_photo": true
+   },
+   "approved_by_aj": null,
+   "rank": 27
+  }
+ ],
+ "cut": [
+  {
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "object": "747SP",
+   "reason": "outline merged with neighbours; can't separate from 747 without a clean length"
+  },
+  {
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "object": "DC-10",
+   "reason": "outline merged; tail engine not confirmable"
+  },
+  {
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "object": "727-100",
+   "reason": "outline merged with neighbours"
+  },
+  {
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "object": "C-124C",
+   "reason": "outline merged; 40 m from Valencia Armory"
+  },
+  {
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "object": "C-141B",
+   "reason": "span off by 16-89%"
+  },
+  {
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "object": "B-58A",
+   "reason": "small delta, outline failed"
+  },
+  {
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "object": "C-130A",
+   "reason": "in trees, outline failed"
+  },
+  {
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "object": "L-049 Constellation",
+   "reason": "outline merged"
+  },
+  {
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "object": "KB-50J",
+   "reason": "outline merged; 25 m from Valencia Armory"
+  },
+  {
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "object": "C-97G / KC-97K",
+   "reason": "outline merged; ~24 m from Valencia Armory"
+  },
+  {
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "object": "EB-47E",
+   "reason": "length 20% short; node may be on a different aircraft"
+  },
+  {
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "object": "M-60 tank",
+   "reason": "under a tree, not identifiable"
+  },
+  {
+   "site": "Pima Air & Space Museum, Tucson AZ",
+   "object": "T-72 tank",
+   "reason": "too small/unclear; tanks can't be told apart at this resolution"
+  },
+  {
+   "site": "USS Alabama Battleship Memorial Park, Mobile AL",
+   "object": "B-25J",
+   "reason": "no outline (under/near trees)"
+  },
+  {
+   "site": "USS Alabama Battleship Memorial Park, Mobile AL",
+   "object": "M60A1, T-55, Sherman tanks",
+   "reason": "0.6 m photo: blurry blobs, not identifiable as a type"
+  },
+  {
+   "site": "Castle Air Museum, Atwater CA (former Castle AFB, closed 1995)",
+   "object": "B-17G",
+   "reason": "outline merged with the next aircraft; ambiguous which aircraft is which"
+  }
+ ],
+ "candidate_sites_not_labeled": [
+  {
+   "site": "Southern California Logistics Airport (Victorville, CA), civil airliner storage",
+   "note": "Photo checked: dozens of stored airliners, mostly twin-jets. No per-spot documentation of which type is where, so any label could reach 94 at most. Not labeled."
+  },
+  {
+   "site": "Mojave Air & Space Port (CA), civil storage",
+   "note": "The 2022-23 photo shows few stored airliners in the checked area. Not labeled."
+  },
+  {
+   "site": "Roswell Air Center (NM), civil storage",
+   "note": "Not checked yet."
+  },
+  {
+   "site": "Pinal Airpark (Marana, AZ)",
+   "note": "Civil storage, but it shares the field with an Army National Guard aviation training site, so it would need AJ's decision."
+  },
+  {
+   "site": "March Field Air Museum (Riverside, CA)",
+   "note": "45+ OSM-tagged aircraft, but the museum is on the edge of active March Air Reserve Base. Excluded under the current policy; AJ decides."
+  }
+ ],
+ "decisions_for_aj": [
+  "Davis-Monthan AMARG boneyard (Tucson): thousands of aircraft, but it's on an active base. Excluded by policy and not used. Include it or not?",
+  "Pima's west edge borders Valencia Armory (AZ National Guard, OSM military=base). Under our 150 m buffer, a 230 m photo needs the aircraft to be at least 265 m from it; see policy.clear_for_230m_photo. Allow tighter framing (armory out of frame but closer than 150 m), or keep the strict buffer?",
+  "Labels are type families for players (e.g. 'B-52', not 'B-52D'); D and G models aren't tellable from above at this resolution."
+ ]
+}

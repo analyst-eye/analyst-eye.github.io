@@ -22,5 +22,8 @@
  ],
  "naip_service": "https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer",
  "user_agent": "AnalystEye/1.0 (daily geo puzzle; https://x.com/A_is_A)",
- "max_per_week": 2
+ "max_per_week": 2,
+ "decoy_photo_budget": 14,
+ "curated_aircraft_enabled": false,
+ "_curated_comment": "generator/curated/aircraft_draft.json is a DRAFT for AJ's review; nothing reads it while curated_aircraft_enabled is false."
 }
