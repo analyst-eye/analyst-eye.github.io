@@ -16,6 +16,32 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { mem[k] = v; } }
 };
 
+/* Saved data is user-editable (devtools), so validate it before use: garbage is ignored, never crashes or renders as HTML. */
+const num = (v, lo, hi, dflt = 0) => (typeof v === "number" && isFinite(v)) ? Math.min(hi, Math.max(lo, v)) : dflt;
+const isDay = v => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
+function cleanResult(r) {
+  if (!r || typeof r !== "object") return null;
+  const c = Array.isArray(r.click) && r.click.length === 2 ? r.click.map(v => num(v, -1e4, 1e4)) : [0, 0];
+  return { d: num(r.d, 0, 1e5), acc: num(r.acc, 0, 80), speed: num(r.speed, 0, 20), hint: r.hint === true,
+    score: Math.round(num(r.score, 0, 100)), t: num(r.t, 0, 1e4), ti: Math.round(num(r.ti, 0, 999)), click: c };
+}
+function loadDay(ds, n) {
+  const v = store.get("ae:day:" + ds);
+  if (!v || typeof v !== "object" || !Array.isArray(v.results)) return null;
+  const results = v.results.slice(0, n).map(cleanResult);
+  if (results.some(r => !r)) return null;
+  return { results, done: results.length >= n };
+}
+function loadStats() {
+  const v = store.get("ae:stats"), st = { played: 0, streak: 0, maxStreak: 0, best: 0, bestDate: null, last: null, hist: {} };
+  if (!v || typeof v !== "object") return st;
+  st.played = Math.round(num(v.played, 0, 1e6)); st.streak = Math.round(num(v.streak, 0, 1e6));
+  st.maxStreak = Math.round(num(v.maxStreak, 0, 1e6)); st.best = Math.round(num(v.best, 0, 1e6));
+  st.bestDate = isDay(v.bestDate) ? v.bestDate : null; st.last = isDay(v.last) ? v.last : null;
+  if (v.hist && typeof v.hist === "object") for (const [d, sc] of Object.entries(v.hist)) if (isDay(d) && typeof sc === "number" && isFinite(sc)) st.hist[d] = Math.round(num(sc, 0, 1e6));
+  return st;
+}
+
 /* ---------- dates (US Central) ---------- */
 const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: C.TIMEZONE || "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit" });
 const centralToday = () => fmt.format(new Date());
@@ -92,16 +118,20 @@ function score(p, s, R, t, hint) {
 const sq = s => s >= 80 ? "🟦" : s >= 40 ? "🟧" : "⬛";
 const cls = s => s >= 80 ? "good" : s >= 40 ? "ok" : "miss";
 const TIER_NAME = { easy: "Easy", medium: "Medium", hard: "Hard" };
+const isTier = t => Object.prototype.hasOwnProperty.call(TIER_NAME, t);
 const verdict = s => s >= 90 ? "Bullseye!" : s >= 70 ? "Nice!" : s >= 40 ? "Close!" : s > 0 ? "Not quite" : "Missed it";
 
 /* ---------- state ---------- */
 let G = null;   // { ds, P, practice, i, results }
-const TODAY = (qs.get("today") && /^\d{4}-\d{2}-\d{2}$/.test(qs.get("today"))) ? qs.get("today") : centralToday();
+// ?today= is a testing override; on the public site it can only go back in time, never unlock future puzzles
+const LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || location.protocol === "file:";
+const QT = qs.get("today"), REAL_TODAY = centralToday();
+const TODAY = (isDay(QT) && (LOCAL || QT <= REAL_TODAY)) ? QT : REAL_TODAY;
 const avail = (IDX.dates || []).filter(d => d <= TODAY).sort();
 
 async function init() {
   const req = qs.get("date"), pt = qs.get("practice");
-  if (pt && TIER_NAME[pt]) return startTier(pt);
+  if (pt && isTier(pt)) return startTier(pt);
   if (req && avail.includes(req) && req !== TODAY) return start(req, true);
   if (avail.includes(TODAY)) return start(TODAY, false);
   const next = (IDX.dates || []).find(d => d > TODAY);
@@ -141,7 +171,7 @@ async function start(ds, practice) {
   let P;
   try { P = await loadPuzzle(ds); } catch (e) { return h(`<div class="panel">Couldn't load the puzzle for ${esc(nice(ds))}. Try again later.</div>`); }
   P.rounds.forEach(r => { r.s = decode(r.secret, ds); });
-  const saved = practice ? null : store.get("ae:day:" + ds);
+  const saved = practice ? null : loadDay(ds, P.rounds.length);
   G = { ds, P, practice, i: 0, results: saved ? saved.results : [] };
   if (!practice && saved && saved.done) return end();
   if (G.results.length) { G.i = G.results.length; return round(); }
@@ -268,11 +298,11 @@ function intro() {
   h(`${hud()}<div class="play">
      ${scopeHTML(r, `<div class="cover"><button class="btn primary big-btn" id="go">▶ Play</button></div>`)}
      <div class="side">
-       <div class="kicker">${G.tier ? `Practice · ${TIER_NAME[G.tier]} rounds from past days` : `Puzzle #${G.P.number || dayNum(G.ds)} · ${esc(nice(G.ds))}${G.practice ? " · practice" : ""}`}</div>
+       <div class="kicker">${G.tier ? `Practice · ${TIER_NAME[G.tier]} rounds from past days` : `Puzzle #${esc(G.P.number || dayNum(G.ds))} · ${esc(nice(G.ds))}${G.practice ? " · practice" : ""}`}</div>
        <div class="task">${G.P.rounds.length} things to find from the sky.</div>
        <p class="dim small">${G.practice ? "Practice games don't change your stats." : "Easy first, hardest last. One set for everyone, new every midnight (US Central)."}</p>
        ${tierPicker()}
-       ${EMBED ? `<a class="dim small" href="${esc(SITE)}">Open full site ↗</a>` : ""}
+       ${EMBED ? `<a class="dim small" href="${esc(SITE)}" target="_blank" rel="noopener">Open full site ↗</a>` : ""}
      </div></div>`);
   bindHelp();
   document.getElementById("go").onclick = () => { preload(); round(); };
@@ -369,7 +399,7 @@ function reveal(res, Z) {
 }
 
 function recordStats() {
-  const st = store.get("ae:stats") || { played: 0, streak: 0, maxStreak: 0, best: 0, bestDate: null, last: null, hist: {} };
+  const st = loadStats();
   if (st.hist[G.ds] != null) return;
   const total = G.results.reduce((a, r) => a + r.score, 0);
   st.hist[G.ds] = total; st.played++;
@@ -381,8 +411,8 @@ function recordStats() {
 
 function shareText() {
   const total = G.results.reduce((a, r) => a + r.score, 0), hints = G.results.filter(r => r.hint).length;
-  const st = store.get("ae:stats");
-  return [G.tier ? `Analyst Eye practice (${TIER_NAME[G.tier]}) 🛰️ ${total}/${G.P.rounds.length * 100}` : `Analyst Eye #${G.P.number}${G.practice ? " (practice)" : ""} 🛰️ ${total}/500`,
+  const st = loadStats();
+  return [G.tier ? `Analyst Eye practice (${TIER_NAME[G.tier]}) 🛰️ ${total}/${G.P.rounds.length * 100}` : `Analyst Eye #${G.P.number || dayNum(G.ds)}${G.practice ? " (practice)" : ""} 🛰️ ${total}/500`,
     G.results.map(r => sq(r.score)).join(""),
     [hints ? `💡${hints}` : "", (!G.practice && st && st.streak > 1) ? `🔥${st.streak}` : ""].filter(Boolean).join(" "),
     SITE].filter(Boolean).join("\n");
@@ -391,12 +421,12 @@ function shareText() {
 function archiveHTML() {
   const past = avail.filter(d => d < TODAY).slice(-30).reverse();
   if (!past.length) return "";
-  if (EMBED) return `<a class="btn ghost" href="${esc(SITE)}">Past puzzles ↗</a>`;
+  if (EMBED) return `<a class="btn ghost" href="${esc(SITE)}" target="_blank" rel="noopener">Past puzzles ↗</a>`;
   const q = t => { const u = new URLSearchParams(location.search); u.delete("date"); u.set("practice", t); return "?" + u.toString(); };
   return `<h3 class="kicker" style="margin:14px 0 4px">Practice by difficulty</h3>
     <div class="seg">${["easy", "medium", "hard"].map(t => `<a href="${esc(q(t))}" target="_self">${TIER_NAME[t]}</a>`).join("")}</div>
     <h3 class="kicker" style="margin:14px 0 4px">Play past days</h3>
-    <ul class="list">${past.map(d => { const sc = (store.get("ae:stats") || { hist: {} }).hist[d];
+    <ul class="list">${past.map(d => { const sc = loadStats().hist[d];
       return `<li><a href="?date=${d}" target="_self">#${dayNum(d)} · ${esc(nice(d))}${sc != null ? ` · ${sc}` : ""}</a></li>`; }).join("")}</ul>`;
 }
 
@@ -404,7 +434,7 @@ const TIER_SHORT = { easy: "Easy", medium: "Med", hard: "Hard" };
 function end() {
   G.i = G.P.rounds.length;
   const N = G.P.rounds.length, total = G.results.reduce((a, r) => a + r.score, 0), text = shareText();
-  const st = store.get("ae:stats") || { played: 0, streak: 0, maxStreak: 0, best: 0 };
+  const st = loadStats();
   const intent = "https://x.com/intent/tweet?text=" + encodeURIComponent(text);
   const title = G.tier ? `Practice · ${TIER_NAME[G.tier]}` : `Analyst Eye #${G.P.number || dayNum(G.ds)} · ${nice(G.ds)}${G.practice ? " · practice" : ""}`;
   const rows = G.P.rounds.map((r, i) => { const x = G.results[i] || { score: 0 };
@@ -421,7 +451,7 @@ function end() {
       <div class="row"><a class="btn x grow" id="sharex" href="${esc(intent)}" target="_blank" rel="noopener">𝕏 Share on X</a>
         <button type="button" class="btn ghost iconcopy" id="copy" aria-label="Copy result" title="Copy result"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button></div>
       <p class="quiet" id="stats">${stats}</p>
-      ${EMBED ? `<p class="quiet"><a href="${esc(SITE)}">Past puzzles ↗</a></p>` : ""}
+      ${EMBED ? `<p class="quiet"><a href="${esc(SITE)}" target="_blank" rel="noopener">Past puzzles ↗</a></p>` : ""}
     </section>
     ${EMBED ? "" : `<div class="results more">${archiveHTML()}</div>`}`);
   bindHelp();

@@ -1,0 +1,8 @@
+# Pinned for the nightly GitHub Action (supply-chain safety). Bump deliberately.
+requests==2.34.2
+pillow==13.0.0
+numpy==2.5.4
+certifi==2026.10.18
+charset-normalizer==3.5.2
+idna==3.20
+urllib3==2.8.0
