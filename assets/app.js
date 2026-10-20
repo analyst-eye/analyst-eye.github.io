@@ -148,7 +148,14 @@ async function init() {
   const req = qs.get("date"), pt = qs.get("practice");
   if (pt && isTier(pt)) return startTier(pt);
   if (req && avail.includes(req) && req !== TODAY) return start(req, true);
-  if (avail.includes(TODAY)) return start(TODAY, false);
+  // ?date=<today> is an unscored replay, allowed only once today's scored game is finished
+  if (req === TODAY && avail.includes(TODAY) && todayDone()) return start(TODAY, true);
+  return showToday(false);
+}
+function todayDone() { const P = window.AE_PUZZLES && window.AE_PUZZLES[TODAY], v = loadDay(TODAY, P ? P.rounds.length : 5); return !!(v && v.done); }
+/* today's scored game; home=true opens the start screen instead of jumping to results / the next round */
+async function showToday(home) {
+  if (avail.includes(TODAY)) return start(TODAY, false, home);
   const next = (IDX.dates || []).find(d => d > TODAY);
   h(`<div class="hud"><span class="brand">Analyst Eye</span></div>
      <div class="panel"><p class="task">No puzzle for ${esc(nice(TODAY))} yet.</p>
@@ -165,7 +172,7 @@ async function startTier(tier) {
   }
   for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
   const picked = pool.slice(0, 5).sort((a, b) => (a.dscore || 0) - (b.dscore || 0));
-  if (!picked.length) return h(`<div class="hud"><span class="brand">Analyst Eye</span></div><div class="panel"><p class="task">No ${TIER_NAME[tier].toLowerCase()} rounds to practice yet.</p><p class="dim">Come back after a few daily puzzles.</p>${archiveHTML()}</div>`);
+  if (!picked.length) { h(`<div class="hud">${brandHTML(true)}</div><div class="panel"><p class="task">No ${TIER_NAME[tier].toLowerCase()} rounds to practice yet.</p><p class="dim">Come back after a few daily puzzles.</p>${archiveHTML()}</div>`); return bindHud(); }
   G = { ds: TODAY, P: { number: "", size, rounds: picked }, practice: true, tier, i: 0, results: [] };
   intro();
 }
@@ -175,22 +182,35 @@ function practiceLink(tier, ds) {
   return "?" + q.toString();
 }
 function tierPicker() {
-  if (!G.practice || EMBED) return "";
+  if (!G.practice || EMBED || !avail.some(d => d < TODAY)) return "";
   const lastPast = avail.filter(d => d < TODAY).pop();
   const cur = G.tier || "mixed", ds = G.tier ? lastPast : G.ds;
   return `<div class="seg" role="group" aria-label="Practice difficulty">${["mixed", "easy", "medium", "hard"].map(t =>
     `<a href="${esc(practiceLink(t, ds))}" target="_self" class="${t === cur ? "on" : ""}" ${t === cur ? 'aria-current="true"' : ""}>${t === "mixed" ? "Mixed" : TIER_NAME[t]}</a>`).join("")}</div>`;
 }
 
-async function start(ds, practice) {
+async function start(ds, practice, home) {
   let P;
   try { P = await loadPuzzle(ds); } catch (e) { return h(`<div class="panel">Couldn't load the puzzle for ${esc(nice(ds))}. Try again later.</div>`); }
   P.rounds.forEach(r => { r.s = decode(r.secret, ds); });
   const saved = practice ? null : loadDay(ds, P.rounds.length);
-  G = { ds, P, practice, i: 0, results: saved ? saved.results : [] };
-  if (!practice && saved && saved.done) return end();
-  if (G.results.length) { G.i = G.results.length; return round(); }
+  G = { ds, P, practice, i: 0, results: saved ? saved.results : [], screen: "" };
+  if (G.results.length) G.i = Math.min(G.results.length, P.rounds.length);
+  if (!home && !practice && saved && saved.done) return end();
+  if (!home && G.results.length) return round();
   intro();
+}
+/* Home: today's start screen. Clears ?date= / ?practice= so a reload lands there too (keeps the ?today= test override). */
+function goHome() {
+  try { const q = new URLSearchParams(location.search); if (q.has("date") || q.has("practice")) { q.delete("date"); q.delete("practice");
+    const t = q.toString(); history.replaceState(null, "", location.pathname + (t ? "?" + t : "")); } } catch (e) {}
+  window.scrollTo(0, 0); showToday(true);
+}
+/* Play again: today's set as unscored practice. Saved results, score, streak, best and played count are never touched. */
+function replayToday() {
+  if (!avail.includes(TODAY) || !todayDone()) return goHome();
+  window.scrollTo(0, 0);
+  start(TODAY, true).then(() => { if (G && G.practice && G.ds === TODAY && G.screen === "intro") { preload(); round(); } });
 }
 
 /* ---------- header: title, round dots, score ---------- */
@@ -201,11 +221,19 @@ function hud() {
     const r = G.results[i];
     return `<span class="${r ? cls(r.score) : i === G.i ? "cur" : ""}"></span>`;
   }).join("");
-  return `<div class="hud"><span class="brand">Analyst Eye${G.practice ? ' <span class="tag practice">Practice</span>' : ""}</span>
+  // Home is offered everywhere except today's own start screen and mid-round of the scored game (no peek-then-restart-the-clock)
+  const canHome = G.practice || (G.screen !== "intro" && G.screen !== "round");
+  return `<div class="hud"><span class="hudl">${brandHTML(canHome, G.practice ? ' <span class="tag practice">Practice</span>' : "")}</span>
     <span class="dots" aria-label="round ${Math.min(G.i + 1, N)} of ${N}">${dots}</span>
     <span class="hudr"><span class="pts"><b>${tot}</b> pts</span><button class="iconbtn" id="help" aria-label="How to play">?</button></span></div>`;
 }
-function bindHelp() { const b = document.getElementById("help"); if (b) b.onclick = () => howto(true); }
+function brandHTML(link, extra = "") {
+  return link ? `<button type="button" class="brand home" id="home" aria-label="Home">Analyst Eye</button>${extra}` : `<span class="brand">Analyst Eye${extra}</span>`;
+}
+function bindHud() {
+  const b = document.getElementById("help"); if (b) b.onclick = () => howto(true);
+  const hm = document.getElementById("home"); if (hm) hm.onclick = goHome;
+}
 
 /* ---------- first-time how-to overlay ---------- */
 function howto(force) {
@@ -314,7 +342,10 @@ function setupScope(r, onTap, getRevealed) {
 }
 
 function intro() {
+  G.screen = "intro";
   const r = G.P.rounds[0], N = G.P.rounds.length;
+  const done = !G.practice && G.results.length >= N, resume = !G.practice && !done && G.results.length > 0;
+  const total = G.results.reduce((a, x) => a + x.score, 0);
   const kicker = G.tier ? `Practice · ${TIER_NAME[G.tier]} rounds from past days` : `Puzzle #${esc(G.P.number || dayNum(G.ds))} · ${esc(nice(G.ds))}${G.practice ? " · practice" : ""}`;
   // today's lineup: difficulty only, never the targets
   const lineup = G.P.rounds.map(x => isTier(x.tier) ? `<li class="t-${x.tier}"><i></i>${TIER_SHORT[x.tier]}</li>` : "<li><i></i></li>").join("");
@@ -327,7 +358,9 @@ function intro() {
     extras = `<div class="imeta">${stats}<p class="inext"><span id="nextin">Next puzzle in ${untilMidnight()}</span>${EMBED ? ` <span>· <a href="${esc(SITE)}" target="_blank" rel="noopener">Full site ↗</a></span>` : hasPast ? ` <span>· <a href="${esc(practiceLink("easy"))}" target="_self">Practice</a></span>` : ""}</p></div>`;
   }
   h(`${hud()}<div class="play intro-play">
-     ${scopeHTML(r, `<div class="cover"><button class="btn primary big-btn" id="go">▶ Play</button></div>`)}
+     ${scopeHTML(r, done
+       ? `<div class="cover"><div class="cbtns"><div class="cdone">Done today · <b>${total}</b>/${N * 100}</div><button class="btn primary big-btn" id="results">See results</button><button class="btn ghost cghost" id="again">↻ Play again</button><span class="cnote">Replays don't count</span></div></div>`
+       : `<div class="cover"><button class="btn primary big-btn" id="go">${resume ? `▶ Continue · round ${G.i + 1}` : "▶ Play"}</button></div>`)}
      <div class="side intro">
        <div class="ihead">
          <div class="kicker">${kicker}</div>
@@ -340,10 +373,12 @@ function intro() {
        ${EMBED && G.practice ? `<a class="dim small" href="${esc(SITE)}" target="_blank" rel="noopener">Open full site ↗</a>` : ""}
      </div></div>`);
   app.classList.add("is-intro");
-  bindHelp();
+  bindHud();
   const nx = document.getElementById("nextin");
   if (nx) { const iv = setInterval(() => { if (!document.body.contains(nx)) return clearInterval(iv); nx.textContent = "Next puzzle in " + untilMidnight(); }, 30000); }
-  document.getElementById("go").onclick = () => { preload(); round(); };
+  const go = document.getElementById("go"); if (go) go.onclick = () => { preload(); round(); };
+  const rs = document.getElementById("results"); if (rs) rs.onclick = () => { window.scrollTo(0, 0); end(); };
+  const ag = document.getElementById("again"); if (ag) ag.onclick = replayToday;
   howto(false);
 }
 function preload() { G.P.rounds.forEach(r => { const i = new Image(); i.src = "puzzles/" + r.image; }); }
@@ -358,6 +393,7 @@ function crosshair([x, y], col, k = 1, u0) {
 }
 
 function round() {
+  G.screen = "round";
   const r = G.P.rounds[G.i], s = r.s;
   let click = null, hint = false, t0 = null, raf = 0, done = false, k = 1;
   h(`${hud()}<div class="play">${scopeHTML(r)}
@@ -369,7 +405,7 @@ function round() {
          <button class="btn primary grow" id="lock" disabled>Lock in</button></div>
        <div class="dim small" id="tip">Tap the photo to drop a pin. Pinch or scroll to zoom.</div>
      </div></div>`);
-  bindHelp();
+  bindHud();
   const img = document.getElementById("img"), ov = document.getElementById("ov");
   const bar = document.getElementById("bar"), lock = document.getElementById("lock"), tip = document.getElementById("tip");
   const startClock = () => { if (t0 == null) { t0 = performance.now(); tick(); } };
@@ -396,7 +432,7 @@ function round() {
     if (!click || done) return; done = true; cancelAnimationFrame(raf);
     const t = t0 == null ? ROUND_S : (performance.now() - t0) / 1000;
     const res = score(click, s, r.radius_px, t, hint); res.click = click.map(v => Math.round(v));
-    G.results.push(res);
+    G.results.push(res); G.screen = "reveal";
     if (!G.practice) store.set("ae:day:" + G.ds, { results: G.results, done: G.results.length >= G.P.rounds.length });
     if (!G.practice && G.results.length >= G.P.rounds.length) recordStats();
     reveal(res, Z);
@@ -440,7 +476,7 @@ function reveal(res, Z) {
   document.getElementById("scope").classList.add("locked");
   Z.onChange = kk => { ov.innerHTML = answerSVG(r, res, kk); };
   Z.reset(true);
-  document.querySelector(".hud").outerHTML = hud(); bindHelp();
+  document.querySelector(".hud").outerHTML = hud(); bindHud();
   const meters = Math.round(res.d * r.gsd_m), last = G.i >= G.P.rounds.length - 1;
   const side = document.querySelector(".side");
   const dc = res.dk >= 0 && (s.decoys || [])[res.dk];
@@ -486,7 +522,7 @@ function archiveHTML() {
 }
 
 function end() {
-  G.i = G.P.rounds.length;
+  G.i = G.P.rounds.length; G.screen = "end";
   const N = G.P.rounds.length, total = G.results.reduce((a, r) => a + r.score, 0), text = shareText();
   const st = loadStats();
   const intent = "https://x.com/intent/tweet?text=" + encodeURIComponent(text);
@@ -496,20 +532,24 @@ function end() {
       <span class="sqr ${cls(x.score)}" aria-hidden="true"></span><span class="rname">${esc(r.label)}</span>
       <span class="rtier t-${esc(r.tier || "")}">${TIER_SHORT[r.tier] || ""}</span><span class="rpts">${x.score}</span><span class="chev" aria-hidden="true">›</span></button>
       <div class="rdetail" hidden></div></li>`; }).join("");
-  const stats = G.practice ? `Practice doesn't count toward stats · <a href="?" target="_self">Back to today</a>`
+  const stats = G.practice ? `Practice doesn't count toward your stats`
     : `Played ${st.played} · Streak ${st.streak} · Best ${st.best} · Next puzzle in ${untilMidnight()}`;
-  h(`<div class="hud"><span class="brand">Analyst Eye</span><button class="iconbtn" id="help" aria-label="How to play">?</button></div>
+  const again = G.ds === TODAY && !G.tier && avail.includes(TODAY) && todayDone();
+  h(`<div class="hud"><span class="hudl">${brandHTML(true, G.practice ? ' <span class="tag practice">Practice</span>' : "")}</span><button class="iconbtn" id="help" aria-label="How to play">?</button></div>
     <section class="results" aria-label="Results">
       <div class="rhead"><div class="kicker">${esc(title)}</div><div class="total"><b>${total}</b><span>/${N * 100}</span></div></div>
       <ol class="rtable">${rows}</ol>
       <div class="row"><a class="btn x grow" id="sharex" href="${esc(intent)}" target="_blank" rel="noopener">𝕏 Share on X</a>
         <button type="button" class="btn ghost iconcopy" id="copy" aria-label="Copy result" title="Copy result"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button></div>
+      <div class="nav"><button type="button" class="lnk" id="homebtn">← Home</button>${again ? `<button type="button" class="lnk" id="again">↻ Play again${G.practice ? "" : " <small>(practice)</small>"}</button>` : ""}</div>
       <p class="quiet" id="stats">${stats}</p>
       ${EMBED ? `<p class="quiet"><a href="${esc(SITE)}" target="_blank" rel="noopener">Past puzzles ↗</a></p>` : ""}
     </section>
     ${EMBED ? "" : `<div class="results more">${archiveHTML()}</div>`}`);
-  bindHelp();
+  bindHud();
   document.getElementById("copy").onclick = () => copy(text);
+  document.getElementById("homebtn").onclick = goHome;
+  const ag = document.getElementById("again"); if (ag) ag.onclick = replayToday;
   app.querySelectorAll(".rbtn").forEach(btn => btn.onclick = () => {
     const open = btn.getAttribute("aria-expanded") === "true";
     app.querySelectorAll(".rbtn").forEach(b => { b.setAttribute("aria-expanded", "false"); b.nextElementSibling.hidden = true; });

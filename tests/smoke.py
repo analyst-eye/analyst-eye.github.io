@@ -323,6 +323,90 @@ with sync_playwright() as p:
             o = page.evaluate(OVER)
             check(page.locator(".rtable li").count() == 5 and o["sw"] <= o["vw"] and page.evaluate(VIS, "#sharex"), f"{tag}: end screen 5 rows, Share visible, no sideways scroll")
         ctx.close()
+    # ---------- v10: Home + unscored "Play again" of today's set ----------
+    TD = REAL_TODAY if not LOCAL else "2026-10-20"
+    TOMORROW = (datetime.date.fromisoformat(TD) + datetime.timedelta(days=1)).isoformat()
+    SAVED = "() => [localStorage.getItem('ae:stats'), localStorage.getItem('ae:day:%s')]" % TD
+    def play5(page, aim=True):
+        for n in range(5):
+            page.locator("#lock").wait_for(); page.locator("#img").evaluate("i => i.complete || new Promise(r => i.onload = r)")
+            bx = page.locator("#scope").bounding_box()
+            if aim: (x, y), _ = target_xy(page, bx)
+            else: x, y = bx["x"] + bx["width"] / 2, bx["y"] + bx["height"] / 2
+            page.mouse.click(x, y); page.locator("#lock").click(); page.locator("#next").wait_for(); page.locator("#next").click()
+        page.locator("#sharex").wait_for(); page.wait_for_timeout(200)
+    for kind, w, h, mob in [("site", 390, 844, True), ("site", 844, 390, True), ("embed", 640, 480, False)]:
+        kw = dict(viewport={"width": w, "height": h})
+        if mob: kw.update(has_touch=True, is_mobile=True, device_scale_factor=2)
+        ctx = b.new_context(**kw); page = ctx.new_page(); tag = f"replay {kind} {w}x{h}"; sfx = f"{kind}-{w}x{h}"
+        page.on("pageerror", lambda e, tag=tag: errors.append(tag + ": " + str(e)))
+        page.add_init_script("localStorage.setItem('ae:howto','1')")
+        url = f"{BASE}/{'embed' if kind == 'embed' else 'index'}.html?today={TD}"
+        # scored game: no Home mid-round (no peek-and-restart), Home on the reveal -> start screen offers Continue
+        page.goto(url); page.locator("#go").wait_for(); page.locator("#go").click(); page.locator("#lock").wait_for()
+        check(page.locator("#home").count() == 0, f"{tag}: no Home link mid-round of the scored game")
+        bx = page.locator("#scope").bounding_box(); (x, y), _ = target_xy(page, bx); page.mouse.click(x, y)
+        page.locator("#lock").click(); page.locator("#next").wait_for()
+        page.locator("#home").click(); page.locator("#go").wait_for()
+        check("Continue" in page.locator("#go").inner_text() and page.evaluate("AE_DEBUG.state.results.length") == 1, f"{tag}: Home after a round -> start screen, {page.locator('#go').inner_text()!r}")
+        page.locator("#go").click(); page.locator("#lock").wait_for()
+        check(page.evaluate("AE_DEBUG.state.i") == 1, f"{tag}: Continue resumes at round 2")
+        page.locator("#next").count() or None
+        # finish the scored game (rounds 2-5)
+        for n in range(4):
+            page.locator("#lock").wait_for(); page.locator("#img").evaluate("i => i.complete || new Promise(r => i.onload = r)")
+            bx = page.locator("#scope").bounding_box(); (x, y), _ = target_xy(page, bx); page.mouse.click(x, y)
+            page.locator("#lock").click(); page.locator("#next").wait_for(); page.locator("#next").click()
+        page.locator("#sharex").wait_for(); page.wait_for_timeout(250)
+        before = page.evaluate(SAVED); st0 = json.loads(before[0]); total0 = int(page.locator(".total b").inner_text())
+        check(st0["played"] == 1 and page.locator("#homebtn").is_visible() and page.locator("#again").is_visible(), f"{tag}: end screen has Home + Play again (scored {total0}, played {st0['played']})")
+        if kind == "embed": check(page.evaluate(VIS, "#homebtn"), f"{tag}: Home visible without scrolling in the 640x480 frame")
+        page.screenshot(path=f"{SHOTS}/v10-{sfx}-end.png", full_page=(kind != "embed"))
+        # Home -> start screen in the done state; reload still opens the results
+        page.locator("#homebtn").click(); page.locator("#results").wait_for(); page.wait_for_timeout(300)
+        check(page.locator("#go").count() == 0 and page.locator(".ititle").is_visible() and page.locator(".lineup li").count() == 5,
+              f"{tag}: Home -> start screen (title, strip), Play replaced by See results / Play again")
+        check(page.evaluate(VIS, "#results") and page.evaluate(VIS, "#again"), f"{tag}: See results + Play again visible without scrolling")
+        if kind == "site" and h > w: check(page.locator(".istats").is_visible(), f"{tag}: stats shown on the start screen")
+        page.screenshot(path=f"{SHOTS}/v10-{sfx}-start-done.png")
+        page.locator("#results").click(); page.locator("#sharex").wait_for()
+        check(int(page.locator(".total b").inner_text()) == total0, f"{tag}: See results shows the saved score {total0}")
+        page.reload(); page.locator("#sharex").wait_for(); check(page.locator(".tag.practice").count() == 0, f"{tag}: reload after finishing still opens the scored results")
+        # Play again: unscored replay of all 5 rounds
+        page.locator("#again").click(); page.locator("#lock").wait_for(); page.locator("#img").evaluate("i => i.complete || new Promise(r => i.onload = r)"); page.wait_for_timeout(250)
+        g = page.evaluate("({p: AE_DEBUG.state.practice, ds: AE_DEBUG.state.ds, i: AE_DEBUG.state.i, n: AE_DEBUG.state.results.length})")
+        check(g["p"] and g["ds"] == TD and g["i"] == 0 and g["n"] == 0 and page.locator(".hud .tag.practice").count() == 1, f"{tag}: Play again starts round 1 of today's set as practice {g}")
+        page.screenshot(path=f"{SHOTS}/v10-{sfx}-replay-round1.png")
+        # brand Home mid-replay returns to the start screen; Play again from there
+        page.locator("#home").click(); page.locator("#again").wait_for(); page.locator("#again").click(); page.locator("#lock").wait_for()
+        play5(page, aim=False)
+        share = page.evaluate("decodeURIComponent(document.getElementById('sharex').href.split('text=')[1])")
+        check("(practice)" in share.splitlines()[0] and "🔥" not in share, f"{tag}: replay share text marked practice: {share.splitlines()[0]!r}")
+        check("Practice" in page.locator("#stats").inner_text(), f"{tag}: replay results say practice doesn't count")
+        after = page.evaluate(SAVED)
+        check(after == before, f"{tag}: saved results, score, streak, best, played unchanged after replay")
+        page.locator("#homebtn").click(); page.locator("#results").wait_for(); page.locator("#results").click(); page.locator("#sharex").wait_for()
+        check(int(page.locator(".total b").inner_text()) == total0 and page.locator(".tag.practice").count() == 0, f"{tag}: Home -> See results still shows scored {total0}")
+        ctx.close()
+    # URL guards: ?date=today is a replay only once finished; the future never unlocks
+    ctx = b.new_context(viewport={"width": 390, "height": 844}); page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append("guards: " + str(e)))
+    page.add_init_script("localStorage.setItem('ae:howto','1')")
+    page.goto(f"{BASE}/index.html?today={TD}&date={TD}"); page.locator("#go").wait_for()
+    check(not page.evaluate("AE_DEBUG.state.practice"), "?date=today before finishing -> the scored game, not a practice peek")
+    page.goto(f"{BASE}/index.html?today={TD}&date={TOMORROW}"); page.locator("#go").wait_for()
+    check(page.evaluate("AE_DEBUG.state.ds") == TD, f"?date={TOMORROW} (future) is ignored")
+    if not LOCAL:
+        page.goto(f"{BASE}/index.html?today={TOMORROW}&date={TOMORROW}"); page.locator("#go").wait_for()
+        check(page.evaluate("AE_DEBUG.state.ds") == TD, "live: ?today=<future> is ignored")
+    seed = json.dumps(json.dumps({"results": [{"d": 0, "acc": 80, "speed": 10, "hint": False, "score": 90, "t": 6, "ti": 0, "click": [100, 100], "dk": -1}] * 5, "done": True}))
+    page.evaluate(f"localStorage.setItem('ae:day:{TD}', {seed})")
+    page.goto(f"{BASE}/index.html?today={TD}&date={TD}"); page.locator("#lock, #go").first.wait_for()
+    check(page.evaluate("AE_DEBUG.state.practice") and page.evaluate("AE_DEBUG.state.ds") == TD, "?date=today after finishing -> unscored replay")
+    page.goto(f"{BASE}/index.html?today={TD}&practice=easy"); page.wait_for_timeout(800)
+    txt = page.locator("#app").inner_text()
+    check(page.locator("#go").count() == 1 or "No easy rounds to practice yet" in txt, "practice-by-difficulty URL still renders: " + " ".join(txt.split())[:70])
+    ctx.close()
     # daily sets ramp easy -> medium -> hard and are the same file for everyone
     for d in json.load(open(os.path.join(ROOT, "puzzles/index.json")))["dates"]:
         t = [r["tier"] for r in json.load(open(os.path.join(ROOT, f"puzzles/{d}.json")))["rounds"]]

@@ -218,3 +218,19 @@ body.split[data-mode=embed] .ititle{font-size:19px}
 body.split .results{width:100%}
 /* embed portrait: the start screen matches the site's */
 body[data-mode=embed]:not(.split) .app{max-width:640px;margin:0 auto;padding:12px 12px 4px}
+/* ---------- v10: home + play again ---------- */
+.hudl{display:flex;align-items:center;gap:6px;min-width:0}
+button.brand.home{appearance:none;background:none;border:0;padding:4px 0;margin:0;cursor:pointer;font-family:var(--mono);font-weight:700;letter-spacing:.14em;color:var(--amber);text-transform:uppercase;font-size:14px}
+button.brand.home::before{content:"‹ ";color:var(--dim);letter-spacing:0}
+button.brand.home:hover,button.brand.home:focus-visible{text-decoration:underline;text-underline-offset:3px}
+.cbtns{display:flex;flex-direction:column;align-items:center;gap:10px}
+.cdone{font:500 13px var(--sans);color:#fff;text-shadow:0 1px 3px #000}
+.cdone b{font-family:var(--mono);color:var(--amber)}
+.cghost{background:rgba(10,16,22,.75);border-color:rgba(255,255,255,.28);color:#fff;font-size:14px;min-height:38px;padding:8px 18px}
+.cnote{font:11px var(--sans);color:rgba(255,255,255,.75);text-shadow:0 1px 2px #000}
+.nav{display:flex;justify-content:center;gap:22px;margin:12px 0 0}
+.lnk{appearance:none;background:none;border:0;padding:6px 2px;color:var(--cyan);font:600 14px var(--sans);cursor:pointer}
+.lnk small{font-weight:400;color:var(--dim)}
+.lnk:hover{text-decoration:underline}
+body[data-mode=embed] .nav{margin-top:6px}
+body[data-mode=embed] .lnk{padding:3px 2px;font-size:13px}
