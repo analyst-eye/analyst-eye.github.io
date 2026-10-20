@@ -675,6 +675,9 @@ SLOTS = ["easy", "easy", "medium", "medium", "hard"]
 W_SIZE, W_ZOOM, W_DISTR, W_VIS, W_PRIOR = .28, .18, .18, .16, .20
 W_DECOY = .16          # verified decoys in the photo make a round harder
 clamp = lambda v, a=0.0, b=1.0: max(a, min(b, v))
+# Subtle types (settings.json "subtlety"): the giveaway is fine texture, not shape or size, so a big footprint
+# doesn't make them easy. Each listed type gets +add points, a minimum tier, and texture-blind visibility.
+SUBTLE = {k: v for k, v in S.get("subtlety", {}).items() if not k.startswith("_") and isinstance(v, dict)}
 
 def target_size_m(x, c):
     e = extent_m(x)
@@ -700,17 +703,21 @@ def pre_difficulty(c, x, gsd, alts, ans, n_look):
     distr_t = clamp(n_look / 5)
     sites, _ = ambiguity(ans, alts, gsd)
     bonus = min(0.2, 0.08 * (sites - 1))                     # more accepted targets = easier
+    sub = SUBTLE.get(c, {})
     return {"size": size_t, "zoom": zoom_t, "distract": distr_t, "prior": (CATS[c]["diff"] - 1) / 2, "bonus": bonus,
+            "subtle": sub.get("add", 0) / 100, "floor": TIERS[sub["min_tier"]][0] if sub.get("min_tier") in TIERS else 0,
             "size_m": round(size), "screen_px": round(screen_px), "lookalikes": n_look, "sites": sites}
 
-def visibility(img, ans, size_px):
-    """0 = invisible .. 1 = pops out: target patch vs. its surroundings."""
+def visibility(img, ans, size_px, texture=True):
+    """0 = invisible .. 1 = pops out: target patch vs. its surroundings.
+       texture=False (subtle types): only brightness contrast counts. Busy texture there is the faint clue itself
+       (headstone dots, tree crowns), not something that jumps out, so it mustn't make the round look easy."""
     g = img.convert("L"); rp = int(clamp(size_px / 2, 6, 60)); x, y = int(ans[0]), int(ans[1])
     box = lambda r: (max(0, x - r), max(0, y - r), min(SIZE, x + r), min(SIZE, y + r))
     inner = ImageStat.Stat(g.crop(box(rp))); outer = ImageStat.Stat(g.crop(box(2 * rp)))
     n_in = (box(rp)[2] - box(rp)[0]) * (box(rp)[3] - box(rp)[1]); n_out = (box(2 * rp)[2] - box(2 * rp)[0]) * (box(2 * rp)[3] - box(2 * rp)[1])
     ring_mean = (outer.mean[0] * n_out - inner.mean[0] * n_in) / max(1, n_out - n_in)
-    return clamp(abs(inner.mean[0] - ring_mean) / 40 + inner.stddev[0] / 60)
+    return clamp(abs(inner.mean[0] - ring_mean) / 40 + (inner.stddev[0] / 60 if texture else 0))
 
 def distinctness(img, ans, geom, gtype, size_px, halfwidth_px=0):
     """How visually distinct the target is from its immediate surroundings (0 = invisible).
@@ -759,8 +766,8 @@ MIN_DISTINCT = 0.3   # below this the target doesn't stand out from its surround
 def combine(parts, vis=None):
     lowvis = 0.5 if vis is None else 1 - vis
     v = (W_SIZE * parts["size"] + W_ZOOM * parts["zoom"] + W_DISTR * parts["distract"] + W_VIS * lowvis
-         + W_PRIOR * parts["prior"] + W_DECOY * parts.get("decoy", 0) - parts["bonus"])
-    return round(100 * clamp(v))
+         + W_PRIOR * parts["prior"] + W_DECOY * parts.get("decoy", 0) + parts.get("subtle", 0) - parts["bonus"])
+    return max(parts.get("floor", 0), round(100 * clamp(v)))
    # more look-alikes than this in one photo = trivial round -> pick another chip
 
 def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None, decoy=None, near=None):
@@ -854,7 +861,7 @@ def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None, decoy
         if decoy == "need" and not decs:
             log(f"    skip {c} {x['type']}/{x['id']}: no verified decoy in frame"); return None
     parts["decoy"] = min(1.0, len(decs) / 2)
-    vis = visibility(img, ans, parts["size_m"] / gsd)
+    vis = visibility(img, ans, parts["size_m"] / gsd, texture=c not in SUBTLE)
     dscore = combine(parts, vis)
     if band and not band[0] <= dscore <= band[1]:
         log(f"    skip {c} {x['type']}/{x['id']}: difficulty {dscore} outside {band}"); return None

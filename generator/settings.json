@@ -25,5 +25,28 @@
  "max_per_week": 2,
  "decoy_photo_budget": 14,
  "curated_aircraft_enabled": false,
- "_curated_comment": "generator/curated/aircraft_draft.json is a DRAFT for AJ's review; nothing reads it while curated_aircraft_enabled is false."
+ "_curated_comment": "generator/curated/aircraft_draft.json is a DRAFT for AJ's review; nothing reads it while curated_aircraft_enabled is false.",
+ "subtlety": {
+  "_comment": "Types whose giveaway is fine texture (dots, rows, faint markings) rather than shape. add: extra difficulty points (0-100 scale); min_tier: never rated below this; visibility ignores texture for these types. A small, sparse or tree-covered one can still reach hard through the size and low-contrast terms. Types the generator doesn't produce yet (orchard, allotments, plaza) are listed so they're covered if added; unknown types are ignored.",
+  "cemetery": {
+   "add": 22,
+   "min_tier": "medium",
+   "why": "headstone dots in a lawn or clearing; looks like a park or field until you spot the rows"
+  },
+  "orchard": {
+   "add": 18,
+   "min_tier": "medium",
+   "why": "tree rows vs. ordinary woods"
+  },
+  "allotments": {
+   "add": 18,
+   "min_tier": "medium",
+   "why": "community garden plots look like any yard or field"
+  },
+  "plaza": {
+   "add": 15,
+   "min_tier": "medium",
+   "why": "paved square vs. a parking lot; only paving pattern and benches tell them apart"
+  }
+ }
 }

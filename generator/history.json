@@ -2,8 +2,8 @@
  "days": {
   "2026-10-20": [
    "marina",
+   "baseball",
    "cemetery",
-   "roundabout",
    "water_tower",
    "slipway"
   ],
@@ -30,9 +30,9 @@
   ],
   "2026-10-24": [
    "track",
-   "cemetery",
-   "pool",
+   "football_field",
    "golf",
+   "cemetery",
    "lighthouse"
   ],
   "2026-10-25": [
@@ -213,6 +213,11 @@
    "date": "2026-10-24",
    "key": null
   },
+  "way/282571254": {
+   "cat": "football_field",
+   "date": "2026-10-24",
+   "key": null
+  },
   "way/36778915": {
    "cat": "stadium",
    "date": "2026-10-26",
@@ -238,6 +243,11 @@
    "date": "2026-10-22",
    "key": null
   },
+  "way/436876534": {
+   "cat": "baseball",
+   "date": "2026-10-20",
+   "key": null
+  },
   "way/544605821": {
    "cat": "roundabout",
    "date": "2026-10-20",
@@ -256,6 +266,11 @@
   "way/625901824": {
    "cat": "storage_tank",
    "date": "2026-10-20",
+   "key": null
+  },
+  "way/665823248": {
+   "cat": "pier",
+   "date": "2026-10-24",
    "key": null
   },
   "way/705835950": {
@@ -297,6 +312,11 @@
    "cat": "pool",
    "date": "2026-10-24",
    "key": "pool:cornerstone swimming pool"
+  },
+  "way/972361155": {
+   "cat": "baseball",
+   "date": "2026-10-20",
+   "key": null
   },
   "way/979399126": {
    "cat": "slipway",
