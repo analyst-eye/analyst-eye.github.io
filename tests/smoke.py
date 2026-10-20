@@ -216,7 +216,7 @@ with sync_playwright() as p:
         page.goto(f"{BASE}/{'embed' if embed else 'index'}.html?today={d}"); page.locator("#lock").wait_for()
         page.locator("#img").evaluate("i => i.complete || new Promise(r => i.onload = r)"); page.wait_for_timeout(300)
         cau = page.locator(".caution").inner_text(); check(cau.startswith("Careful:"), f"{tag}: decoy round shows caution line: {cau!r}")
-        page.screenshot(path=f"{SHOTS}/v7-{tag}-decoy-round.png")
+        page.screenshot(path=f"{SHOTS}/v8-{tag}-decoy-round.png")
         box = page.locator("#scope").bounding_box()
         st = page.evaluate("() => { const g = AE_DEBUG.state, r = g.P.rounds[g.i]; return {a: r.s.decoys[0].answer, size: g.P.size, clue: r.s.decoys[0].clue}; }")
         x = box["x"] + st["a"][0] / st["size"] * box["width"]; y = box["y"] + st["a"][1] / st["size"] * box["height"]
@@ -224,7 +224,7 @@ with sync_playwright() as p:
         page.locator("#lock").click(); page.locator("#next").wait_for(); page.wait_for_timeout(400)
         word = page.locator(".verdict .word").inner_text(); sc = int(page.locator(".verdict .big").inner_text())
         check(word == "Decoy!" and sc == 0 and st["clue"] in page.locator(".side").inner_text(), f"{tag}: tapping the decoy -> {word} {sc} with clue")
-        page.screenshot(path=f"{SHOTS}/v7-{tag}-decoy-hit.png")
+        page.screenshot(path=f"{SHOTS}/v8-{tag}-decoy-hit.png")
         ctx.close()
     # the real target still scores in a decoy round (pure function check)
     ctx = b.new_context(); page = ctx.new_page(); page.goto(f"{BASE}/index.html?today={found[0] if found else DATE}"); page.wait_for_timeout(500)
@@ -232,6 +232,11 @@ with sync_playwright() as p:
         res = page.evaluate(f"""() => {{ const P = AE_PUZZLES['{found[0]}'], r = P.rounds[{found[1] - 1}], s = AE_DEBUG.decode(r.secret, '{found[0]}');
             return [AE_DEBUG.score(s.answer, s, r.radius_px, 3, false), AE_DEBUG.score(s.decoys[0].answer, s, r.radius_px, 3, false)]; }}""")
         check(res[0]["score"] >= 90 and res[0]["dk"] == -1 and res[1]["score"] == 0 and res[1]["dk"] == 0, f"decoy round: target scores {res[0]['score']}, decoy scores {res[1]['score']}")
+    # today's live (pre-decoy) Oct 20 file still loads and plays with the decoy-aware app
+    page.goto(f"{BASE}/index.html?today=2026-10-20"); page.wait_for_timeout(600)
+    r20 = page.evaluate("() => { const P = AE_PUZZLES['2026-10-20']; if (!P) return null; const r = P.rounds[0], s = AE_DEBUG.decode(r.secret, '2026-10-20'); return [P.rounds.length, AE_DEBUG.score(s.answer, s, r.radius_px, 3, false).score, (s.decoys || []).length]; }")
+    check(bool(r20) and r20[0] == 5 and r20[1] >= 90 and r20[2] == 0, f"Oct 20 old-format puzzle loads and scores: {r20}")
+    ctx.close()
     # daily sets ramp easy -> medium -> hard and are the same file for everyone
     for d in json.load(open(os.path.join(ROOT, "puzzles/index.json")))["dates"]:
         t = [r["tier"] for r in json.load(open(os.path.join(ROOT, f"puzzles/{d}.json")))["rounds"]]
