@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Headless smoke test (v2): serve the repo, play index.html (mobile + desktop), embed.html (640x480) and
    embed.html inside a sandboxed iframe. Exercises pinch / wheel / button zoom, pan-without-guess, tap-to-guess.
-   Screenshots -> screens/v2-*.png.     /workspace/.pwenv/bin/python tests/smoke.py"""
+   Screenshots -> screens/v4-*.png.     /workspace/.pwenv/bin/python tests/smoke.py"""
 import http.server, json, os, socketserver, sys, threading
 from playwright.sync_api import sync_playwright
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -46,13 +46,13 @@ def drag_touch(page, x, y, dx, dy, steps=8):
 
 def start(page, fr, tag, shot_howto=False):
     fr.locator("#gotit").wait_for(); 
-    if shot_howto: page.wait_for_timeout(300); page.screenshot(path=f"{SHOTS}/v2-{tag}-howto.png")
+    if shot_howto: page.wait_for_timeout(300); page.screenshot(path=f"{SHOTS}/v4-{tag}-howto.png")
     fr.locator("#gotit").click(); fr.locator("#go").click(); fr.locator("#lock").wait_for()
     fr.locator("#img").evaluate("i => i.complete || new Promise(r => i.onload = r)")
 
 def finish_round(page, fr, tag, n, shot=False):
     fr.locator("#lock").click(); fr.locator("#next").wait_for(); page.wait_for_timeout(350)
-    if shot: page.screenshot(path=f"{SHOTS}/v2-{tag}-round{n}-reveal.png")
+    if shot: page.screenshot(path=f"{SHOTS}/v4-{tag}-round{n}-reveal.png")
     sc = int(fr.locator(".verdict .big").inner_text()); word = fr.locator(".verdict .word").inner_text()
     fr.locator("#next").click(); return sc, word
 
@@ -80,14 +80,20 @@ with sync_playwright() as p:
     check((z2["tx"], z2["ty"]) != (z["tx"], z["ty"]) and locked_disabled(page), "one-finger drag pans and does NOT drop a pin")
     (x, y), st = target_xy(page, box); page.touchscreen.tap(x, y); page.wait_for_timeout(200)
     check(not locked_disabled(page), "tap (no movement) while zoomed drops a pin")
-    page.screenshot(path=f"{SHOTS}/v2-mobile-round1-zoomed-pin.png")
+    page.screenshot(path=f"{SHOTS}/v4-mobile-round1-zoomed-pin.png")
     pinch(page, box["x"] + box["width"] / 2, box["y"] + box["height"] / 2, 200, 10, 10); page.wait_for_timeout(150)
     check(abs(zoomstate(page)["k"] - 1) < 1e-6, "pinch out clamps at 1x")
     r1 = (st["label"], *finish_round(page, page, "mobile", 1, shot=True))
     check(r1[1] >= 90, f"round 1 after zoom+tap scored {r1[1]} ({r1[2]})")
     rest = play_rest(page, page, "mobile", touch=True)
     page.locator("#sharex").wait_for(); page.wait_for_timeout(300)
-    page.screenshot(path=f"{SHOTS}/v2-mobile-end.png", full_page=True)
+    page.screenshot(path=f"{SHOTS}/v4-mobile-end.png", full_page=True)
+    check(page.locator(".rtable li").count() == 5 and page.locator("#sharetext").count() == 0 and page.locator("#scope").count() == 0,
+          "end screen: one 5-row results table, no photo / share-text box")
+    print("  stats line:", page.locator("#stats").inner_text())
+    page.locator(".rbtn").nth(4).click(); page.wait_for_timeout(250)
+    check(page.locator(".rdetail:not([hidden]) .rthumb img").count() == 1, "tapping a row shows its answer thumbnail")
+    page.screenshot(path=f"{SHOTS}/v4-mobile-end-expanded.png", full_page=True)
     print("  rounds:", [r1] + rest)
     share = page.evaluate("decodeURIComponent(document.getElementById('sharex').href.split('text=')[1])")
     print("  share:", share.replace("\n", " | ")); check(page.get_attribute("#sharex", "target") == "_blank", "share opens new tab")
@@ -107,12 +113,12 @@ with sync_playwright() as p:
     z2 = zoomstate(page); check((z2["tx"], z2["ty"]) != (z["tx"], z["ty"]) and locked_disabled(page), "mouse drag pans and does NOT drop a pin")
     (x, y), st = target_xy(page, box); page.mouse.click(x, y); page.wait_for_timeout(150)
     check(not locked_disabled(page), "click while zoomed drops a pin")
-    page.screenshot(path=f"{SHOTS}/v2-desktop-round1-zoomed-pin.png")
+    page.screenshot(path=f"{SHOTS}/v4-desktop-round1-zoomed-pin.png")
     page.click("[data-z=reset]"); page.wait_for_timeout(300); check(zoomstate(page)["k"] == 1, "reset button -> 1x")
     r1 = (st["label"], *finish_round(page, page, "desktop", 1, shot=True)); check(r1[1] >= 90, f"round 1 scored {r1[1]}")
     page.locator("#info").click(); page.wait_for_timeout(100)
     print("  rounds:", [r1] + play_rest(page, page, "desktop", touch=False))
-    page.locator("#sharex").wait_for(); page.screenshot(path=f"{SHOTS}/v2-desktop-end.png", full_page=True)
+    page.locator("#sharex").wait_for(); page.screenshot(path=f"{SHOTS}/v4-desktop-end.png", full_page=True)
     ctx.close()
 
     # ---------- embed 640x480: +/- buttons then click ----------
@@ -120,18 +126,20 @@ with sync_playwright() as p:
     page.on("pageerror", lambda e: errors.append("embed: " + str(e)))
     page.goto(f"{BASE}/embed.html?today={DATE}"); print("embed 640x480")
     start(page, page, "embed", shot_howto=True)
-    page.wait_for_timeout(200); page.screenshot(path=f"{SHOTS}/v2-embed-round1.png")
+    page.wait_for_timeout(200); page.screenshot(path=f"{SHOTS}/v4-embed-round1.png")
     page.click("[data-z=in]"); page.click("[data-z=in]"); page.wait_for_timeout(300); z = zoomstate(page)
     check(abs(z["k"] - 2.56) < 0.01, f"+ button twice -> k={z['k']:.2f}"); check(locked_disabled(page), "zoom buttons do NOT drop a pin")
     box = page.locator("#scope").bounding_box(); (x, y), st = target_xy(page, box)
     inside = box["x"] <= x <= box["x"] + box["width"] and box["y"] <= y <= box["y"] + box["height"]
     if not inside:   # answer off-screen at this zoom: zoom out once and retry
         page.click("[data-z=out]"); page.wait_for_timeout(300); (x, y), st = target_xy(page, box)
-    page.mouse.click(x, y); page.wait_for_timeout(150); page.screenshot(path=f"{SHOTS}/v2-embed-round1-zoomed-pin.png")
+    page.mouse.click(x, y); page.wait_for_timeout(150); page.screenshot(path=f"{SHOTS}/v4-embed-round1-zoomed-pin.png")
     page.click("[data-z=out]"); page.wait_for_timeout(300)
     r1 = (st["label"], *finish_round(page, page, "embed", 1, shot=True))
     print("  rounds:", [r1] + play_rest(page, page, "embed", touch=False))
-    page.locator("#sharex").wait_for(); page.wait_for_timeout(300); page.screenshot(path=f"{SHOTS}/v2-embed-end.png")
+    page.locator("#sharex").wait_for(); page.wait_for_timeout(300); page.screenshot(path=f"{SHOTS}/v4-embed-end.png")
+    page.locator(".rbtn").nth(0).click(); page.wait_for_timeout(250); page.screenshot(path=f"{SHOTS}/v4-embed-end-expanded.png")
+    page.locator(".rbtn").nth(0).click(); page.wait_for_timeout(150)
     bb = page.locator("#sharex").bounding_box(); check(bb["y"] + bb["height"] <= 336, f"embed share button bottom {bb['y'] + bb['height']:.0f}px <= 336")
     ctx.close()
 
@@ -146,9 +154,9 @@ with sync_playwright() as p:
     check(z["k"] > 1.5, f"pinch inside sandboxed iframe -> k={z['k']:.2f}")
     (x, y), st = target_xy(frame, box); page.touchscreen.tap(x, y); page.wait_for_timeout(200)
     check(not locked_disabled(frame), "tap inside sandboxed iframe drops a pin")
-    page.screenshot(path=f"{SHOTS}/v2-sandbox-zoomed-pin.png")
+    page.screenshot(path=f"{SHOTS}/v4-sandbox-zoomed-pin.png")
     sc, word = finish_round(page, fr, "sandbox", 1, shot=False); check(sc >= 90, f"sandbox round 1 scored {sc} ({word})")
-    page.screenshot(path=f"{SHOTS}/v2-sandbox-round2.png")
+    page.screenshot(path=f"{SHOTS}/v4-sandbox-round2.png")
     ctx.close()
 
     # ---------- real "today" (no overrides) ----------
@@ -165,10 +173,10 @@ with sync_playwright() as p:
     page.locator("#gotit").click(); page.locator(".seg a", has_text="Hard").click(); page.locator("#go").wait_for()
     tiers = page.evaluate("AE_DEBUG.state.P.rounds.map(r => r.tier)")
     check(len(tiers) >= 1 and set(tiers) == {"hard"}, f"Hard practice set = {len(tiers)} hard rounds from past days")
-    page.wait_for_timeout(300); page.screenshot(path=f"{SHOTS}/v3-practice-hard-intro.png")
+    page.wait_for_timeout(300); page.screenshot(path=f"{SHOTS}/v4-practice-hard-intro.png")
     page.click("#go"); page.locator("#lock").wait_for(); page.wait_for_timeout(300)
     check(page.locator(".tier.t-hard").count() == 1, "round shows Hard tier label")
-    page.screenshot(path=f"{SHOTS}/v3-practice-hard-round1.png")
+    page.screenshot(path=f"{SHOTS}/v4-practice-hard-round1.png")
     # any same-type feature counts: clicking an alternate scores like the main target
     alt = page.evaluate("""() => { for (const d of AE_INDEX.dates) { const P = AE_PUZZLES[d]; if (!P) continue;
         for (const r of P.rounds) { const s = r.s || AE_DEBUG.decode(r.secret, d); if ((s.alts || []).length)

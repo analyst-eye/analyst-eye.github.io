@@ -8,7 +8,7 @@ A daily aerial-imagery spotting game. Five overhead images a day, one target eac
 * **Fully automated content**: a nightly GitHub Action builds puzzles from **OpenStreetMap** targets and **USDA NAIP** imagery (public domain), commits them, and redeploys.
 * No servers, no accounts, no tracking. Stats and streaks live in the player's browser (localStorage).
 
-Made by [@A_is_A](https://x.com/A_is_A). Targets © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) (ODbL). Imagery: USDA NAIP via USGS The National Map.
+Made by [@A_is_A](https://x.com/A_is_A). Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright). Imagery: USDA NAIP via USGS The National Map.
 
 ---
 
@@ -65,7 +65,7 @@ Add a repo secret `XAI_API_KEY` (*Settings → Secrets and variables → Actions
 | `tests/smoke.py` | Headless Playwright test that plays full games (mobile, desktop, 640×480 embed, sandboxed iframe), including pinch/wheel/button zoom, drag-to-pan (must not drop a pin) and tap-to-guess. Screenshots go to `screens/v2-*`. |
 
 ### Generator pipeline
-1. **Overpass API** (3 tiles, falls back across mirrors with backoff, cached 20 h): 22 everyday target types: stadiums, runways, marinas, golf courses, baseball/soccer/football fields, running tracks, cemeteries, water treatment plants, piers (≥60 m), bridges, roundabouts, named swimming pools, tennis courts, water towers, storage tanks, solar farms, substations, boat ramps, lighthouses, tall radio towers (≥40 m).
+1. **Overpass API** (3 tiles, falls back across mirrors with backoff, cached 20 h): 21 everyday target types: stadiums, runways, marinas, golf putting greens, baseball fields, sports fields (soccer and football merged, since line markings aren't reliable at 0.6 m), running tracks, cemeteries, water treatment plants, piers (≥60 m), bridges, roundabouts, named swimming pools, tennis courts, water towers, storage tanks, solar farms, substations, boat ramps, lighthouses (≥150 m cemeteries; ≥80 m bridges). Radio masts are excluded: from straight overhead they are a thin pole with no visible footprint.
 2. **Sensitive-site exclusion**: anything tagged `landuse=military`, `military=*`, prisons, nuclear plants, refineries, military-named aerodromes, plus `blocklist.json`. A round is rejected if any of those lies **inside the image footprint or within 150 m of it**, so excluded sites never appear in frame even at the edge. Names matching the blocklist regex are skipped too.
 3. **Imagery**: `exportImage` from `https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer` (USDA NAIP, public domain). Target placed off-center; answer pixel and outline computed from Web-Mercator math.
 4. **QC**: rejects no-data/blank, low-contrast, badly exposed chips and featureless target patches, then tries another feature.
@@ -74,7 +74,8 @@ Add a repo secret `XAI_API_KEY` (*Settings → Secrets and variables → Actions
 7. **Variety**: each type at most once per day and at most `max_per_week` (default 2) times in any 7 days (`settings.json`); if the pool ever runs dry the cap relaxes by one and the log says so. Rounds are ordered easy → hard (2 easy, 2 medium, 1 hard).
 8. **Look-alikes**: every other OSM feature of the same type inside the photo is stored and also scores as correct (nearest one wins; all are revealed). Photos with more than 3 separate sites or 6 extra copies are skipped as too easy. Golf is a *putting green* (not the whole course), and any polygon target spanning most of the photo is skipped.
 9. **Difficulty ramp**: each candidate gets a 0–100 difficulty score from target size vs. frame, whether you need to zoom on a phone, look-alike distractors of other types in frame, how much the target stands out from its surroundings, and a per-type prior (fewer accepted copies = harder). Each day is rounds 1–2 Easy (0–29), 3–4 Medium (30–49), 5 Hard (50+); `TIERS` in `make_puzzle.py`. If a tier can't be filled the band widens by 5–10 points, then the weekly cap relaxes; the day fails if it still can't. Practice mode (only) lets players pick Easy / Medium / Hard / Mixed, built from past days.
-10. **Fix one round**: `python3 generator/make_puzzle.py --replace 2026-10-21:3` swaps a single round for another of the same type and tier.
+10. **Fix one round**: `python3 generator/make_puzzle.py --replace 2026-10-21:3` swaps a single round for another of the same type and tier. Add `--any` to allow any type that isn't already in that day and is under the weekly cap.
+11. **Distinctness check**: every candidate is measured against its surroundings (color inside vs. a ring around the outline, edge strength along it, or patch vs. ring for points). Below 0.3 it is rejected, so targets that blend into their background never ship.
 11. **Manual rejects**: add `"way/123"`-style ids to `osm_ids` in `blocklist.json` to never use a feature again.
 
 Run locally:

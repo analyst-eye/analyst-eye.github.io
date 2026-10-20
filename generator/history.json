@@ -1,22 +1,22 @@
 {
  "days": {
   "2026-10-19": [
-   "soccer",
+   "field",
    "stadium",
    "water_tower",
    "bridge",
-   "mast"
+   "lighthouse"
   ],
   "2026-10-20": [
    "marina",
-   "football",
+   "cemetery",
    "roundabout",
    "water_tower",
-   "mast"
+   "storage_tank"
   ],
   "2026-10-21": [
-   "soccer",
-   "baseball",
+   "cemetery",
+   "cemetery",
    "golf",
    "bridge",
    "substation"
@@ -43,7 +43,7 @@
    "lighthouse"
   ],
   "2026-10-25": [
-   "football",
+   "field",
    "baseball",
    "wastewater",
    "roundabout",
@@ -51,7 +51,7 @@
   ],
   "2026-10-26": [
    "stadium",
-   "soccer",
+   "field",
    "tennis",
    "water_tower",
    "lighthouse"
@@ -66,6 +66,11 @@
   "node/5214879206": {
    "cat": "slipway",
    "date": "2026-10-22",
+   "key": null
+  },
+  "node/6721757407": {
+   "cat": "slipway",
+   "date": "2026-10-25",
    "key": null
   },
   "node/7833232651": {
@@ -163,6 +168,11 @@
    "date": "2026-10-25",
    "key": null
   },
+  "way/1412758968": {
+   "cat": "cemetery",
+   "date": "2026-10-21",
+   "key": "cemetery:saint joseph cemetery"
+  },
   "way/1462496331": {
    "cat": "tennis",
    "date": "2026-10-24",
@@ -191,6 +201,16 @@
   "way/212448632": {
    "cat": "water_tower",
    "date": "2026-10-26",
+   "key": null
+  },
+  "way/231237898": {
+   "cat": "baseball",
+   "date": "2026-10-21",
+   "key": null
+  },
+  "way/251370422": {
+   "cat": "lighthouse",
+   "date": "2026-10-19",
    "key": null
   },
   "way/266446769": {
@@ -228,6 +248,11 @@
    "date": "2026-10-20",
    "key": null
   },
+  "way/625901824": {
+   "cat": "storage_tank",
+   "date": "2026-10-20",
+   "key": null
+  },
   "way/633806410": {
    "cat": "pool",
    "date": "2026-10-23",
@@ -243,10 +268,20 @@
    "date": "2026-10-19",
    "key": null
   },
+  "way/812699211": {
+   "cat": "cemetery",
+   "date": "2026-10-21",
+   "key": "cemetery:maryetta cemetery"
+  },
   "way/827569375": {
    "cat": "tennis",
    "date": "2026-10-26",
    "key": null
+  },
+  "way/929034250": {
+   "cat": "cemetery",
+   "date": "2026-10-20",
+   "key": "cemetery:spring hill memorial gardens"
   },
   "way/971209187": {
    "cat": "stadium",
@@ -262,6 +297,11 @@
    "cat": "soccer",
    "date": "2026-10-19",
    "key": null
+  },
+  "way/999209829": {
+   "cat": "cemetery",
+   "date": "2026-10-21",
+   "key": "cemetery:timney south river park community cemetery"
   }
  }
 }

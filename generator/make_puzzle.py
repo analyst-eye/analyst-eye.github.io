@@ -38,8 +38,8 @@ CATS = {
  "marina":       dict(sel=['nwr["leisure"="marina"]'], label="Marina", task="Find a marina.", gsd=0.9, r_m=30, diff=1),
  "golf":         dict(sel=['way["golf"="green"]'], label="Putting green", task="Find a putting green.", gsd=0.6, r_m=10, diff=2),
  "baseball":     dict(sel=['way["leisure"="pitch"]["sport"="baseball"]'], label="Baseball field", task="Find a baseball field.", gsd=0.6, r_m=18, diff=1),
- "soccer":       dict(sel=['way["leisure"="pitch"]["sport"="soccer"]'], label="Soccer field", task="Find a soccer field.", gsd=0.6, r_m=18, diff=1),
- "football":     dict(sel=['way["leisure"="pitch"]["sport"="american_football"]'], label="Football field", task="Find a football field.", gsd=0.6, r_m=18, diff=1),
+ # soccer / football pitches: markings are rarely visible at 0.6 m, so they are one honest "sports field" type
+ "field":        dict(sel=['way["leisure"="pitch"]["sport"="soccer"]', 'way["leisure"="pitch"]["sport"="american_football"]'], label="Sports field", task="Find a sports field.", gsd=0.6, r_m=18, diff=1),
  "track":        dict(sel=['way["leisure"="track"]["sport"="athletics"]'], label="Running track", task="Find a running track.", gsd=0.6, r_m=20, diff=1),
  "cemetery":     dict(sel=['way["landuse"="cemetery"]'], label="Cemetery", task="Find a cemetery.", gsd=0.9, r_m=25, diff=2),
  "wastewater":   dict(sel=['nwr["man_made"="wastewater_plant"]'], label="Water treatment plant", task="Find a water treatment plant.", gsd=0.9, r_m=30, diff=2),
@@ -54,7 +54,6 @@ CATS = {
  "substation":   dict(sel=['way["power"="substation"]'], label="Power substation", task="Find a power substation.", gsd=0.6, r_m=15, diff=3),
  "slipway":      dict(sel=['nwr["leisure"="slipway"]'], label="Boat ramp", task="Find a boat ramp.", gsd=0.6, r_m=15, diff=3),
  "lighthouse":   dict(sel=['nwr["man_made"="lighthouse"]'], label="Lighthouse", task="Find a lighthouse.", gsd=0.6, r_m=15, diff=3),
- "mast":         dict(sel=['node["man_made"="mast"]', 'node["man_made"="tower"]["tower:type"="communication"]'], label="Radio tower", task="Find a radio tower.", gsd=0.6, r_m=15, diff=3),
 }
 
 def cat_of(t):
@@ -64,7 +63,7 @@ def cat_of(t):
     if t.get("leisure") == "marina": return "marina"
     if t.get("golf") == "green": return "golf"
     if t.get("leisure") == "pitch":
-        return {"baseball": "baseball", "soccer": "soccer", "american_football": "football", "tennis": "tennis"}.get(sport)
+        return {"baseball": "baseball", "soccer": "field", "american_football": "field", "tennis": "tennis"}.get(sport)
     if t.get("leisure") == "track" and sport == "athletics": return "track"
     if t.get("leisure") == "swimming_pool" and t.get("name"): return "pool"
     if t.get("leisure") == "slipway": return "slipway"
@@ -75,7 +74,7 @@ def cat_of(t):
     if mm in ("pier", "water_tower", "storage_tank", "lighthouse"): return mm
     if t.get("power") == "substation": return "substation"
     if t.get("plant:source") == "solar" or t.get("generator:source") == "solar": return "solar"
-    if mm == "mast" or (mm == "tower" and t.get("tower:type") == "communication"): return "mast"
+    # masts / towers / chimneys / flagpoles are deliberately excluded: too thin to see at 0.6 m and OSM points drift
     return None
 
 # ---------------------------------------------------------------- analyst notes (templates)
@@ -86,8 +85,7 @@ NOTES = {
  "marina": ["Rows of thin docks with white boats parked side by side.", "A sheltered patch of water lined with boats in neat rows."],
  "golf": ["A small, extra-smooth patch of bright green, usually hugged by white sand traps.", "Find the end of a fairway: a smooth oval of lighter green next to a sand trap."],
  "baseball": ["A green fan shape with a tan dirt diamond at its point.", "Look for the tan dirt infield shaped like a slice of pie."],
- "soccer": ["A bright green rectangle with white lines and a circle in the middle.", "A big green rectangle with a goal box painted at each end."],
- "football": ["A green rectangle striped with white lines every few steps.", "Look for a green field with evenly spaced white stripes across it."],
+ "field": ["A mowed green rectangle, often with tall light poles and a parking lot nearby.", "Look for a big, neat rectangle of grass with sharper edges than any yard."],
  "track": ["A reddish or dark oval loop, like a mini racetrack.", "Look for an oval running loop, often with a field in the middle."],
  "cemetery": ["A tidy lawn covered in tiny, evenly spaced dots: the headstones.", "Look for a grassy area with neat rows of little white specks."],
  "wastewater": ["Big round and square pools of water grouped together behind a fence.", "Several identical circles of water side by side, like giant coins."],
@@ -102,7 +100,6 @@ NOTES = {
  "substation": ["A fenced gravel yard packed with metal equipment where power lines meet.", "Follow the cleared power-line path through the trees to a yard full of gear."],
  "slipway": ["A short paved ramp running straight into the water, usually beside a parking lot.", "Look for a strip of pavement that dips right into the water."],
  "lighthouse": ["A small round tower by the water with a long, thin shadow.", "Look along the shore for a small tower and its long shadow."],
- "mast": ["It's almost invisible from above; look for a very long, thin shadow.", "Find a tiny fenced pad with a needle-thin shadow stretching away."],
 }
 
 # ---------------------------------------------------------------- helpers
@@ -293,8 +290,8 @@ def ref_clause(t):
 
 SPORT_NOTES = {
  "baseball": "A ballpark: a green fan shape with a tan dirt diamond, ringed by seats.",
- "soccer": "A green rectangle with a circle in the middle, ringed by seats.",
- "american_football": "A striped green field inside a running track, with stands along the sides.",
+ "soccer": "A big green rectangle ringed by seats and tall light poles.",
+ "american_football": "A green field inside a running track, with stands along the sides.",
 }
 
 def template_note(cat, t, rng, meta):
@@ -393,16 +390,16 @@ def build_pool(data, hist):
         if t.get("access") in ("private", "military", "no"): continue
         if c == "runway" and (t.get("surface") in ("grass", "dirt", "unpaved") or "water" in t.get("surface", "")): continue
         if c == "storage_tank" and t.get("content") in ("gas", "fuel", "oil", "lpg"): pass  # allowed; refineries excluded by area
-        if c == "mast" and _num(t.get("height")) < 40: continue   # only tall masts cast a findable shadow
         size_m = extent_m(x)
         if c == "pier" and size_m < 60 and not t.get("name"): continue        # skip tiny private docks
         if c == "solar" and t.get("power") != "plant" and size_m < 80: continue  # skip rooftop panels
-        if c in ("bridge", "cemetery") and size_m < 80: continue                 # tiny culverts / family plots
+        if c == "bridge" and size_m < 80: continue                               # tiny culverts
+        if c == "cemetery" and size_m < 150: continue                            # small wooded family plots are invisible
         if c == "roundabout" and size_m < 25: continue                           # mini traffic circles
         if c in ("tennis", "pool") and size_m < 20: continue
         if c == "golf" and not 12 <= size_m <= 80: continue                      # real putting greens only
         # fairness: a target whose outline spans most of the photo makes the round trivial
-        if c not in ("runway", "pier", "mast", "lighthouse", "water_tower") and size_m > 0.7 * SIZE * CATS[c]["gsd"]: continue
+        if c not in ("runway", "pier", "lighthouse", "water_tower") and size_m > 0.7 * SIZE * CATS[c]["gsd"]: continue
         if c in ("storage_tank",) and x["type"] == "way" and size_m < 12: continue
         cen = feature_point(x, c)
         if not cen: continue
@@ -507,10 +504,10 @@ MAX_SITES, MAX_ALTS = 3, 6
 
 # ---------------------------------------------------------------- difficulty model
 # Things that look alike from above; other-type features from the same group in frame count as distractors.
-LOOKALIKE = [{"baseball", "soccer", "football", "track", "stadium", "tennis"}, {"storage_tank", "wastewater", "water_tower", "pool"},
-             {"pier", "slipway", "marina", "bridge"}, {"substation", "solar"}, {"mast", "lighthouse", "water_tower"},
+LOOKALIKE = [{"baseball", "field", "track", "stadium", "tennis"}, {"storage_tank", "wastewater", "water_tower", "pool"},
+             {"pier", "slipway", "marina", "bridge"}, {"substation", "solar"}, {"lighthouse", "water_tower"},
              {"golf", "cemetery"}, {"roundabout", "storage_tank"}]
-NODE_SIZE_M = {"water_tower": 14, "mast": 4, "lighthouse": 8, "storage_tank": 15, "slipway": 10, "marina": 80,
+NODE_SIZE_M = {"water_tower": 14, "lighthouse": 8, "storage_tank": 15, "slipway": 10, "marina": 80,
                "wastewater": 100, "stadium": 120, "solar": 60, "pool": 15}
 TIERS = {"easy": (0, 29), "medium": (30, 49), "hard": (50, 100)}   # calibrated on the Gulf Coast pool
 SLOTS = ["easy", "easy", "medium", "medium", "hard"]
@@ -552,6 +549,50 @@ def visibility(img, ans, size_px):
     n_in = (box(rp)[2] - box(rp)[0]) * (box(rp)[3] - box(rp)[1]); n_out = (box(2 * rp)[2] - box(2 * rp)[0]) * (box(2 * rp)[3] - box(2 * rp)[1])
     ring_mean = (outer.mean[0] * n_out - inner.mean[0] * n_in) / max(1, n_out - n_in)
     return clamp(abs(inner.mean[0] - ring_mean) / 40 + inner.stddev[0] / 60)
+
+def distinctness(img, ans, geom, gtype, size_px, halfwidth_px=0):
+    """How visually distinct the target is from its immediate surroundings (0 = invisible).
+    Polygons: colour difference inside vs. a ring around the outline, or a strong edge along the outline.
+    Lines: brightness on the line vs. beside it.  Points: patch vs. ring."""
+    import numpy as np
+    from PIL import ImageDraw, ImageFilter
+    a = np.asarray(img.convert("RGB"), dtype=np.float32)
+    L = a.mean(axis=2); scene_sd = float(L.std()) or 1.0
+    gimg = img.convert("L").filter(ImageFilter.FIND_EDGES); G = np.asarray(gimg, dtype=np.float32); g_mean = float(G.mean()) or 1.0
+    def mask_poly(pts, grow=0):
+        m = Image.new("L", (SIZE, SIZE), 0); ImageDraw.Draw(m).polygon([tuple(p) for p in pts], fill=255)
+        if grow: m = m.filter(ImageFilter.MaxFilter(2 * int(grow) + 1))
+        return np.asarray(m) > 0
+    if gtype == "polygon" and len(geom) >= 4:
+        inside = mask_poly(geom)
+        if inside.sum() < 30: return 0.0
+        grow = clamp(size_px * 0.25, 4, 20); ring = mask_poly(geom, grow) & ~inside
+        if ring.sum() < 30: return 1.0
+        col = float(np.linalg.norm(a[inside].mean(axis=0) - a[ring].mean(axis=0))) / scene_sd
+        edge_m = Image.new("L", (SIZE, SIZE), 0); ImageDraw.Draw(edge_m).line([tuple(p) for p in geom], fill=255, width=3)
+        on = np.asarray(edge_m) > 0
+        edge = float(G[on].mean()) / g_mean if on.sum() else 0
+        return round(max(col / 0.8, (edge - 1) / 1.5), 2)
+    if gtype == "line" and len(geom) >= 2:
+        hw = max(2.0, halfwidth_px); off = 3 * hw + 3; on_v, side_v = [], []
+        for (x1, y1), (x2, y2) in zip(geom, geom[1:]):
+            L_ = math.hypot(x2 - x1, y2 - y1); n = max(1, int(L_ / 4))
+            if L_ == 0: continue
+            nx, ny = -(y2 - y1) / L_, (x2 - x1) / L_
+            for i in range(n + 1):
+                x = x1 + (x2 - x1) * i / n; y = y1 + (y2 - y1) * i / n
+                for (u, v, lst) in ((x, y, on_v), (x + nx * off, y + ny * off, side_v), (x - nx * off, y - ny * off, side_v)):
+                    if 0 <= u < SIZE and 0 <= v < SIZE: lst.append(L[int(v), int(u)])
+        if len(on_v) < 5 or len(side_v) < 5: return 0.0
+        return round(abs(float(np.mean(on_v)) - float(np.mean(side_v))) / scene_sd / 0.6, 2)
+    x, y = int(ans[0]), int(ans[1]); r = int(clamp(size_px / 2, 5, 40))
+    yy, xx = np.ogrid[:SIZE, :SIZE]; d2 = (xx - x) ** 2 + (yy - y) ** 2
+    inside = d2 <= r * r; ring = (d2 > r * r) & (d2 <= (2.5 * r) ** 2)
+    col = float(np.linalg.norm(a[inside].mean(axis=0) - a[ring].mean(axis=0))) / scene_sd
+    tex = float(L[inside].std()) / scene_sd
+    return round(max(col / 0.8, tex / 0.9), 2)
+
+MIN_DISTINCT = 0.3   # below this the target doesn't stand out from its surroundings (tuned on Oct 19-26)
 
 def combine(parts, vis=None):
     lowvis = 0.5 if vis is None else 1 - vis
@@ -599,6 +640,9 @@ def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None):
     ok, why = quality_ok(img, int(ans[0]), int(ans[1]), c)
     if not ok:
         log(f"    skip {c} {x['type']}/{x['id']}: QC {why}"); return None
+    dist_v = distinctness(img, ans, geom, gtype, parts["size_m"] / gsd, cfg.get("halfwidth_m", 0) / gsd)
+    if dist_v < MIN_DISTINCT:
+        log(f"    skip {c} {x['type']}/{x['id']}: target not visually distinct ({dist_v})"); return None
     vis = visibility(img, ans, parts["size_m"] / gsd)
     dscore = combine(parts, vis)
     if band and not band[0] <= dscore <= band[1]:
@@ -623,19 +667,33 @@ def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None):
     return {"round": idx, "category": c, "label": cfg["label"], "task": cfg["task"], "image": tmp,
             "gsd_m": gsd, "radius_px": r_px, "difficulty": cfg["diff"],
             "dscore": dscore, "tier": next(k for k, (a, b) in TIERS.items() if a <= dscore <= b),
-            "dparts": {**{k: (round(v, 2) if isinstance(v, float) else v) for k, v in parts.items()}, "visibility": round(vis, 2)},
+            "dparts": {**{k: (round(v, 2) if isinstance(v, float) else v) for k, v in parts.items()}, "visibility": round(vis, 2), "distinct": dist_v},
             "imagery_date": (meta or {}).get("acquired"), "secret_plain": secret, "_tie": rng.random()}
 
-def replace_round(spec, data, shapes, hist):
-    """--replace 2026-10-21:3 -> swap one round for another feature of the same type (keeps the rest of the day)."""
+def replace_round(spec, data, shapes, hist, any_type=False):
+    """--replace 2026-10-21:3 -> swap one round for another feature of the same type and tier (keeps the rest of the day).
+       --any: any type not already in that day and under the weekly cap in the surrounding +/-6 days."""
     ds, n = spec.split(":"); n = int(n); date = dt.date.fromisoformat(ds)
-    P = json.load(open(os.path.join(PUZ, f"{ds}.json"))); old = P["rounds"][n - 1]; c = old["category"]
+    P = json.load(open(os.path.join(PUZ, f"{ds}.json"))); old = P["rounds"][n - 1]; c0 = old["category"]
     rng = random.Random(f"replace/{ds}/{n}/{len(hist['used'])}")
     pool, names_used, used = build_pool(data, hist)
-    cand = pool.get(c, [])[:]; rng.shuffle(cand)
-    for x, cen, k in cand[:40]:
-        r = make_round(ds, n, c, CATS[c], x, cen, shapes, rng, data, TIERS.get(old.get("tier")))
+    if any_type:
+        near = {}
+        for i in range(-6, 7):
+            if i == 0: continue
+            for cc in hist["days"].get((date + dt.timedelta(days=i)).isoformat(), []): near[cc] = near.get(cc, 0) + 1
+        today_cats = {r["category"] for j, r in enumerate(P["rounds"]) if j != n - 1}
+        cats = [cc for cc in pool if cc not in today_cats and near.get(cc, 0) < S.get("max_per_week", 2)]
+        rng.shuffle(cats)
+    else:
+        cats = [c0] if c0 in CATS else []
+    tier = old.get("tier"); band = TIERS.get(tier)
+    cand = [(cc, x, cen, k) for cc in cats for (x, cen, k) in rng.sample(pool.get(cc, []), min(25, len(pool.get(cc, []))))]
+    if any_type: cand.sort(key=lambda z: abs((CATS[z[0]]["diff"] - 1) / 2 - {"easy": 0, "medium": .5, "hard": 1}.get(tier, .5)) + rng.random() * .6)
+    for c, x, cen, k in cand:
+        r = make_round(ds, n, c, CATS[c], x, cen, shapes, rng, data, band)
         if not r: continue
+        r["tier"] = tier or r["tier"]
         os.replace(os.path.join(PUZ, r["image"]), os.path.join(PUZ, old["image"]))
         r["image"] = old["image"]; r["round"] = n; r.pop("_tie"); r.pop("_slot", None); sp = r.pop("secret_plain")
         r["secret"] = xor_pack(sp, ds); P["rounds"][n - 1] = r
@@ -643,7 +701,9 @@ def replace_round(spec, data, shapes, hist):
         with open(os.path.join(PUZ, f"{ds}.json"), "w") as f: json.dump(P, f, indent=1)
         with open(os.path.join(PUZ, f"{ds}.js"), "w") as f:
             f.write("(window.AE_PUZZLES=window.AE_PUZZLES||{})[%s]=%s;\n" % (json.dumps(ds), json.dumps(P, separators=(",", ":"))))
-        log(f"[{ds}] round {n} ({c}) replaced with {x['type']}/{x['id']}"); return
+        days = hist["days"].get(ds)
+        if days and len(days) >= n: days[n - 1] = c
+        log(f"[{ds}] round {n} ({c0}) replaced with {c} {x['type']}/{x['id']} difficulty {r['dscore']}"); return
     raise RuntimeError(f"no replacement found for {spec}")
 
 def refresh_day(ds, data):
@@ -651,7 +711,9 @@ def refresh_day(ds, data):
     key = f"analyst-eye:{ds}".encode()
     for r in P["rounds"]:
         sp = json.loads(bytes(b ^ key[i % len(key)] for i, b in enumerate(base64.b64decode(r["secret"]))))
-        c = r["category"]; cfg = CATS[c]; gsd = r["gsd_m"]
+        c = {"soccer": "field", "football": "field"}.get(r["category"], r["category"]); r["category"] = c
+        if c not in CATS: log(f"[{ds}] round {r['round']}: retired type {c}, replace it"); continue
+        cfg = CATS[c]; gsd = r["gsd_m"]
         if "chip_merc" in sp: xmin, ymin, xmax, ymax = sp["chip_merc"]
         else:   # rebuild the footprint from the answer pixel (lat/lon stored to 1e-5 deg, < 1 px error)
             k = 1 / math.cos(math.radians(sp["lat"])); span = SIZE * gsd * k; X, Y = merc(sp["lat"], sp["lon"])
@@ -661,6 +723,7 @@ def refresh_day(ds, data):
             X, Y = merc(la, lo); return [round((X - xmin) / (xmax - xmin) * SIZE, 1), round((ymax - Y) / (ymax - ymin) * SIZE, 1)]
         tp, tid = sp["osm"].rsplit("/", 2)[-2:]
         sp["alts"] = alternates(data, c, {"type": tp, "id": int(tid)}, px)
+        if c == "field": sp["note"] = template_note(c, {}, random.Random(f"{ds}/{r['round']}"), None)
         r["task"] = cfg["task"]; r["label"] = cfg["label"]; r["secret"] = xor_pack(sp, ds)
         if sp["alts"]: log(f"[{ds}] round {r['round']} {c}: {len(sp['alts'])} more in frame")
     with open(os.path.join(PUZ, f"{ds}.json"), "w") as f: json.dump(P, f, indent=1)
@@ -677,13 +740,17 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--date"); ap.add_argument("--start"); ap.add_argument("--days", type=int)
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--any", action="store_true", help="with --replace: allow any type (weekly cap respected)")
     ap.add_argument("--replace", help="DATE:N  swap one round (same type), e.g. 2026-10-21:3. Add the bad id to blocklist osm_ids first.")
     ap.add_argument("--refresh", nargs="+", metavar="DATE", help="recompute accepted same-type features + task text for existing days")
     a = ap.parse_args()
     if a.refresh:
-        data = fetch_osm(); [refresh_day(d, data) for d in a.refresh]; return
+        data = fetch_osm(); [refresh_day(d, data) for d in a.refresh]
+        hist = load_history()
+        for d, cl in hist["days"].items(): hist["days"][d] = [{"soccer": "field", "football": "field"}.get(c, c) for c in cl]
+        save_history(hist); return
     if a.replace:
-        data = fetch_osm(); hist = load_history(); replace_round(a.replace, data, bad_shapes(data["bad"]), hist); save_history(hist); return
+        data = fetch_osm(); hist = load_history(); replace_round(a.replace, data, bad_shapes(data["bad"]), hist, a.any); save_history(hist); return
     if a.date: dates = [dt.date.fromisoformat(a.date)]
     else:
         start = dt.date.fromisoformat(a.start) if a.start else max(central_today(), dt.date.fromisoformat(S["launch_date"]))

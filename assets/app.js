@@ -282,8 +282,8 @@ function preload() { G.P.rounds.forEach(r => { const i = new Image(); i.src = "p
 
 // u = photo units per screen pixel, so the pin stays the same on-screen size at any zoom
 const unitPx = k => { const sc = document.getElementById("scope"); return G.P.size / ((sc ? sc.clientWidth : G.P.size) * k); };
-function crosshair([x, y], col, k = 1) {
-  const u = unitPx(k), r = 10 * u, a = 20 * u, b = 6 * u;
+function crosshair([x, y], col, k = 1, u0) {
+  const u = u0 || unitPx(k), r = 10 * u, a = 20 * u, b = 6 * u;
   const d = `M${x - a} ${y}H${x - b}M${x + b} ${y}H${x + a}M${x} ${y - a}V${y - b}M${x} ${y + b}V${y + a}`;
   return `<g fill="none" stroke-linecap="round"><circle cx="${x}" cy="${y}" r="${r}" stroke="rgba(0,0,0,.6)" stroke-width="${4.5 * u}"/><path d="${d}" stroke="rgba(0,0,0,.6)" stroke-width="${4.5 * u}"/>` +
     `<circle cx="${x}" cy="${y}" r="${r}" stroke="${col}" stroke-width="${2.2 * u}"/><path d="${d}" stroke="${col}" stroke-width="${2.2 * u}"/><circle cx="${x}" cy="${y}" r="${1.6 * u}" fill="${col}"/></g>`;
@@ -334,8 +334,8 @@ function round() {
   };
 }
 
-function answerSVG(r, res, k) {
-  const s = r.s, u = unitPx(k), T = targets(s); let svg = "";
+function answerSVG(r, res, k, u0) {
+  const s = r.s, u = u0 || unitPx(k), T = targets(s); let svg = "";
   const near = T[res && res.ti != null ? res.ti : (res ? nearest(res.click, s).i : 0)] || s;
   T.forEach(t => {
     const g = t.geom || [];
@@ -348,7 +348,7 @@ function answerSVG(r, res, k) {
   });
   if (res) svg += `<line x1="${res.click[0]}" y1="${res.click[1]}" x2="${near.answer[0]}" y2="${near.answer[1]}" stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke" stroke-dasharray="6 6"/>`;
   svg += `<circle cx="${near.answer[0]}" cy="${near.answer[1]}" r="${Math.max(12 * u, r.radius_px)}" fill="none" stroke="#ffb02e" stroke-width="${3 * u}"/><circle cx="${near.answer[0]}" cy="${near.answer[1]}" r="${3 * u}" fill="#ffb02e"/>`;
-  if (res) svg += crosshair(res.click, "#fff", k);
+  if (res) svg += crosshair(res.click, "#fff", k, u0);
   return svg;
 }
 
@@ -400,33 +400,43 @@ function archiveHTML() {
       return `<li><a href="?date=${d}" target="_self">#${dayNum(d)} · ${esc(nice(d))}${sc != null ? ` · ${sc}` : ""}</a></li>`; }).join("")}</ul>`;
 }
 
+const TIER_SHORT = { easy: "Easy", medium: "Med", hard: "Hard" };
 function end() {
   G.i = G.P.rounds.length;
-  const total = G.results.reduce((a, r) => a + r.score, 0), text = shareText();
+  const N = G.P.rounds.length, total = G.results.reduce((a, r) => a + r.score, 0), text = shareText();
   const st = store.get("ae:stats") || { played: 0, streak: 0, maxStreak: 0, best: 0 };
   const intent = "https://x.com/intent/tweet?text=" + encodeURIComponent(text);
-  const r0 = G.P.rounds[G.P.rounds.length - 1];
-  h(`${hud()}<div class="play">
-     ${scopeHTML(r0)}
-     <div class="side">
-       <div class="kicker">${G.tier ? `Practice · ${TIER_NAME[G.tier]}` : `${G.practice ? "Practice" : "Today's score"} · ${esc(nice(G.ds))}`}</div>
-       <div><span class="big">${total}</span><span class="dim"> / ${G.P.rounds.length * 100}</span></div>
-       <div class="grid" aria-label="round results">${G.results.map(r => sq(r.score)).join("")}</div>
-       <div class="row"><a class="btn x grow" id="sharex" href="${esc(intent)}" target="_blank" rel="noopener">𝕏 Share on X</a>
-         <button class="btn ghost" id="copy">Copy</button></div>
-       ${EMBED ? "" : `<pre class="share" id="sharetext">${esc(text)}</pre>`}
-       <div class="stats"><div><b>${st.played}</b><span>Played</span></div><div><b>${st.streak}</b><span>Streak</span></div><div><b>${st.best}</b><span>Best</span></div></div>
-       <div class="dim small">${G.practice ? `Practice doesn't count toward stats. <a href="?" target="_self">Back to today</a>` : `New puzzle in ${untilMidnight()}.`}</div>
-       ${EMBED ? `<a class="dim small" href="${esc(SITE)}">Past puzzles on the full site ↗</a>` : ""}
-     </div></div>
-     ${EMBED ? "" : `<div class="panel"><b>Your rounds</b><ol class="rounds">${G.P.rounds.map((r, i) => { const x = G.results[i];
-        return `<li>${sq(x.score)} ${esc(r.label)} <b>${x.score}</b></li>`; }).join("")}</ol>${archiveHTML()}</div>`}`);
+  const title = G.tier ? `Practice · ${TIER_NAME[G.tier]}` : `Analyst Eye #${G.P.number || dayNum(G.ds)} · ${nice(G.ds)}${G.practice ? " · practice" : ""}`;
+  const rows = G.P.rounds.map((r, i) => { const x = G.results[i] || { score: 0 };
+    return `<li class="rrow"><button type="button" class="rbtn" aria-expanded="false" data-i="${i}">
+      <span class="sqr ${cls(x.score)}" aria-hidden="true"></span><span class="rname">${esc(r.label)}</span>
+      <span class="rtier t-${esc(r.tier || "")}">${TIER_SHORT[r.tier] || ""}</span><span class="rpts">${x.score}</span><span class="chev" aria-hidden="true">›</span></button>
+      <div class="rdetail" hidden></div></li>`; }).join("");
+  const stats = G.practice ? `Practice doesn't count toward stats · <a href="?" target="_self">Back to today</a>`
+    : `Played ${st.played} · Streak ${st.streak} · Best ${st.best} · Next puzzle in ${untilMidnight()}`;
+  h(`<div class="hud"><span class="brand">Analyst Eye</span><button class="iconbtn" id="help" aria-label="How to play">?</button></div>
+    <section class="results" aria-label="Results">
+      <div class="rhead"><div class="kicker">${esc(title)}</div><div class="total"><b>${total}</b><span>/${N * 100}</span></div></div>
+      <ol class="rtable">${rows}</ol>
+      <div class="row"><a class="btn x grow" id="sharex" href="${esc(intent)}" target="_blank" rel="noopener">𝕏 Share on X</a>
+        <button type="button" class="btn ghost iconcopy" id="copy" aria-label="Copy result" title="Copy result"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button></div>
+      <p class="quiet" id="stats">${stats}</p>
+      ${EMBED ? `<p class="quiet"><a href="${esc(SITE)}">Past puzzles ↗</a></p>` : ""}
+    </section>
+    ${EMBED ? "" : `<div class="results more">${archiveHTML()}</div>`}`);
   bindHelp();
   document.getElementById("copy").onclick = () => copy(text);
-  const ov = document.getElementById("ov"), res = G.results[G.results.length - 1];
-  const Z = setupScope(r0, () => {}, () => true);
-  Z.onChange = kk => { ov.innerHTML = answerSVG(r0, res, kk); }; Z.reset(false);
-  document.getElementById("scope").classList.add("locked");
+  app.querySelectorAll(".rbtn").forEach(btn => btn.onclick = () => {
+    const open = btn.getAttribute("aria-expanded") === "true";
+    app.querySelectorAll(".rbtn").forEach(b => { b.setAttribute("aria-expanded", "false"); b.nextElementSibling.hidden = true; });
+    if (open) return;
+    const i = +btn.dataset.i, r = G.P.rounds[i], res = G.results[i], det = btn.nextElementSibling;
+    det.innerHTML = `<div class="rthumb"><img src="puzzles/${esc(r.image)}" alt="Answer for round ${i + 1}"><svg viewBox="0 0 ${G.P.size} ${G.P.size}" preserveAspectRatio="none"></svg></div>
+      <p>${esc(r.s.note)}${(r.s.alts || []).length ? ` <span class="dim">(${targets(r.s).length} in the photo; any counted.)</span>` : ""}</p>`;
+    det.hidden = false; btn.setAttribute("aria-expanded", "true");
+    const th = det.querySelector(".rthumb");
+    det.querySelector("svg").innerHTML = answerSVG(r, res, 1, G.P.size / (th.clientWidth || 150));
+  });
 }
 
 function copy(text) {

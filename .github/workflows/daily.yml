@@ -34,7 +34,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: pip install requests pillow
+      - run: pip install requests pillow numpy
       - name: Generate puzzles
         env:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}   # optional; leave unset to use template notes
