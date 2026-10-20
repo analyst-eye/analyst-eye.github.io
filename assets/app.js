@@ -58,7 +58,7 @@ function untilMidnight() {
 
 /* ---------- helpers ---------- */
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const h = (html) => { app.innerHTML = html; return app; };
+const h = (html) => { app.className = "app"; app.innerHTML = html; return app; };
 const toast = (msg) => { const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 1600); };
 function decode(secret, ds) {
   const raw = atob(secret), key = new TextEncoder().encode("analyst-eye:" + ds);
@@ -118,6 +118,7 @@ function score(p, s, R, t, hint) {
 const sq = s => s >= 80 ? "🟦" : s >= 40 ? "🟧" : "⬛";
 const cls = s => s >= 80 ? "good" : s >= 40 ? "ok" : "miss";
 const TIER_NAME = { easy: "Easy", medium: "Medium", hard: "Hard" };
+const TIER_SHORT = { easy: "Easy", medium: "Med", hard: "Hard" };
 const isTier = t => Object.prototype.hasOwnProperty.call(TIER_NAME, t);
 const verdict = s => s >= 90 ? "Bullseye!" : s >= 70 ? "Nice!" : s >= 40 ? "Close!" : s > 0 ? "Not quite" : "Missed it";
 
@@ -294,17 +295,35 @@ function setupScope(r, onTap, getRevealed) {
 }
 
 function intro() {
-  const r = G.P.rounds[0];
-  h(`${hud()}<div class="play">
+  const r = G.P.rounds[0], N = G.P.rounds.length;
+  const kicker = G.tier ? `Practice · ${TIER_NAME[G.tier]} rounds from past days` : `Puzzle #${esc(G.P.number || dayNum(G.ds))} · ${esc(nice(G.ds))}${G.practice ? " · practice" : ""}`;
+  // today's lineup: difficulty only, never the targets
+  const lineup = G.P.rounds.map(x => isTier(x.tier) ? `<li class="t-${x.tier}"><i></i>${TIER_SHORT[x.tier]}</li>` : "<li><i></i></li>").join("");
+  let extras = "";
+  if (!EMBED && !G.practice) {
+    const st = loadStats(), hasPast = avail.some(d => d < TODAY);
+    const stats = st.played > 0
+      ? `<div class="istats"><div><b>${st.streak}</b><span>Streak</span></div><div><b>${st.best}</b><span>Best</span></div><div><b>${st.played}</b><span>Played</span></div></div>`
+      : `<p class="istart">Start your streak today</p>`;
+    extras = `<div class="imeta">${stats}<p class="inext"><span id="nextin">Next puzzle in ${untilMidnight()}</span>${hasPast ? ` · <a href="${esc(practiceLink("easy"))}" target="_self">Practice</a>` : ""}</p></div>`;
+  }
+  h(`${hud()}<div class="play intro-play">
      ${scopeHTML(r, `<div class="cover"><button class="btn primary big-btn" id="go">▶ Play</button></div>`)}
-     <div class="side">
-       <div class="kicker">${G.tier ? `Practice · ${TIER_NAME[G.tier]} rounds from past days` : `Puzzle #${esc(G.P.number || dayNum(G.ds))} · ${esc(nice(G.ds))}${G.practice ? " · practice" : ""}`}</div>
-       <div class="task">${G.P.rounds.length} things to find from the sky.</div>
-       <p class="dim small">${G.practice ? "Practice games don't change your stats." : "Easy first, hardest last. One set for everyone, new every midnight (US Central)."}</p>
+     <div class="side intro">
+       <div class="ihead">
+         <div class="kicker">${kicker}</div>
+         <h1 class="ititle">${N} Things to Spy from the Sky</h1>
+         <p class="isub">${G.practice ? "Practice games don't change your stats." : "Easy first, hardest last. New puzzle every midnight (US Central)."}</p>
+       </div>
+       ${G.tier ? "" : `<ol class="lineup" aria-label="Rounds by difficulty">${lineup}</ol>`}
        ${tierPicker()}
+       ${extras}
        ${EMBED ? `<a class="dim small" href="${esc(SITE)}" target="_blank" rel="noopener">Open full site ↗</a>` : ""}
      </div></div>`);
+  app.classList.add("is-intro");
   bindHelp();
+  const nx = document.getElementById("nextin");
+  if (nx) { const iv = setInterval(() => { if (!document.body.contains(nx)) return clearInterval(iv); nx.textContent = "Next puzzle in " + untilMidnight(); }, 30000); }
   document.getElementById("go").onclick = () => { preload(); round(); };
   howto(false);
 }
@@ -430,7 +449,6 @@ function archiveHTML() {
       return `<li><a href="?date=${d}" target="_self">#${dayNum(d)} · ${esc(nice(d))}${sc != null ? ` · ${sc}` : ""}</a></li>`; }).join("")}</ul>`;
 }
 
-const TIER_SHORT = { easy: "Easy", medium: "Med", hard: "Hard" };
 function end() {
   G.i = G.P.rounds.length;
   const N = G.P.rounds.length, total = G.results.reduce((a, r) => a + r.score, 0), text = shareText();

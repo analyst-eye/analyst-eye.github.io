@@ -158,3 +158,30 @@ body[data-mode=embed] .results .btn{min-height:38px;padding:8px 12px}
 
 .foot .foot-line { display: block; }
 .foot .foot-line + .foot-line { margin-top: 2px; }
+/* ---------- v5: start screen ---------- */
+.ititle{margin:0;font:700 22px/1.2 var(--sans);letter-spacing:-.01em;color:var(--ink);text-wrap:balance}
+.isub{margin:0;font-size:13px;line-height:1.5;color:var(--dim);text-wrap:balance}
+.intro .kicker{font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);margin:0}
+.ihead{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.intro{text-align:center;align-items:center}
+.lineup{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:100%;max-width:290px}
+.lineup li{display:flex;flex-direction:column;align-items:center;gap:6px;font:500 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.lineup i{display:block;width:100%;height:4px;border-radius:2px;background:var(--line)}
+.lineup .t-easy i{background:#6ee7b7}.lineup .t-medium i{background:var(--amber)}.lineup .t-hard i{background:#fb7185}
+.lineup .t-easy,.lineup .t-medium,.lineup .t-hard{border:0}
+.istats{display:grid;grid-template-columns:repeat(3,1fr);width:100%;max-width:290px;border:1px solid var(--line);border-radius:12px;background:rgba(17,27,36,.7);padding:10px 0}
+.istats div+div{border-left:1px solid var(--line)}
+.istats b{display:block;font:700 20px/1.2 var(--mono);color:var(--ink)}
+.istats span{font:500 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.istart{margin:0;font:500 13px var(--sans);color:var(--amber)}
+.inext{margin:0;font:12px var(--mono);color:var(--dim)}
+.inext a{color:var(--cyan);text-decoration:none}
+.inext a:hover{text-decoration:underline}
+body[data-mode=full] .app.is-intro{display:flex;flex-direction:column}
+body[data-mode=full] .intro-play{flex:1;display:flex;flex-direction:column}
+body[data-mode=full] .intro{flex:1;display:flex;flex-direction:column;justify-content:center;gap:22px;padding:22px 8px 18px}
+body[data-mode=embed] .side.intro{justify-content:center;gap:14px;padding:0 6px}
+body[data-mode=embed] .ititle{font-size:20px}
+body[data-mode=embed] .lineup{max-width:250px}
+@media (max-width:559px){ body[data-mode=embed] .side.intro{padding:10px 6px;gap:10px} }
+.imeta{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
