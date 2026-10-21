@@ -236,6 +236,14 @@ with sync_playwright() as p:
     page.goto(f"{BASE}/index.html?today=2026-10-20"); page.wait_for_timeout(600)
     r20 = page.evaluate("() => { const P = AE_PUZZLES['2026-10-20']; if (!P) return null; const r = P.rounds[0], s = AE_DEBUG.decode(r.secret, '2026-10-20'); return [P.rounds.length, AE_DEBUG.score(s.answer, s, r.radius_px, 3, false).score, (s.decoys || []).length]; }")
     check(bool(r20) and r20[0] == 5 and r20[1] >= 90 and r20[2] == 0, f"Oct 20 old-format puzzle loads and scores: {r20}")
+    # Oct 21 fix: footprint scoring. Marina = multipolygon outline + its docks; "sports field" also accepts the baseball diamonds
+    page.goto(f"{BASE}/index.html?today=2026-10-21"); page.wait_for_timeout(600)
+    fp = page.evaluate("""() => { const P = AE_PUZZLES['2026-10-21']; if (!P) return null; const dc = i => AE_DEBUG.decode(P.rounds[i].secret, '2026-10-21');
+        const m = dc(0), f = dc(1), R = i => P.rounds[i].radius_px, sc = (p, s, i) => AE_DEBUG.score(p, s, R(i), 3, false).score;
+        const dock = m.parts.find(q => q.gtype === 'line'), ball = (f.alts || []).find(a => a.kind === 'baseball');
+        return [m.gtype, m.geom.length, sc(dock.geom[0], m, 0), sc(m.answer, m, 0), ball ? sc(ball.answer, f, 1) : -1, sc([700, 700], f, 1)]; }""")
+    check(bool(fp) and fp[0] == "polygon" and fp[1] > 3 and fp[2] >= 90 and fp[3] >= 90 and fp[4] >= 90 and fp[5] == 0,
+          f"Oct 21 footprint scoring (marina polygon + docks, baseball diamond counts as sports field, empty spot misses): {fp}")
     ctx.close()
     # ---------- relaunch: Oct 20 is Puzzle #1 (start, embed, result title, share text); old Oct 19 saves don't break stats ----------
     L = json.load(open(os.path.join(ROOT, "puzzles/index.json")))

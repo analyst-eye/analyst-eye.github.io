@@ -18,7 +18,7 @@
    "runway",
    "stadium",
    "roundabout",
-   "wastewater",
+   "pool",
    "tennis"
   ],
   "2026-10-23": [
@@ -115,6 +115,11 @@
    "date": "2026-10-27",
    "key": null
   },
+  "way/1105425732": {
+   "cat": "marina",
+   "date": "2026-10-28",
+   "key": null
+  },
   "way/1105441669": {
    "cat": "marina",
    "date": "2026-10-23",
@@ -185,6 +190,11 @@
    "date": "2026-10-20",
    "key": "marina:river yacht basin marina"
   },
+  "way/1334854646": {
+   "cat": "roundabout",
+   "date": "2026-10-22",
+   "key": null
+  },
   "way/139587269": {
    "cat": "water_tower",
    "date": "2026-10-20",
@@ -209,6 +219,11 @@
    "cat": "storage_tank",
    "date": "2026-10-26",
    "key": null
+  },
+  "way/1489357817": {
+   "cat": "pool",
+   "date": "2026-10-22",
+   "key": "pool:uno aquatic center"
   },
   "way/1514264545": {
    "cat": "roundabout",

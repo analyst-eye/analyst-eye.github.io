@@ -68,6 +68,9 @@ DCLS = {
  "softball":   dict(sel='way["leisure"="pitch"]["sport"="softball"]', one="softball field", many="softball fields", r_m=14, size=(45, 100)),
  "tee":        dict(sel='way["golf"="tee"]', one="tee box", many="tee boxes", r_m=6, size=(10, 70)),
  "taxiway":    dict(sel='way["aeroway"="taxiway"]', one="taxiway", many="taxiways", r_m=12, halfwidth_m=9, size=(120, 6000)),
+ # never a decoy: other big pitches (rugby, lacrosse, multi-use, untagged) that count as a "sports field"
+ "pitch_other": dict(sel='way["leisure"="pitch"][!"sport"]', sel2='way["leisure"="pitch"]["sport"~"^(rugby|rugby_union|rugby_league|lacrosse|multi|field_hockey|cricket|kickball)$"]',
+                     one="sports field", many="sports fields", r_m=16, size=(50, 250)),
  # these three come from the main candidate set
  "soccer":       dict(one="soccer field", many="soccer fields", r_m=16, size=(80, 170)),
  "storage_tank": dict(one="storage tank", many="storage tanks", r_m=8, size=(6, 50)),
@@ -87,6 +90,7 @@ MAX_DECOYS = 4
 def dclass_of(t):
     sport = t.get("sport"); lp = t.get("leisure") == "pitch"
     if lp and sport in ("basketball", "pickleball", "softball", "soccer"): return sport
+    if lp and (not sport or sport in ("rugby", "rugby_union", "rugby_league", "lacrosse", "multi", "field_hockey", "cricket", "kickball")): return "pitch_other"
     if t.get("golf") == "tee": return "tee"
     if t.get("aeroway") == "taxiway": return "taxiway"
     if t.get("man_made") == "storage_tank": return "storage_tank"
@@ -196,13 +200,17 @@ def overpass(q):
     raise RuntimeError("all Overpass mirrors failed")
 
 # ---------------------------------------------------------------- data fetch (cached ~20h)
-def fetch_osm():
+def fetch_osm(stale_ok=False):
     os.makedirs(CACHE, exist_ok=True)
     cpath = os.path.join(CACHE, "overpass.json")
-    if os.path.exists(cpath) and time.time() - os.path.getmtime(cpath) < 20 * 3600:
+    if os.path.exists(cpath) and (stale_ok or time.time() - os.path.getmtime(cpath) < 20 * 3600):
         data = json.load(open(cpath))
         if "dcands" not in data:   # cache from before decoys existed
             data["dcands"] = fetch_decoys(); json.dump(data, open(cpath, "w"))
+        if not data.get("pitch_other"):   # cache from before other pitches counted as sports fields (best effort)
+            extra = fetch_other_pitches()
+            if extra is not None:
+                data["dcands"] += extra; data["pitch_other"] = True; json.dump(data, open(cpath, "w"))
         return data
     s, w, n, e = S["region"]["bbox"]
     slices = S.get("query_slices", 3); step = (e - w) / slices
@@ -234,7 +242,7 @@ def fetch_osm():
         if sensitive: bad.append(x)
         elif cat_of(t): cands.append(x)
     data = {"fetched": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "cands": cands, "bad": bad,
-            "dcands": fetch_decoys()}
+            "dcands": fetch_decoys(), "pitch_other": True}
     json.dump(data, open(cpath, "w"))
     log(f"  OSM: {len(cands)} candidates, {len(bad)} sensitive features, {len(data['dcands'])} decoy features")
     return data
@@ -244,7 +252,7 @@ def fetch_decoys():
     means no decoys today, never a failed puzzle."""
     s, w, n, e = S["region"]["bbox"]
     slices = S.get("query_slices", 3); step = (e - w) / slices; out, seen = [], set()
-    sels = [c["sel"] for c in DCLS.values() if c.get("sel")]
+    sels = [c[k] for c in DCLS.values() for k in ("sel", "sel2") if c.get(k)]
     try:
         for i in range(slices):
             bb = f"({s},{w + i * step:.4f},{n},{w + (i + 1) * step:.4f})"
@@ -255,6 +263,15 @@ def fetch_decoys():
             time.sleep(3)
     except Exception as ex:
         log(f"  decoy fetch failed ({ex}); continuing without decoys"); return []
+    return out
+
+def fetch_other_pitches():
+    s, w, n, e = S["region"]["bbox"]; c = DCLS["pitch_other"]; out = []
+    try:
+        q = f"[out:json][timeout:180];\n( {c['sel']}({s},{w},{n},{e}); {c['sel2']}({s},{w},{n},{e}); );\nout tags center geom;"
+        out = [x for x in overpass(q) if dclass_of(x.get("tags", {})) == "pitch_other"]
+    except Exception as ex:
+        log(f"  other-pitch fetch failed ({ex})"); return None
     return out
 
 def bad_shapes(bad):
@@ -393,22 +410,107 @@ def extent_m(x):
     proj = local_m(b["minlat"], b["minlon"]); X, Y = proj(b["maxlat"], b["maxlon"])
     return math.hypot(X, Y)
 
+# ---------------------------------------------------------------- feature geometry
+# Overpass "out tags center geom" gives ways their node list but gives multipolygon RELATIONS no geometry at all
+# (only a bounding box). Before Oct 21 such targets (e.g. Bear Point Harbor marina) were scored as a single point at
+# the bbox centre, which can sit on land next to the feature. Relations now get their real outer rings from the
+# OSM API (cached), and every area target is scored on its footprint.
+AREA_CATS = {"marina", "stadium", "wastewater", "solar", "cemetery"}   # a bare node can't say where these are
+OSM_API = "https://api.openstreetmap.org/api/0.6"
+
+def stitch(segs):
+    """Join open way segments (lists of node ids) into closed rings."""
+    segs = [list(s) for s in segs if len(s) >= 2]; rings = []
+    while segs:
+        cur = segs.pop(0); grew = True
+        while cur[0] != cur[-1] and grew:
+            grew = False
+            for i, sg in enumerate(segs):
+                if sg[0] == cur[-1]: cur += sg[1:]
+                elif sg[-1] == cur[-1]: cur += sg[::-1][1:]
+                elif sg[-1] == cur[0]: cur = sg + cur[1:]
+                elif sg[0] == cur[0]: cur = sg[::-1] + cur[1:]
+                else: continue
+                segs.pop(i); grew = True; break
+        if len(cur) > 3 and cur[0] == cur[-1]: rings.append(cur)
+    return rings
+
+def osm_full(tp, oid):
+    """Element + its nodes from the OSM API (cached on disk). -> (element, {node id: (lat, lon)}, {way id: element})"""
+    os.makedirs(os.path.join(CACHE, "osm"), exist_ok=True)
+    cp = os.path.join(CACHE, "osm", f"{tp}-{oid}.json")
+    if os.path.exists(cp): j = json.load(open(cp))
+    else:
+        j = get(f"{OSM_API}/{tp}/{oid}/full.json", timeout=60).json(); json.dump(j, open(cp, "w")); time.sleep(0.3)
+    nodes = {e["id"]: (e["lat"], e["lon"]) for e in j["elements"] if e["type"] == "node"}
+    ways = {e["id"]: e for e in j["elements"] if e["type"] == "way"}
+    me = next(e for e in j["elements"] if e["type"] == tp and e["id"] == int(oid))
+    return me, nodes, ways
+
+def relation_rings(rid):
+    """Outer rings [(lat, lon), ...] of a multipolygon relation, largest first. [] if unavailable."""
+    try:
+        rel, nodes, ways = osm_full("relation", rid)
+    except Exception as e:
+        log(f"  relation {rid} geometry unavailable: {e}"); return []
+    segs = [ways[m["ref"]]["nodes"] for m in rel.get("members", [])
+            if m["type"] == "way" and m.get("role") in ("outer", "") and m["ref"] in ways]
+    rings = [[nodes[n] for n in r if n in nodes] for r in stitch(segs)]
+    rings = [r for r in rings if len(r) > 3]
+    return sorted(rings, key=lambda r: -abs(ring_area(r)))
+
+def ring_area(r):
+    proj = local_m(*r[0]); q = [proj(*p) for p in r]
+    return sum(x1 * y2 - x2 * y1 for (x1, y1), (x2, y2) in zip(q, q[1:])) / 2
+
+def rings_of(x):
+    """-> list of [(lat, lon), ...] (closed rings or open lines). Ways: their geometry. Relations: outer rings."""
+    if "_rings" in x: return x["_rings"]
+    if x.get("type") == "way" and x.get("geometry"):
+        out = [[(p["lat"], p["lon"]) for p in x["geometry"] if p]]
+    elif x.get("type") == "relation":
+        out = relation_rings(x["id"])
+    else: out = []
+    x["_rings"] = out
+    return out
+
+def is_area(ring, c):
+    return len(ring) > 3 and ring[0] == ring[-1] and c not in ("runway", "pier")
+
+def interior_point(g):
+    """A point well inside polygon g [(lat, lon)]: the centroid if it sits comfortably inside, else the grid point
+    farthest from the outline (concave shapes like L-shaped basins or harbours)."""
+    proj = local_m(*g[0]); r = [proj(*p) for p in g]
+    def edge_d(p): return min(seg_dist(p, a, b) for a, b in zip(r, r[1:]))
+    xs, ys = [p[0] for p in r], [p[1] for p in r]; span = min(max(xs) - min(xs), max(ys) - min(ys))
+    best, bd = None, -1.0
+    A = cx = cy = 0.0
+    for (x1, y1), (x2, y2) in zip(r, r[1:]):
+        k = x1 * y2 - x2 * y1; A += k; cx += (x1 + x2) * k; cy += (y1 + y2) * k
+    if abs(A) > 1e-6:
+        cx /= 3 * A; cy /= 3 * A
+        if point_in_ring((cx, cy), r):
+            best, bd = (cx, cy), edge_d((cx, cy))
+            if bd >= 0.2 * span: return g[0][0] + cy / 110540, g[0][1] + cx / (111320 * math.cos(math.radians(g[0][0])))
+    n = 14
+    for i in range(1, n):
+        for j in range(1, n):
+            p = (min(xs) + (max(xs) - min(xs)) * i / n, min(ys) + (max(ys) - min(ys)) * j / n)
+            if point_in_ring(p, r):
+                d = edge_d(p)
+                if d > bd: best, bd = p, d
+    if best is None: return None
+    return g[0][0] + best[1] / 110540, g[0][1] + best[0] / (111320 * math.cos(math.radians(g[0][0])))
+
 def feature_point(x, c):
-    """Representative answer point: node coords, polygon centroid (if inside), else mid-length of the line."""
+    """Representative answer point: node coords, a point well inside the (largest) polygon, else mid-length of the line."""
     if "lat" in x: return {"lat": x["lat"], "lon": x["lon"]}
-    g = [(p["lat"], p["lon"]) for p in x.get("geometry") or [] if p]
+    rings = rings_of(x)
+    g = rings[0] if rings else []
     if len(g) >= 2:
-        closed = len(g) > 3 and g[0] == g[-1]
-        if closed and c not in ("runway", "pier"):
-            proj = local_m(*g[0]); r = [proj(*p) for p in g]
-            A = cx = cy = 0.0
-            for (x1, y1), (x2, y2) in zip(r, r[1:]):
-                k = x1 * y2 - x2 * y1; A += k; cx += (x1 + x2) * k; cy += (y1 + y2) * k
-            if abs(A) > 1e-6:
-                cx /= 3 * A; cy /= 3 * A
-                if point_in_ring((cx, cy), r):
-                    lat = g[0][0] + cy / 110540; lon = g[0][1] + cx / (111320 * math.cos(math.radians(g[0][0])))
-                    return {"lat": lat, "lon": lon}
+        if is_area(g, c):
+            ip = interior_point(g)
+            if ip: return {"lat": ip[0], "lon": ip[1]}
         proj = local_m(*g[0]); r = [proj(*p) for p in g]
         L = [math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(r, r[1:])]; half = sum(L) / 2
         for (a, b), l, (ga, gb) in zip(zip(r, r[1:]), L, zip(g, g[1:])):
@@ -455,13 +557,16 @@ def build_pool(data, hist):
         if c == "pier" and size_m < 60 and not t.get("name"): continue        # skip tiny private docks
         if c == "solar" and t.get("power") != "plant" and size_m < 80: continue  # skip rooftop panels
         if c == "bridge" and size_m < 80: continue                               # tiny culverts
-        if c == "cemetery" and size_m < 150: continue                            # small wooded family plots are invisible
+        if c == "cemetery" and size_m < 150: continue
+        if c == "wastewater" and size_m < 60: continue                           # a single tagged tank, not the plant                            # small wooded family plots are invisible
         if c == "roundabout" and size_m < 25: continue                           # mini traffic circles
         if c in ("tennis", "pool") and size_m < 20: continue
         if c == "golf" and not 12 <= size_m <= 80: continue                      # real putting greens only
         # fairness: a target whose outline spans most of the photo makes the round trivial
         if c not in ("runway", "pier", "lighthouse", "water_tower") and size_m > 0.7 * SIZE * CATS[c]["gsd"]: continue
         if c in ("storage_tank",) and x["type"] == "way" and size_m < 12: continue
+        if c in AREA_CATS and x["type"] == "node": continue                        # a point can't mark a footprint
+        if x["type"] == "relation" and not rings_of(x): continue                 # no usable outline: can't score fairly
         cen = feature_point(x, c)
         if not cen: continue
         k = f"{c}:{t.get('name','').lower()}" if t.get("name") else None
@@ -593,6 +698,54 @@ def decoy_near(data, c, x, cen):
     out.sort(key=lambda z: z[0])
     return [z[1:] for z in out]
 
+def target_shapes(x, c, px, gsd, data=None):
+    """Answer geometry in photo pixels -> (geom, gtype, parts). geom: the main outline (largest outer ring / the line).
+    parts: other pieces that count too: further outer rings of a multipolygon and, for marinas, the docks (OSM piers)
+    touching the marina outline, since the boat slips are the giveaway and mappers often draw the marina on land."""
+    rings = rings_of(x)
+    if not rings or len(rings[0]) < 2: return [], "point", []
+    main = rings[0]; geom = [px(*q) for q in main]; gtype = "polygon" if is_area(main, c) else "line"
+    parts = [{"geom": [px(*q) for q in r], "gtype": "polygon" if is_area(r, c) else "line", "halfwidth_px": 0}
+             for r in rings[1:] if len(r) > 1]
+    if c == "marina" and data and gtype == "polygon":
+        near = 25 / gsd; hw = 4 / gsd
+        for y in same_type(data, "pier"):
+            ry = rings_of(y)
+            if not ry: continue
+            g = [px(*q) for q in ry[0]]
+            if not any(-20 <= u <= SIZE + 20 and -20 <= v <= SIZE + 20 for u, v in g): continue
+            if min(dist_to(v, geom[0], geom, "polygon") for v in g) > near: continue
+            closed = len(g) > 3 and ry[0][0] == ry[0][-1]
+            parts.append({"geom": g, "gtype": "polygon" if closed else "line", "halfwidth_px": 0 if closed else round(hw, 1)})
+            if len(parts) >= 40: break
+    return geom, gtype, parts
+
+def dock_point(geom, parts):
+    """Marinas: put the answer marker on the docks (middle of the longest dock inside the marina outline), not on
+    whatever land the outline's centre falls on. -> [x, y] or None"""
+    best, bl = None, 0
+    for q in parts:
+        g = q["geom"]
+        if q["gtype"] != "line" or len(g) < 2: continue
+        L = sum(math.dist(a, b) for a, b in zip(g, g[1:]))
+        half = L / 2
+        for a, b in zip(g, g[1:]):
+            l = math.dist(a, b)
+            if half <= l and l > 0:
+                m = [round(a[0] + (b[0] - a[0]) * half / l, 1), round(a[1] + (b[1] - a[1]) * half / l, 1)]; break
+            half -= l
+        else: continue
+        if L > bl and 24 <= m[0] <= SIZE - 24 and 24 <= m[1] <= SIZE - 24 and dist_to(m, geom[0], geom, "polygon") <= 20: best, bl = m, L
+    return best
+
+def dist_target(p, t, hw=0):
+    """Distance (px) from p to a scoring target dict {answer, geom, gtype, parts?}; 0 inside any of its polygons."""
+    d = dist_to(p, t["answer"], t.get("geom") or [], t.get("gtype", "point"), hw)
+    for q in t.get("parts") or []:
+        if d == 0: break
+        d = min(d, dist_to(p, t["answer"], q["geom"], q["gtype"], q.get("halfwidth_px", 0)))
+    return d
+
 def dist_to(p, ans, geom, gtype, hw=0):
     d = math.dist(p, ans)
     if gtype == "polygon" and len(geom) > 2 and point_in_ring(tuple(p), geom): return 0.0
@@ -632,22 +785,34 @@ def yardlines(img, geom, gsd):
     if not band.any() or not ref.any(): return 0.0
     return round(float(pw[band].max() / (np.median(pw[ref]) + 1e-6)), 2)
 
-def alternates(data, c, x, px):
-    """Other OSM features of the same type visible in the chip -> also accepted as correct."""
-    out = []
-    for y in same_type(data, c):
-        if y["type"] == x["type"] and y["id"] == x["id"]: continue
-        pt = feature_point(y, c)
+# Things a player can't be expected to tell apart from the asked type at ~0.6 m, so they count as correct too.
+# "Sports field" means any big grass pitch: a baseball diamond is a sports field. A softball field counts for
+# "baseball" unless the round is a decoy round built to teach the difference (then it's the decoy).
+ACCEPT_ALSO = {"field": [("cand", "baseball"), ("dcls", "softball"), ("dcls", "pitch_other")],
+               "baseball": [("dcls", "softball")]}
+
+def alternates(data, c, x, px, gsd=0.6, also=True):
+    """Other OSM features of the same type (or an accepted look-alike type) visible in the chip -> also correct."""
+    out = []; feats = [(y, c) for y in same_type(data, c)]
+    if also:
+        for src, cc in ACCEPT_ALSO.get(c, []):
+            feats += [(y, cc) for y in (same_type(data, cc) if src == "cand" else decoy_feats(data, cc))]
+    seen = set()
+    for y, cc in feats:
+        if (y["type"], y["id"]) == (x["type"], x["id"]) or (y["type"], y["id"]) in seen: continue
+        seen.add((y["type"], y["id"]))
+        if cc != c and DCLS.get(cc, {}).get("size") and extent_m(y) and extent_m(y) < 50: continue   # small pitches aren't "fields"
+        pt = feature_point(y, cc)
         if not pt: continue
         a = px(pt["lat"], pt["lon"])
-        geom, gtype = [], "point"
-        if y["type"] == "way" and y.get("geometry"):
-            geom = [px(p["lat"], p["lon"]) for p in y["geometry"] if p]
-            closed = len(geom) > 3 and y["geometry"][0] == y["geometry"][-1]
-            gtype = "polygon" if closed and c not in ("runway", "pier") else "line"
+        geom, gtype, parts = target_shapes(y, c, px, gsd, data)
         pts = geom or [a]
         if not any(-8 <= u <= SIZE + 8 and -8 <= v <= SIZE + 8 for u, v in pts + [a]): continue
-        out.append({"answer": a, "geom": geom, "gtype": gtype, "name": y.get("tags", {}).get("name")})
+        if y["type"] == "relation" and not geom: continue
+        alt = {"answer": a, "geom": geom, "gtype": gtype, "name": y.get("tags", {}).get("name")}
+        if parts: alt["parts"] = parts
+        if cc != c: alt["kind"] = cc
+        out.append(alt)
     return out
 
 def ambiguity(ans, alts, gsd, link_m=60):
@@ -799,23 +964,22 @@ def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None, decoy
         X, Y = merc(la, lo)
         return [round((X - xmin) / (xmax - xmin) * SIZE, 1), round((ymax - Y) / (ymax - ymin) * SIZE, 1)]
     ans = px(lat, lon)
-    geom, gtype = [], "point"
-    if x["type"] == "way" and x.get("geometry"):
-        geom = [px(p["lat"], p["lon"]) for p in x["geometry"]]
-        closed = len(geom) > 3 and x["geometry"][0] == x["geometry"][-1]
-        gtype = "polygon" if closed and c not in ("runway", "pier") else "line"
-        if gtype == "polygon":   # use pole-ish point: centroid may fall outside concave shapes; keep OSM center
-            pass
-        # clip silly geometry that is mostly off-chip (huge features): keep anyway, scoring handles it
-    alts = alternates(data, c, x, px) if data else []
-    sites, raw = ambiguity(ans, alts, gsd)
+    geom, gtype, tparts = target_shapes(x, c, px, gsd, data)
+    if c == "marina": ans = dock_point(geom, tparts) or ans
+    if c in AREA_CATS and gtype != "polygon":
+        log(f"    skip {c} {x['type']}/{x['id']}: no footprint to score"); return None
+    if c == "marina" and not any(q["gtype"] == "line" for q in tparts):   # outline drawn on the shore office/lot only
+        log(f"    skip {c} {x['type']}/{x['id']}: no mapped docks at the marina"); return None
+    # same-type features + accepted look-alikes; in decoy rounds the look-alike class is the decoy, not an answer
+    alts = alternates(data, c, x, px, gsd, also=not decoy) if data else []
+    sites, raw = ambiguity(ans, alts, gsd)   # look-alikes that count make the round easy too: same caps
     if sites > MAX_SITES or raw > MAX_ALTS:
         log(f"    skip {c} {x['type']}/{x['id']}: {raw} look-alikes in frame ({sites} sites)"); return None
     parts = pre_difficulty(c, x, gsd, alts, ans, lookalikes(data, c, px) if data else 0)
     dgeo = []   # look-alikes that pass the geometry checks (in frame, plausible size, clearly apart from targets)
     if decoy:
         R_t = cfg["r_m"] / gsd; hw_t = cfg.get("halfwidth_m", 0) / gsd
-        scoring = [(ans, geom, gtype)] + [(t["answer"], t["geom"], t["gtype"]) for t in alts]
+        scoring = [{"answer": ans, "geom": geom, "gtype": gtype, "parts": tparts}] + alts
         for dc, y, pt, clue in near:
             if len(dgeo) >= MAX_DECOYS: break
             dcfg = DCLS[dc]; a = px(pt["lat"], pt["lon"])
@@ -828,7 +992,7 @@ def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None, decoy
                 dgt = "polygon" if len(dg) > 3 and y["geometry"][0] == y["geometry"][-1] and dc != "taxiway" else "line"
             dr = dcfg["r_m"] / gsd; dhw = dcfg.get("halfwidth_m", 0) / gsd
             # a decoy must be clearly separate from every scoring feature, both ways round
-            if any(dist_to(sa, a, dg, dgt, dhw) <= dr + 4 or dist_to(a, sa, sg, sgt, hw_t) <= R_t for sa, sg, sgt in scoring): continue
+            if any(dist_to(st["answer"], a, dg, dgt, dhw) <= dr + 4 or dist_target(a, st, hw_t) <= R_t for st in scoring): continue
             if any(math.dist(a, d0["answer"]) < 10 for d0 in dgeo): continue
             dgeo.append({"answer": a, "geom": dg, "gtype": dgt, "halfwidth_px": round(dhw, 1), "r": round(dr, 1),
                          "cls": dc, "label": dcfg["one"], "clue": clue, "_size_px": (ext or 20) / gsd})
@@ -873,10 +1037,8 @@ def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None, decoy
     os.makedirs(IMG, exist_ok=True)
     img.save(os.path.join(PUZ, tmp), quality=S["jpeg_quality"], optimize=True, progressive=True)
     r_px = round(cfg["r_m"] / gsd, 1)
-    hr = round(SIZE * 0.2); ang = rng.uniform(0, 2 * math.pi); off = rng.uniform(0.15, 0.6) * hr
-    hint = [round(min(SIZE - hr * 0.5, max(hr * 0.5, ans[0] + off * math.cos(ang)))),
-            round(min(SIZE - hr * 0.5, max(hr * 0.5, ans[1] + off * math.sin(ang)))), hr]
-    secret = {"answer": ans, "geom": geom, "gtype": gtype,
+    hint = make_hint(ans, rng)
+    secret = {"answer": ans, "geom": geom, "gtype": gtype, **({"parts": tparts} if tparts else {}),
               "halfwidth_px": round(cfg.get("halfwidth_m", 0) / gsd, 1), "hint": hint,
               "name": t.get("name"), "lat": round(lat, 5), "lon": round(lon, 5),
               "osm": f"https://www.openstreetmap.org/{x['type']}/{x['id']}", "note": note,
@@ -933,7 +1095,25 @@ def replace_round(spec, data, shapes, hist, any_type=False):
         log(f"[{ds}] round {n} ({c0}) replaced with {c} {x['type']}/{x['id']} difficulty {r['dscore']}"); return
     raise RuntimeError(f"no replacement found for {spec}")
 
+def make_hint(ans, rng):
+    hr = round(SIZE * 0.2); ang = rng.uniform(0, 2 * math.pi); off = rng.uniform(0.15, 0.6) * hr
+    return [round(min(SIZE - hr * 0.5, max(hr * 0.5, ans[0] + off * math.cos(ang)))),
+            round(min(SIZE - hr * 0.5, max(hr * 0.5, ans[1] + off * math.sin(ang)))), hr]
+
+def find_feature(data, tp, oid):
+    for y in data["cands"] + data.get("dcands", []):
+        if y["type"] == tp and y["id"] == oid: return y
+    # not in this cache (built from another night's fetch): rebuild it from the OSM API
+    me, nodes, ways = osm_full(tp, oid)
+    y = {"type": tp, "id": oid, "tags": me.get("tags", {})}
+    if tp == "node": y.update(lat=me["lat"], lon=me["lon"])
+    elif tp == "way": y["geometry"] = [{"lat": nodes[n][0], "lon": nodes[n][1]} for n in me["nodes"] if n in nodes]
+    return y
+
 def refresh_day(ds, data):
+    """Re-derive every round's answer geometry for an existing day, keeping its photos, order and notes:
+    answer point, footprint (relations included), extra parts, accepted same-type / look-alike features, hint.
+    Decoys that now overlap an accepted feature are dropped."""
     P = json.load(open(os.path.join(PUZ, f"{ds}.json")))
     key = f"analyst-eye:{ds}".encode()
     for r in P["rounds"]:
@@ -948,11 +1128,25 @@ def refresh_day(ds, data):
             sp["chip_merc"] = [round(v, 2) for v in (xmin, ymin, xmax, ymax)]
         def px(la, lo, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax):
             X, Y = merc(la, lo); return [round((X - xmin) / (xmax - xmin) * SIZE, 1), round((ymax - Y) / (ymax - ymin) * SIZE, 1)]
-        tp, tid = sp["osm"].rsplit("/", 2)[-2:]
-        sp["alts"] = alternates(data, c, {"type": tp, "id": int(tid)}, px)
-        if c == "field": sp["note"] = template_note(c, {}, random.Random(f"{ds}/{r['round']}"), None)
+        tp, tid = sp["osm"].rsplit("/", 2)[-2:]; x = find_feature(data, tp, int(tid))
+        cen = feature_point(x, c); old = sp["answer"]
+        geom, gtype, parts = target_shapes(x, c, px, gsd, data)
+        sp["answer"] = (c == "marina" and dock_point(geom, parts)) or px(cen["lat"], cen["lon"]); sp["lat"] = round(cen["lat"], 5); sp["lon"] = round(cen["lon"], 5)
+        sp["geom"], sp["gtype"] = geom, gtype
+        if parts: sp["parts"] = parts
+        else: sp.pop("parts", None)
+        sp["alts"] = alternates(data, c, x, px, gsd, also=not sp.get("decoys"))
+        if math.dist(old, sp["answer"]) > 3 or not (sp["hint"][0] - sp["hint"][2] <= sp["answer"][0] <= sp["hint"][0] + sp["hint"][2]
+                                                    and sp["hint"][1] - sp["hint"][2] <= sp["answer"][1] <= sp["hint"][1] + sp["hint"][2]):
+            sp["hint"] = make_hint(sp["answer"], random.Random(f"hint/{ds}/{r['round']}"))
+        R_t = cfg["r_m"] / gsd; hw_t = sp.get("halfwidth_px", 0)
+        scoring = [sp] + sp["alts"]
+        keep = [d0 for d0 in sp.get("decoys") or [] if not any(dist_target(d0["answer"], st, hw_t) <= R_t for st in scoring)]
+        if len(keep) != len(sp.get("decoys") or []): log(f"[{ds}] round {r['round']}: dropped {len(sp['decoys']) - len(keep)} decoys that are now accepted")
+        sp["decoys"] = keep
+        if not keep: r.pop("caution", None)
         r["task"] = cfg["task"]; r["label"] = cfg["label"]; r["secret"] = xor_pack(sp, ds)
-        if sp["alts"]: log(f"[{ds}] round {r['round']} {c}: {len(sp['alts'])} more in frame")
+        log(f"[{ds}] round {r['round']} {c}: answer moved {math.dist(old, sp['answer']):.0f}px, {gtype}, {len(parts)} parts, {len(sp['alts'])} more accepted")
     with open(os.path.join(PUZ, f"{ds}.json"), "w") as f: json.dump(P, f, indent=1)
     with open(os.path.join(PUZ, f"{ds}.js"), "w") as f:
         f.write("(window.AE_PUZZLES=window.AE_PUZZLES||{})[%s]=%s;\n" % (json.dumps(ds), json.dumps(P, separators=(",", ":"))))
@@ -972,12 +1166,12 @@ def main():
     ap.add_argument("--refresh", nargs="+", metavar="DATE", help="recompute accepted same-type features + task text for existing days")
     a = ap.parse_args()
     if a.refresh:
-        data = fetch_osm(); [refresh_day(d, data) for d in a.refresh]
+        data = fetch_osm(stale_ok=True); [refresh_day(d, data) for d in a.refresh]
         hist = load_history()
         for d, cl in hist["days"].items(): hist["days"][d] = [{"soccer": "field", "football": "field"}.get(c, c) for c in cl]
         save_history(hist); return
     if a.replace:
-        data = fetch_osm(); hist = load_history(); replace_round(a.replace, data, bad_shapes(data["bad"]), hist, a.any); save_history(hist); return
+        data = fetch_osm(stale_ok=True); hist = load_history(); replace_round(a.replace, data, bad_shapes(data["bad"]), hist, a.any); save_history(hist); return
     if a.date: dates = [dt.date.fromisoformat(a.date)]
     else:
         start = dt.date.fromisoformat(a.start) if a.start else max(central_today(), dt.date.fromisoformat(S["launch_date"]))

@@ -96,15 +96,17 @@ function inPoly(p, poly) {
   }
   return ins;
 }
+function shapeDist(p, g, gtype, hw) {
+  if (gtype === "polygon" && g.length > 2 && inPoly(p, g)) return 0;
+  if (g.length < 2) return Infinity;
+  let m = Infinity; for (let i = 1; i < g.length; i++) m = Math.min(m, segDist(p, g[i - 1], g[i]));
+  if (gtype !== "polygon") m = Math.max(0, m - (hw || 0));
+  return m;
+}
+// a target scores on its whole footprint: main outline plus any extra parts (other rings, a marina's docks)
 function distOne(p, t, hw) {
-  let d = Math.hypot(p[0] - t.answer[0], p[1] - t.answer[1]);
-  const g = t.geom || [];
-  if (t.gtype === "polygon" && g.length > 2 && inPoly(p, g)) return 0;
-  if (g.length > 1) {
-    let m = Infinity; for (let i = 1; i < g.length; i++) m = Math.min(m, segDist(p, g[i - 1], g[i]));
-    if (t.gtype === "line") m = Math.max(0, m - (hw || 0));
-    d = Math.min(d, m);
-  }
+  let d = Math.min(Math.hypot(p[0] - t.answer[0], p[1] - t.answer[1]), shapeDist(p, t.geom || [], t.gtype, hw));
+  (t.parts || []).forEach(q => { if (d > 0) d = Math.min(d, shapeDist(p, q.geom || [], q.gtype, q.halfwidth_px)); });
   return d;
 }
 // every same-type feature in the photo counts: score against the nearest one
@@ -491,12 +493,13 @@ function answerSVG(r, res, k, u0) {
   const s = r.s, u = u0 || unitPx(k), T = targets(s); let svg = decoySVG(s, res, u);
   const near = T[res && res.ti != null ? res.ti : (res ? nearest(res.click, s).i : 0)] || s;
   T.forEach(t => {
-    const g = t.geom || [];
-    if (g.length > 1) {
+    [{ geom: t.geom, gtype: t.gtype, halfwidth_px: s.halfwidth_px }, ...(t.parts || [])].forEach(q => {
+      const g = q.geom || [];
+      if (g.length < 2) return;
       const pts = g.map(p => p.join(",")).join(" ");
-      svg += t.gtype === "polygon" ? `<polygon points="${pts}" fill="rgba(90,209,230,.18)" stroke="#5ad1e6" stroke-width="3" vector-effect="non-scaling-stroke"/>`
-        : `<polyline points="${pts}" fill="none" stroke="#5ad1e6" stroke-width="${Math.max(4, (s.halfwidth_px || 2) * 2)}" stroke-opacity=".55"/>`;
-    }
+      svg += q.gtype === "polygon" ? `<polygon points="${pts}" fill="rgba(90,209,230,.18)" stroke="#5ad1e6" stroke-width="3" vector-effect="non-scaling-stroke"/>`
+        : `<polyline points="${pts}" fill="none" stroke="#5ad1e6" stroke-width="${Math.max(4, (q.halfwidth_px || 2) * 2)}" stroke-opacity=".55"/>`;
+    });
     if (t !== near) svg += `<circle cx="${t.answer[0]}" cy="${t.answer[1]}" r="${Math.max(9 * u, r.radius_px * 0.8)}" fill="none" stroke="#ffb02e" stroke-opacity=".7" stroke-width="${2 * u}" stroke-dasharray="${5 * u} ${4 * u}"/>`;
   });
   if (res) svg += `<line x1="${res.click[0]}" y1="${res.click[1]}" x2="${near.answer[0]}" y2="${near.answer[1]}" stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke" stroke-dasharray="6 6"/>`;
