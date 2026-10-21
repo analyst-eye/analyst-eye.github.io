@@ -55,6 +55,13 @@
    "water_tower",
    "solar",
    "golf"
+  ],
+  "2026-10-28": [
+   "field",
+   "marina",
+   "cemetery",
+   "tennis",
+   "golf"
   ]
  },
  "used": {
@@ -248,6 +255,11 @@
    "date": "2026-10-20",
    "key": null
   },
+  "way/437309452": {
+   "cat": "cemetery",
+   "date": "2026-10-28",
+   "key": "cemetery:wilson cemetery"
+  },
   "way/544605821": {
    "cat": "roundabout",
    "date": "2026-10-20",
@@ -268,9 +280,19 @@
    "date": "2026-10-20",
    "key": null
   },
+  "way/660444869": {
+   "cat": "tennis",
+   "date": "2026-10-28",
+   "key": null
+  },
   "way/665823248": {
    "cat": "pier",
    "date": "2026-10-24",
+   "key": null
+  },
+  "way/687836720": {
+   "cat": "field",
+   "date": "2026-10-28",
    "key": null
   },
   "way/705835950": {
@@ -287,6 +309,11 @@
    "cat": "tennis",
    "date": "2026-10-27",
    "key": "tennis:tennis court"
+  },
+  "way/857326540": {
+   "cat": "golf",
+   "date": "2026-10-28",
+   "key": null
   },
   "way/895461714": {
    "cat": "runway",
@@ -322,6 +349,11 @@
    "cat": "slipway",
    "date": "2026-10-20",
    "key": null
+  },
+  "way/982459657": {
+   "cat": "marina",
+   "date": "2026-10-28",
+   "key": "marina:lakeshore marina"
   }
  }
 }
