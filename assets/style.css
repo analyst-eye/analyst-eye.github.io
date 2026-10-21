@@ -234,3 +234,9 @@ button.brand.home:hover,button.brand.home:focus-visible{text-decoration:underlin
 .lnk:hover{text-decoration:underline}
 body[data-mode=embed] .nav{margin-top:6px}
 body[data-mode=embed] .lnk{padding:3px 2px;font-size:13px}
+/* ---------- v11: challenge links ---------- */
+.ichal{margin:0;font:500 13px var(--sans);color:var(--amber);text-wrap:balance}
+.ichal b{font-family:var(--mono)}
+.vs{margin:-4px 0 10px;font-size:14px;color:var(--dim)}
+.vs b{color:var(--ink)}.vs.win b{color:var(--cyan)}.vs.lose b{color:var(--amber)}
+body[data-mode=embed] .vs{margin:-2px 0 6px;font-size:13px}

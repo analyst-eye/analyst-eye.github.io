@@ -998,5 +998,14 @@ def main():
     write_index()
     sys.exit(1 if failures == len(todo) else 0)
 
+def day_pages():
+    """Per-day share pages + card images (tools/make_day_pages.py) for every day in the index."""
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
+    try:
+        import make_day_pages; make_day_pages.main()
+    except Exception as e:
+        log(f"day pages FAILED: {e}"); raise
+
 if __name__ == "__main__":
-    main()
+    try: main()
+    finally: day_pages()

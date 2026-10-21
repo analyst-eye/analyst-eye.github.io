@@ -143,9 +143,41 @@ const LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || lo
 const QT = qs.get("today"), REAL_TODAY = centralToday();
 const TODAY = (isDay(QT) && (LOCAL || QT <= REAL_TODAY)) ? QT : REAL_TODAY;
 const avail = (IDX.dates || []).filter(d => d <= TODAY).sort();
+// per-day pages (p/YYYY-MM-DD.html) name their day here; a future day is ignored like ?date=
+const DAY = isDay(document.body.dataset.day) ? document.body.dataset.day : null;
+
+/* ---------- challenge links (?c=): a friend's total + per-round score/time. No personal data. Fakeable by design. ---------- */
+// bytes: [1 (version), total hi, total lo, then per round: score, time*10 hi, time*10 lo] -> base64url
+const CH_MAX_T = 6000;   // tenths of a second (10 min); anything longer is clamped
+function encChal(results) {
+  const total = Math.round(num(results.reduce((a, r) => a + r.score, 0), 0, 1000));
+  const b = [1, total >> 8, total & 255];
+  results.slice(0, 10).forEach(r => { const t = Math.round(num(r.t * 10, 0, CH_MAX_T)); b.push(Math.round(num(r.score, 0, 100)), t >> 8, t & 255); });
+  return btoa(String.fromCharCode(...b)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function parseChal(v) {
+  if (typeof v !== "string" || v.length < 8 || v.length > 64 || !/^[A-Za-z0-9_-]+$/.test(v) || v.length % 4 === 1) return null;
+  let raw;
+  try { raw = atob(v.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - v.length % 4) % 4)); } catch (e) { return null; }
+  const b = Array.from(raw, ch => ch.charCodeAt(0)), n = (b.length - 3) / 3;
+  if (b[0] !== 1 || !Number.isInteger(n) || n < 1 || n > 10) return null;
+  const rounds = [];
+  for (let i = 0; i < n; i++) rounds.push({ score: Math.min(100, b[3 + 3 * i]), t: Math.min(CH_MAX_T, b[4 + 3 * i] * 256 + b[5 + 3 * i]) / 10 });
+  return { total: Math.min(n * 100, b[1] * 256 + b[2]), rounds };
+}
+// the challenge belongs to one day: the page's day, else ?date=, else today
+const CH = (() => { const c = parseChal(qs.get("c")); if (!c) return null; const qd = qs.get("date");
+  c.ds = DAY || (isDay(qd) ? qd : TODAY); return c; })();
+const chal = () => (CH && G && !G.tier && G.ds === CH.ds) ? CH : null;
+function vsText(mine, theirs) {
+  const d = mine - theirs;
+  return d > 0 ? `You beat them by ${d}` : d < 0 ? `${-d} short` : "Tied";
+}
+const dayPage = ds => `${SITE}p/${ds}.html`;
 
 async function init() {
-  const req = qs.get("date"), pt = qs.get("practice");
+  // a per-day page for today plays like the home page (scored game, or results once finished)
+  const req = qs.get("date") || (DAY && DAY !== TODAY ? DAY : null), pt = qs.get("practice");
   if (pt && isTier(pt)) return startTier(pt);
   if (req && avail.includes(req) && req !== TODAY) return start(req, true);
   // ?date=<today> is an unscored replay, allowed only once today's scored game is finished
@@ -202,8 +234,9 @@ async function start(ds, practice, home) {
 }
 /* Home: today's start screen. Clears ?date= / ?practice= so a reload lands there too (keeps the ?today= test override). */
 function goHome() {
-  try { const q = new URLSearchParams(location.search); if (q.has("date") || q.has("practice")) { q.delete("date"); q.delete("practice");
-    const t = q.toString(); history.replaceState(null, "", location.pathname + (t ? "?" + t : "")); } } catch (e) {}
+  try { const q = new URLSearchParams(location.search); if (DAY || q.has("date") || q.has("practice") || q.has("c")) { q.delete("date"); q.delete("practice"); q.delete("c");
+    const t = q.toString(), path = DAY ? new URL("./", document.baseURI).pathname : location.pathname;
+    history.replaceState(null, "", path + (t ? "?" + t : "")); } } catch (e) {}
   window.scrollTo(0, 0); showToday(true);
 }
 /* Play again: today's set as unscored practice. Saved results, score, streak, best and played count are never touched. */
@@ -366,6 +399,7 @@ function intro() {
          <div class="kicker">${kicker}</div>
          <h1 class="ititle">${N} Things to Spy from the Sky</h1>
          <p class="isub">${G.practice ? "Practice games don't change your stats." : "New puzzle every midnight"}</p>
+         ${chal() ? `<p class="ichal" id="chal">A friend scored <b>${chal().total}</b>. ${done ? esc(vsText(total, chal().total)) + "." : "Can you beat it?"}</p>` : ""}
        </div>
        ${G.tier ? "" : `<ol class="lineup" aria-label="Rounds by difficulty">${lineup}</ol>`}
        ${tierPicker()}
@@ -500,13 +534,27 @@ function recordStats() {
   store.set("ae:stats", st);
 }
 
+/* the dare: the fastest clean find (no hint preferred), else a plain "beat me" */
+function dareLine() {
+  const found = G.results.map((r, i) => ({ r, i })).filter(x => x.r.score >= 80 && x.r.dk < 0 && G.P.rounds[x.i]);
+  const pick = found.filter(x => !x.r.hint).concat(found.filter(x => x.r.hint)).reduce((a, x) => (!a || (a.r.hint && !x.r.hint) || (a.r.hint === x.r.hint && x.r.t < a.r.t)) ? x : a, null);
+  if (pick) return `I found the ${String(G.P.rounds[pick.i].label || "target").toLowerCase()} in ${num(pick.r.t, 0, 999).toFixed(1)}s. Beat me:`;
+  return G.results.some(r => r.score > 0) ? "Beat my score:" : "Your turn:";
+}
+// challenge = scored games and first plays of past days; a replay of today (answers already seen) shares a plain link
+const canChallenge = () => !G.tier && !(G.practice && G.ds === TODAY) && G.results.length === G.P.rounds.length;
+function shareLink() {
+  if (G.tier || !isDay(G.ds)) return SITE;
+  return dayPage(G.ds) + (canChallenge() ? "?c=" + encChal(G.results) : "");
+}
 function shareText() {
   const total = G.results.reduce((a, r) => a + r.score, 0), hints = G.results.filter(r => r.hint).length;
   const st = loadStats();
   return [G.tier ? `Analyst Eye practice (${TIER_NAME[G.tier]}) 🛰️ ${total}/${G.P.rounds.length * 100}` : `Analyst Eye #${G.P.number || dayNum(G.ds)}${G.practice ? " (practice)" : ""} 🛰️ ${total}/500`,
     G.results.map(r => sq(r.score)).join(""),
     [hints ? `💡${hints}` : "", (!G.practice && st && st.streak > 1) ? `🔥${st.streak}` : ""].filter(Boolean).join(" "),
-    SITE].filter(Boolean).join("\n");
+    canChallenge() ? dareLine() : "",
+    shareLink()].filter(Boolean).join("\n");
 }
 
 function archiveHTML() {
@@ -538,6 +586,7 @@ function end() {
   h(`<div class="hud"><span class="hudl">${brandHTML(true, G.practice ? ' <span class="tag practice">Practice</span>' : "")}</span><button class="iconbtn" id="help" aria-label="How to play">?</button></div>
     <section class="results" aria-label="Results">
       <div class="rhead"><div class="kicker">${esc(title)}</div><div class="total"><b>${total}</b><span>/${N * 100}</span></div></div>
+      ${chal() ? `<p class="vs ${total > chal().total ? "win" : total < chal().total ? "lose" : ""}" id="vs">Friend: ${chal().total} · <b>${esc(vsText(total, chal().total))}</b></p>` : ""}
       <ol class="rtable">${rows}</ol>
       <div class="row"><a class="btn x grow" id="sharex" href="${esc(intent)}" target="_blank" rel="noopener">𝕏 Share on X</a>
         <button type="button" class="btn ghost iconcopy" id="copy" aria-label="Copy result" title="Copy result"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button></div>
@@ -570,6 +619,6 @@ function copy(text) {
   try { navigator.clipboard ? navigator.clipboard.writeText(text).then(ok, fallback) : fallback(); } catch (e) { fallback(); }
 }
 
-window.AE_DEBUG = { score, distance, decode, get state() { return G; } };
+window.AE_DEBUG = { score, distance, decode, encChal, parseChal, get challenge() { return CH; }, get state() { return G; } };
 init();
 })();

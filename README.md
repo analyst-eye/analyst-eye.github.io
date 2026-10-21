@@ -56,6 +56,7 @@ Add a repo secret `XAI_API_KEY` (*Settings → Secrets and variables → Actions
 | `puzzles/YYYY-MM-DD.json` / `.js` | One day = 5 rounds. `.js` is loaded with a `<script>` tag so it works inside X's sandboxed iframe. Answers are XOR/base64-packed to stop casual peeking (not secure). |
 | `puzzles/img/` | 768×768 NAIP chips (~100–170 KB each). |
 | `puzzles/index.js` | List of available dates. |
+| `p/YYYY-MM-DD.html`, `assets/cards/` | Per-day share pages (own X player card + card image: round 1 photo, no marker, round 1 target type only). Built by `tools/make_day_pages.py`, which the generator runs after every build. Share links point here with `?c=` (a friend's total + per-round score/time, base64url, no personal data). |
 | `generator/make_puzzle.py` | The generator (see below). |
 | `generator/settings.json` | Region bbox, rounds/day, image size, Overpass mirrors, NAIP endpoint. |
 | `generator/blocklist.json` | Manual exclusions (name regex + boxes). Add anything you never want shown. |

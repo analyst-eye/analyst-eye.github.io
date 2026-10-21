@@ -407,6 +407,114 @@ with sync_playwright() as p:
     txt = page.locator("#app").inner_text()
     check(page.locator("#go").count() == 1 or "No easy rounds to practice yet" in txt, "practice-by-difficulty URL still renders: " + " ".join(txt.split())[:70])
     ctx.close()
+    # ---------- v11: challenge links (?c=) + per-day pages (p/DATE.html) ----------
+    import base64, struct
+    from urllib.parse import urlparse, parse_qs
+    def mkc(total, rounds, ver=1):
+        b_ = bytes([ver]) + struct.pack(">H", total) + b"".join(bytes([sc]) + struct.pack(">H", t) for sc, t in rounds)
+        return base64.urlsafe_b64encode(b_).decode().rstrip("=")
+    C430 = mkc(430, [(95, 31), (90, 52), (85, 120), (80, 88), (80, 300)])
+    ctx = b.new_context(viewport={"width": 390, "height": 844}); page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append("chal-parse: " + str(e)))
+    page.goto(f"{BASE}/index.html?today={TD}"); page.locator("#go").wait_for()
+    got = page.evaluate(f"AE_DEBUG.parseChal('{C430}')")
+    check(got and got["total"] == 430 and [r["t"] for r in got["rounds"]] == [3.1, 5.2, 12, 8.8, 30] and got["rounds"][0]["score"] == 95, f"parseChal decodes total + per-round times: {got}")
+    rt = page.evaluate("""() => { const res = [{score: 100, t: 3.14}, {score: 0, t: 45}, {score: 77, t: 0}, {score: 40, t: 999}, {score: 63, t: 12.3}];
+        return AE_DEBUG.parseChal(AE_DEBUG.encChal(res)); }""")
+    check(rt["total"] == 280 and [r["t"] for r in rt["rounds"]] == [3.1, 45, 0, 600, 12.3], f"encChal -> parseChal round trip (times clamped to 600s): {rt}")
+    clamp = page.evaluate(f"AE_DEBUG.parseChal('{mkc(65535, [(255, 65535)] * 5)}')")
+    check(clamp["total"] == 500 and all(r["score"] == 100 and r["t"] == 600 for r in clamp["rounds"]), f"out-of-range values are clamped: total {clamp['total']}")
+    bad = ["", "abc", "!!!!!!!!", "A" * 65, mkc(430, [(90, 30)] * 5, ver=2), mkc(430, []), mkc(430, [(90, 30)] * 11), "AQGuX", "AQGuXw-_AQ", "<script>alert(1)</script>", "AQGu%00%00", None, 12345]
+    res = page.evaluate("bad => bad.map(v => AE_DEBUG.parseChal(v))", bad)
+    check(all(r is None for r in res), f"malformed ?c= values are ignored: {res}")
+    ctx.close()
+    # challenged start screen + comparison end screen on today's per-day page
+    PN = (datetime.date.fromisoformat(TD) - datetime.date(2026, 10, 20)).days + 1
+    for kind, w, h, mob in [("site", 390, 844, True), ("site", 844, 390, True)]:
+        kw = dict(viewport={"width": w, "height": h})
+        if mob: kw.update(has_touch=True, is_mobile=True, device_scale_factor=2)
+        ctx = b.new_context(**kw); page = ctx.new_page(); tag = f"challenge {w}x{h}"
+        page.on("pageerror", lambda e, tag=tag: errors.append(tag + ": " + str(e)))
+        page.add_init_script("localStorage.setItem('ae:howto','1')")
+        page.goto(f"{BASE}/p/{TD}.html?today={TD}&c={C430}"); page.locator("#go").wait_for()
+        page.locator("#img").evaluate("i => i.complete || new Promise(r => i.onload = r)"); page.wait_for_timeout(300)
+        chal = page.locator("#chal").inner_text() if page.locator("#chal").count() else ""
+        check(chal == "A friend scored 430. Can you beat it?", f"{tag}: start screen shows the challenge: {chal!r}")
+        g = page.evaluate("({p: AE_DEBUG.state.practice, ds: AE_DEBUG.state.ds})")
+        check(not g["p"] and g["ds"] == TD and page.locator(".kicker").first.inner_text().upper().startswith(f"PUZZLE #{PN} "), f"{tag}: today's per-day page opens the normal scored game {g}")
+        check(page.evaluate(VIS, "#go") and page.evaluate(VIS, "#chal"), f"{tag}: Play + challenge line visible without scrolling")
+        if w > h:
+            sd = page.evaluate("() => { const s = document.querySelector('.side'); return [s.scrollWidth, s.clientWidth, s.scrollHeight, s.clientHeight]; }")
+            check(sd[0] <= sd[1] and sd[2] <= sd[3], f"{tag}: start panel still fits with the challenge line ({sd})")
+        page.screenshot(path=f"{SHOTS}/v11-{w}x{h}-challenge-start.png")
+        page.locator("#go").click(); play5(page, aim=True)
+        total = int(page.locator(".total b").inner_text()); vs = page.locator("#vs").inner_text()
+        want = f"You beat them by {total - 430}" if total > 430 else f"{430 - total} short" if total < 430 else "Tied"
+        check(vs == f"Friend: 430 · {want}", f"{tag}: end screen compares: {vs!r} (scored {total})")
+        page.screenshot(path=f"{SHOTS}/v11-{w}x{h}-challenge-end.png", full_page=(w < h))
+        share = page.evaluate("decodeURIComponent(document.getElementById('sharex').href.split('text=')[1])")
+        lines = share.splitlines(); link = lines[-1]; body = "\n".join(lines[:-1])
+        print("  share:", share.replace("\n", " | "))
+        check(lines[0].startswith(f"Analyst Eye #{PN} 🛰️ {total}/500") and lines[-2].endswith("Beat me:") and lines[-2].startswith("I found the "), f"{tag}: share is a dare: {lines[-2]!r}")
+        check(len(body) <= 200, f"{tag}: share text before the link is {len(body)} chars (<= 200)")
+        u = urlparse(link); c = parse_qs(u.query).get("c", [""])[0]
+        check(u.path.endswith(f"/p/{TD}.html") and bool(c), f"{tag}: share link is the per-day page with ?c=: {link}")
+        dec = page.evaluate("c => AE_DEBUG.parseChal(c)", c)
+        check(bool(dec) and dec["total"] == total and len(dec["rounds"]) == 5, f"{tag}: share link encodes this score ({dec and dec['total']})")
+        if w < h:
+            # reopening the challenge after finishing -> straight to results with the comparison; Home -> site root
+            page.goto(f"{BASE}/p/{TD}.html?today={TD}&c={C430}"); page.locator("#sharex").wait_for()
+            check(page.locator("#vs").count() == 1 and page.locator(".tag.practice").count() == 0, f"{tag}: challenge link after finishing opens scored results + comparison")
+            page.locator("#homebtn").click(); page.locator("#results").wait_for()
+            check(urlparse(page.url).path in ("/", "/index.html") and "c=" not in page.url, f"{tag}: Home from a per-day page goes to the site root: {page.url}")
+            # replay of today shares a plain per-day link (no dare: the answers were already seen)
+            page.locator("#again").click(); play5(page, aim=False)
+            sh = page.evaluate("decodeURIComponent(document.getElementById('sharex').href.split('text=')[1])")
+            check("c=" not in sh and "Beat me" not in sh and sh.splitlines()[-1].endswith(f"/p/{TD}.html"), f"replay share: plain per-day link, no challenge: {sh.splitlines()[-1]}")
+        ctx.close()
+    # malformed ?c= on a per-day page: no challenge line, no errors, game still works
+    ctx = b.new_context(viewport={"width": 390, "height": 844}); page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append("chal-bad: " + str(e)))
+    page.add_init_script("localStorage.setItem('ae:howto','1')")
+    for v in ["%3Cimg%20src%3Dx%3E", "AQGu", "____________", mkc(430, [(90, 30)] * 5, ver=7)]:
+        page.goto(f"{BASE}/p/{TD}.html?today={TD}&c={v}"); page.locator("#go").wait_for()
+        check(page.locator("#chal").count() == 0 and page.locator("img[src=x]").count() == 0, f"bad c={v[:16]}: ignored")
+    ctx.close()
+    # past day page -> the past day (as practice, like ?date=), with the challenge; future day page -> today, no challenge
+    if LOCAL:
+        ctx = b.new_context(viewport={"width": 390, "height": 844}); page = ctx.new_page()
+        page.on("pageerror", lambda e: errors.append("day-pages: " + str(e)))
+        page.add_init_script("localStorage.setItem('ae:howto','1')")
+        page.goto(f"{BASE}/p/2026-10-20.html?today=2026-10-22&c={C430}"); page.locator("#go").wait_for()
+        g = page.evaluate("({p: AE_DEBUG.state.practice, ds: AE_DEBUG.state.ds})")
+        check(g == {"p": True, "ds": "2026-10-20"} and page.locator("#chal").count() == 1, f"past per-day page opens that day as practice, with challenge {g}")
+        page.locator("#go").click(); play5(page, aim=False)
+        check(page.locator("#vs").count() == 1, "past day: end screen compares too: " + (page.locator("#vs").inner_text() if page.locator("#vs").count() else ""))
+        sh = page.evaluate("decodeURIComponent(document.getElementById('sharex').href.split('text=')[1])")
+        check("/p/2026-10-20.html?c=" in sh, "past day share links back to its own page with ?c=")
+        page.goto(f"{BASE}/p/2026-10-27.html?today=2026-10-20&c={C430}"); page.locator("#go").wait_for()
+        g = page.evaluate("({p: AE_DEBUG.state.practice, ds: AE_DEBUG.state.ds})")
+        check(g == {"p": False, "ds": "2026-10-20"} and page.locator("#chal").count() == 0, f"future per-day page opens today's game, no challenge {g}")
+        ctx.close()
+    # per-day pages: right meta, card exists, no answers, no other round targets
+    from PIL import Image
+    L = json.load(open(os.path.join(ROOT, "puzzles/index.json")))
+    for d in L["dates"]:
+        P = json.load(open(os.path.join(ROOT, f"puzzles/{d}.json"))); r1 = P["rounds"][0]
+        f = os.path.join(ROOT, f"p/{d}.html"); ok = os.path.exists(f)
+        hh = open(f).read() if ok else ""
+        others = {r["label"].lower() for r in P["rounds"][1:]} - {r1["label"].lower()}
+        card = os.path.join(ROOT, f"assets/cards/{d}.jpg")
+        check(ok and '<meta name="twitter:card" content="player">' in hh and f'content="https://analyst-eye.github.io/embed.html?date={d}"' in hh
+              and f"Analyst Eye #{P['number']}: can you find the {r1['label'].lower()}?" in hh and f'data-day="{d}"' in hh
+              and f"assets/cards/{d}.jpg?v=" in hh and os.path.exists(card) and Image.open(card).size == (1200, 900)
+              and "secret" not in hh and not any(o in hh.lower() for o in others), f"p/{d}.html: player card meta, title names round 1 only, card 1200x900")
+    if not LOCAL:
+        import urllib.request
+        for d in (TD, L["dates"][-1]):
+            hh = urllib.request.urlopen(f"{BASE}/p/{d}.html?c={C430}").read().decode()
+            check(f"embed.html?date={d}" in hh and 'twitter:card" content="player"' in hh and f"/assets/cards/{d}.jpg" in hh, f"live p/{d}.html serves its meta")
+            img = urllib.request.urlopen(f"{BASE}/assets/cards/{d}.jpg"); check(img.status == 200 and img.headers["Content-Type"] == "image/jpeg", f"live card {d}.jpg served")
     # daily sets ramp easy -> medium -> hard and are the same file for everyone
     for d in json.load(open(os.path.join(ROOT, "puzzles/index.json")))["dates"]:
         t = [r["tier"] for r in json.load(open(os.path.join(ROOT, f"puzzles/{d}.json")))["rounds"]]
