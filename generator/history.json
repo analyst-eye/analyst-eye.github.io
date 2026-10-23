@@ -69,9 +69,21 @@
    "water_tower",
    "tennis",
    "substation"
+  ],
+  "2026-10-30": [
+   "runway",
+   "marina",
+   "bridge",
+   "tennis",
+   "slipway"
   ]
  },
  "used": {
+  "node/5121178537": {
+   "cat": "slipway",
+   "date": "2026-10-30",
+   "key": null
+  },
   "node/530819568": {
    "cat": "lighthouse",
    "date": "2026-10-24",
@@ -172,6 +184,11 @@
    "date": "2026-10-26",
    "key": null
   },
+  "way/1174311181": {
+   "cat": "bridge",
+   "date": "2026-10-30",
+   "key": null
+  },
   "way/1251560570": {
    "cat": "track",
    "date": "2026-10-24",
@@ -232,6 +249,11 @@
    "date": "2026-10-29",
    "key": null
   },
+  "way/1474029971": {
+   "cat": "tennis",
+   "date": "2026-10-30",
+   "key": null
+  },
   "way/1482917357": {
    "cat": "storage_tank",
    "date": "2026-10-26",
@@ -256,6 +278,11 @@
    "cat": "water_tower",
    "date": "2026-10-29",
    "key": null
+  },
+  "way/180798644": {
+   "cat": "runway",
+   "date": "2026-10-30",
+   "key": "runway:18/36"
   },
   "way/282571254": {
    "cat": "football_field",
@@ -306,6 +333,11 @@
    "cat": "cemetery",
    "date": "2026-10-28",
    "key": "cemetery:wilson cemetery"
+  },
+  "way/470313065": {
+   "cat": "marina",
+   "date": "2026-10-30",
+   "key": "marina:bay st louis municipal harbor"
   },
   "way/544605821": {
    "cat": "roundabout",
