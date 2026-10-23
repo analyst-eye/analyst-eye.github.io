@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Per-day share pages + card images, one per puzzle day.
    p/YYYY-MM-DD.html     : the full game (same as index.html) with its own X player card / og tags
-   assets/cards/DATE.jpg : 1200x900 card (640x480 player aspect): round 1 photo, no marker, "Puzzle #N: can you find the <target>?"
+   assets/cards/DATE.jpg : 1200x900 card (640x480 player aspect): featured round's photo, no marker, "Puzzle #N: can you find the <target>?"
+   Featured round: round 1, unless its target repeats the previous day's featured target, then the latest round that
+   doesn't (5, 4, 3, 2: late rounds make the better dare). Per-date override in tools/card_overrides.json {"YYYY-MM-DD": round}.
+   Days before RULE_START keep round 1 so already-shared cards never change.
    python3 tools/make_day_pages.py            # every day in puzzles/index.json (cards rebuilt only when round 1 changes)
    python3 tools/make_day_pages.py --force    # rebuild every card
 Run automatically at the end of generator/make_puzzle.py. Future days are safe to publish: the page and card name
@@ -11,6 +14,8 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PUZ, PAGES, CARDS = (os.path.join(ROOT, d) for d in ("puzzles", "p", "assets/cards"))
 MANIFEST = os.path.join(CARDS, "manifest.json")
+OVERRIDES = os.path.join(ROOT, "tools", "card_overrides.json")
+RULE_START = "2026-10-23"   # first day the no-repeat rule applies
 CARD_VERSION = 1   # bump to rebuild every card after a design change
 W, H = 1200, 900
 A, C, Wt, D = (255, 176, 46), (90, 209, 230), (220, 231, 238), (138, 160, 176)
@@ -62,10 +67,20 @@ def meta_sub(h, attr, key, value):
 def url_meta(attr, key, rel, site):
     return f'<meta {attr}="{key}" data-ae-url="{html.escape(rel)}" content="{html.escape(site + rel)}">'
 
-def make_page(tpl, site, ds, number, label, card_rel):
+def pick_featured(ds, rounds, prev_label, overrides):
+    """1-based round number for the card."""
+    if ds in overrides:
+        n = int(overrides[ds]); assert 1 <= n <= len(rounds), (ds, n); return n
+    if ds < RULE_START or prev_label is None or rounds[0]["label"].lower() != prev_label.lower(): return 1
+    for n in range(len(rounds), 1, -1):
+        if rounds[n - 1]["label"].lower() != prev_label.lower(): return n
+    return 1
+
+def make_page(tpl, site, ds, number, label, card_rel, rnd=1):
     q = f"Can you find the {label.lower()}?"
     title = f"Analyst Eye #{number}: can you find the {label.lower()}?"
-    desc = f"Puzzle #{number}. 5 aerial photos, 30 seconds each. First up: find the {label.lower()}. Free daily spotting game."
+    lead = "First up" if rnd == 1 else ("Last round" if rnd == 5 else f"Round {rnd}")
+    desc = f"Puzzle #{number}. 5 aerial photos, 30 seconds each. {lead}: find the {label.lower()}. Free daily spotting game."
     e = html.escape
     h = tpl.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n<base href="../">', 1)
     h = re.sub(r"<title>.*?</title>", f"<title>{e(title)}</title>", h, count=1)
@@ -92,14 +107,18 @@ def main(force=False):
     dates = json.load(open(os.path.join(PUZ, "index.json")))["dates"]
     os.makedirs(PAGES, exist_ok=True); os.makedirs(CARDS, exist_ok=True)
     man = json.load(open(MANIFEST)) if os.path.exists(MANIFEST) else {}
-    for ds in dates:
-        P = json.load(open(os.path.join(PUZ, f"{ds}.json"))); r1 = P["rounds"][0]
-        src = os.path.join(PUZ, r1["image"]); label = r1["label"]; number = P["number"]
-        key = hashlib.sha1(open(src, "rb").read() + f"|{number}|{label}|{CARD_VERSION}".encode()).hexdigest()[:10]
+    overrides = json.load(open(OVERRIDES)) if os.path.exists(OVERRIDES) else {}
+    prev_label = None
+    for ds in sorted(dates):
+        P = json.load(open(os.path.join(PUZ, f"{ds}.json")))
+        rnd = pick_featured(ds, P["rounds"], prev_label, overrides); r1 = P["rounds"][rnd - 1]
+        src = os.path.join(PUZ, r1["image"]); label = r1["label"]; number = P["number"]; prev_label = label
+        tag = f"|{number}|{label}|{CARD_VERSION}" + (f"|r{rnd}" if rnd != 1 else "")
+        key = hashlib.sha1(open(src, "rb").read() + tag.encode()).hexdigest()[:10]
         out = os.path.join(CARDS, f"{ds}.jpg")
         if force or man.get(ds) != key or not os.path.exists(out):
-            make_card(src, number, label, out); man[ds] = key; print("card", out, file=sys.stderr)
-        page = make_page(tpl, site, ds, number, label, f"assets/cards/{ds}.jpg?v={key}")
+            make_card(src, number, label, out); man[ds] = key; print("card", out, f"round {rnd}: {label}", file=sys.stderr)
+        page = make_page(tpl, site, ds, number, label, f"assets/cards/{ds}.jpg?v={key}", rnd)
         pp = os.path.join(PAGES, f"{ds}.html")
         if not os.path.exists(pp) or open(pp).read() != page: open(pp, "w").write(page); print("page", pp, file=sys.stderr)
     # retired days (removed from the index) lose their page and card
