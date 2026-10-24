@@ -44,7 +44,7 @@
   ],
   "2026-10-26": [
    "stadium",
-   "field",
+   "pier",
    "bridge",
    "storage_tank",
    "lighthouse"
@@ -65,7 +65,7 @@
   ],
   "2026-10-29": [
    "baseball",
-   "stadium",
+   "pool",
    "water_tower",
    "tennis",
    "substation"
@@ -321,6 +321,11 @@
    "date": "2026-10-29",
    "key": null
   },
+  "way/361476366": {
+   "cat": "pier",
+   "date": "2026-10-26",
+   "key": null
+  },
   "way/36778915": {
    "cat": "stadium",
    "date": "2026-10-26",
@@ -400,6 +405,11 @@
    "cat": "pier",
    "date": "2026-10-24",
    "key": null
+  },
+  "way/66869159": {
+   "cat": "pool",
+   "date": "2026-10-29",
+   "key": "pool:olive a. stallings pool"
   },
   "way/687836720": {
    "cat": "field",
