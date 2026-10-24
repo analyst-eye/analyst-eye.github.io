@@ -76,6 +76,13 @@
    "bridge",
    "tennis",
    "slipway"
+  ],
+  "2026-10-31": [
+   "pier",
+   "track",
+   "pool",
+   "golf",
+   "lighthouse"
   ]
  },
  "used": {
@@ -189,6 +196,11 @@
    "date": "2026-10-30",
    "key": null
   },
+  "way/1235293253": {
+   "cat": "track",
+   "date": "2026-10-31",
+   "key": null
+  },
   "way/1251560570": {
    "cat": "track",
    "date": "2026-10-24",
@@ -197,6 +209,11 @@
   "way/1251788401": {
    "cat": "track",
    "date": "2026-10-27",
+   "key": null
+  },
+  "way/1283374861": {
+   "cat": "golf",
+   "date": "2026-10-31",
    "key": null
   },
   "way/1283477693": {
@@ -284,6 +301,11 @@
    "date": "2026-10-30",
    "key": "runway:18/36"
   },
+  "way/251370422": {
+   "cat": "lighthouse",
+   "date": "2026-10-31",
+   "key": null
+  },
   "way/282571254": {
    "cat": "football_field",
    "date": "2026-10-24",
@@ -364,6 +386,11 @@
    "date": "2026-10-20",
    "key": null
   },
+  "way/636208316": {
+   "cat": "pool",
+   "date": "2026-10-31",
+   "key": "pool:east pool"
+  },
   "way/660444869": {
    "cat": "tennis",
    "date": "2026-10-28",
@@ -417,6 +444,11 @@
   "way/937491302": {
    "cat": "water_tower",
    "date": "2026-10-27",
+   "key": null
+  },
+  "way/970358744": {
+   "cat": "pier",
+   "date": "2026-10-31",
    "key": null
   },
   "way/97157126": {
