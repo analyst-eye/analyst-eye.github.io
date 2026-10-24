@@ -51,7 +51,7 @@
   ],
   "2026-10-27": [
    "track",
-   "baseball",
+   "substation",
    "water_tower",
    "solar",
    "golf"
@@ -300,6 +300,11 @@
    "cat": "runway",
    "date": "2026-10-30",
    "key": "runway:18/36"
+  },
+  "way/186595241": {
+   "cat": "substation",
+   "date": "2026-10-27",
+   "key": "substation:madisonville substation"
   },
   "way/251370422": {
    "cat": "lighthouse",
