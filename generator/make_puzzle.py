@@ -87,6 +87,12 @@ DECOYS = {   # target category -> [(decoy class, max distance from target in m, 
 DECOY_TARGET_SIZE = {"baseball": (110, 260)}   # decoy rounds only: a "baseball" target must be full-size to contrast with softball
 MAX_DECOYS = 4
 
+# Families: types that read as "the same kind of thing" to a player. At most one per family per day.
+FAMILY = {"stadium": "sports", "baseball": "sports", "field": "sports", "track": "sports", "football_field": "sports",
+          "tennis": "sports", "water_tower": "tank", "storage_tank": "tank"}
+def fam(c): return FAMILY.get(c, c)
+def fam_clash(c, chosen): return fam(c) in {fam(x) for x in chosen}
+
 def dclass_of(t):
     sport = t.get("sport"); lp = t.get("leisure") == "pitch"
     if lp and sport in ("basketball", "pickleball", "softball", "soccer"): return sport
@@ -226,7 +232,11 @@ def fetch_osm(stale_ok=False):
 .cand out tags center geom;
 .bad out tags geom;"""
         log(f"  tile {i + 1}/{slices} {bb}")
-        for x in overpass(q):
+        tpath = os.path.join(CACHE, f"tile-{slices}-{i}.json")   # partial progress survives a mirror outage
+        if os.path.exists(tpath) and time.time() - os.path.getmtime(tpath) < 20 * 3600: res = json.load(open(tpath))
+        else:
+            res = overpass(q); json.dump(res, open(tpath, "w"))
+        for x in res:
             key = (x["type"], x["id"])
             if key not in seen: seen.add(key); els.append(x)
         time.sleep(3)
@@ -555,6 +565,7 @@ def build_pool(data, hist):
         if c == "storage_tank" and t.get("content") in ("gas", "fuel", "oil", "lpg"): pass  # allowed; refineries excluded by area
         size_m = extent_m(x)
         if c == "pier" and size_m < 60 and not t.get("name"): continue        # skip tiny private docks
+        if c == "pier" and (t.get("bridge:support") or t.get("pier") == "bridge"): continue   # bridge footings, not a walkable pier
         if c == "solar" and t.get("power") != "plant" and size_m < 80: continue  # skip rooftop panels
         if c == "bridge" and size_m < 80: continue                               # tiny culverts
         if c == "cemetery" and size_m < 150: continue
@@ -599,8 +610,7 @@ def build_day(date, data, shapes, hist):
             got = decoy_round(ds, len(rounds) + 1, pool, recent, chosen, cap0, lo, hi, shapes, rng, data, used, names_used)
         for cap, widen in (() if got else ((cap0, 0), (cap0, 5), (cap0 + 1, 5), (cap0 + 1, 10))):
             band = (max(0, lo - widen), min(100, hi + widen))
-            ok_cats = [c for c in cats if recent.get(c, 0) < cap and c not in chosen and not CATS[c].get("decoy_only")
-                       and not (c == "field" and "football_field" in chosen)]
+            ok_cats = [c for c in cats if recent.get(c, 0) < cap and not fam_clash(c, chosen) and not CATS[c].get("decoy_only")]
             rng.shuffle(ok_cats)   # likely types first (by prior), random within
             ok_cats.sort(key=lambda c: abs((CATS[c]["diff"] - 1) / 2 - center[tier]) + rng.random() * 0.6)
             for c in ok_cats:
@@ -644,8 +654,7 @@ def decoy_round(ds, idx, pool, recent, chosen, cap0, lo, hi, shapes, rng, data, 
     stop_at = FETCHES[0] + S.get("decoy_photo_budget", 14)   # photos this search may fetch: keeps the nightly run fast
     for cap, widen in ((cap0, 0), (cap0, 10), (cap0 + 1, 10)):
         band = (max(0, lo - widen), min(100, hi + widen))
-        cats = [c for c in DECOYS if c in pool and recent.get(c, 0) < cap and c not in chosen
-                and not (c == "football_field" and "field" in chosen) and not (c == "field" and "football_field" in chosen)]
+        cats = [c for c in DECOYS if c in pool and recent.get(c, 0) < cap and not fam_clash(c, chosen)]
         rng.shuffle(cats)
         for c in cats:
             cand = []
@@ -1067,7 +1076,8 @@ def replace_round(spec, data, shapes, hist, any_type=False):
             if i == 0: continue
             for cc in hist["days"].get((date + dt.timedelta(days=i)).isoformat(), []): near[cc] = near.get(cc, 0) + 1
         today_cats = {r["category"] for j, r in enumerate(P["rounds"]) if j != n - 1}
-        cats = [cc for cc in pool if cc not in today_cats and near.get(cc, 0) < S.get("max_per_week", 2)]
+        cats = [cc for cc in pool if not fam_clash(cc, today_cats) and not CATS[cc].get("decoy_only")
+                and near.get(cc, 0) < S.get("max_per_week", 2)]
         rng.shuffle(cats)
     else:
         cats = [c0] if c0 in CATS else []

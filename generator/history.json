@@ -29,7 +29,7 @@
    "slipway"
   ],
   "2026-10-24": [
-   "track",
+   "wastewater",
    "football_field",
    "golf",
    "cemetery",
@@ -286,6 +286,11 @@
   },
   "way/282571254": {
    "cat": "football_field",
+   "date": "2026-10-24",
+   "key": null
+  },
+  "way/300593903": {
+   "cat": "wastewater",
    "date": "2026-10-24",
    "key": null
   },
