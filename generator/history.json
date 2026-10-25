@@ -83,6 +83,13 @@
    "pool",
    "golf",
    "lighthouse"
+  ],
+  "2026-11-01": [
+   "stadium",
+   "runway",
+   "cemetery",
+   "roundabout",
+   "slipway"
   ]
  },
  "used": {
@@ -104,6 +111,11 @@
   "node/6721757408": {
    "cat": "slipway",
    "date": "2026-10-23",
+   "key": null
+  },
+  "node/7774917786": {
+   "cat": "slipway",
+   "date": "2026-11-01",
    "key": null
   },
   "node/9910673055": {
@@ -306,6 +318,11 @@
    "date": "2026-10-27",
    "key": "substation:madisonville substation"
   },
+  "way/191504967": {
+   "cat": "runway",
+   "date": "2026-11-01",
+   "key": "runway:01/19"
+  },
   "way/251370422": {
    "cat": "lighthouse",
    "date": "2026-10-31",
@@ -319,6 +336,16 @@
   "way/300593903": {
    "cat": "wastewater",
    "date": "2026-10-24",
+   "key": null
+  },
+  "way/318631132": {
+   "cat": "stadium",
+   "date": "2026-11-01",
+   "key": null
+  },
+  "way/334324378": {
+   "cat": "roundabout",
+   "date": "2026-11-01",
    "key": null
   },
   "way/352602637": {
@@ -375,6 +402,11 @@
    "cat": "cemetery",
    "date": "2026-10-28",
    "key": "cemetery:wilson cemetery"
+  },
+  "way/447159770": {
+   "cat": "cemetery",
+   "date": "2026-11-01",
+   "key": "cemetery:spring hill graveyard"
   },
   "way/470313065": {
    "cat": "marina",
