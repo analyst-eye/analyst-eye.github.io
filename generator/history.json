@@ -40,7 +40,7 @@
    "solar",
    "runway",
    "pool",
-   "substation"
+   "cemetery"
   ],
   "2026-10-26": [
    "stadium",
@@ -345,6 +345,11 @@
    "cat": "runway",
    "date": "2026-10-23",
    "key": "runway:17/35"
+  },
+  "way/40038408": {
+   "cat": "cemetery",
+   "date": "2026-10-25",
+   "key": "cemetery:mcdonoghville cemetery"
   },
   "way/405695269": {
    "cat": "baseball",
