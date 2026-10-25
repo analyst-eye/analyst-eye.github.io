@@ -93,6 +93,11 @@
   ]
  },
  "used": {
+  "node/4065659413": {
+   "cat": "lighthouse",
+   "date": "2026-10-26",
+   "key": "lighthouse:tchefuncte river range rear light"
+  },
   "node/5121178537": {
    "cat": "slipway",
    "date": "2026-10-30",
@@ -253,6 +258,11 @@
    "date": "2026-10-22",
    "key": null
   },
+  "way/1384204600": {
+   "cat": "bridge",
+   "date": "2026-10-28",
+   "key": null
+  },
   "way/139587269": {
    "cat": "water_tower",
    "date": "2026-10-20",
@@ -357,6 +367,11 @@
    "cat": "pier",
    "date": "2026-10-26",
    "key": null
+  },
+  "way/362632963": {
+   "cat": "wastewater",
+   "date": "2026-10-29",
+   "key": "wastewater:carlos morris wastewater treatment facility"
   },
   "way/36778915": {
    "cat": "stadium",
@@ -522,16 +537,6 @@
    "cat": "marina",
    "date": "2026-10-28",
    "key": "marina:lakeshore marina"
-  },
-  "way/1384204600": {
-   "cat": "bridge",
-   "date": "2026-10-28",
-   "key": null
-  },
-  "way/362632963": {
-   "cat": "wastewater",
-   "date": "2026-10-29",
-   "key": "wastewater:carlos morris wastewater treatment facility"
   }
  }
 }
