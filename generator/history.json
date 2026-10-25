@@ -60,14 +60,14 @@
    "field",
    "marina",
    "cemetery",
-   "tennis",
+   "bridge",
    "golf"
   ],
   "2026-10-29": [
    "baseball",
    "pool",
    "water_tower",
-   "tennis",
+   "wastewater",
    "substation"
   ],
   "2026-10-30": [
@@ -522,6 +522,16 @@
    "cat": "marina",
    "date": "2026-10-28",
    "key": "marina:lakeshore marina"
+  },
+  "way/1384204600": {
+   "cat": "bridge",
+   "date": "2026-10-28",
+   "key": null
+  },
+  "way/362632963": {
+   "cat": "wastewater",
+   "date": "2026-10-29",
+   "key": "wastewater:carlos morris wastewater treatment facility"
   }
  }
 }
