@@ -90,9 +90,21 @@
    "cemetery",
    "roundabout",
    "slipway"
+  ],
+  "2026-11-02": [
+   "stadium",
+   "roundabout",
+   "wastewater",
+   "runway",
+   "storage_tank"
   ]
  },
  "used": {
+  "node/13408463512": {
+   "cat": "storage_tank",
+   "date": "2026-11-02",
+   "key": null
+  },
   "node/4065659413": {
    "cat": "lighthouse",
    "date": "2026-10-26",
@@ -228,6 +240,11 @@
    "date": "2026-10-27",
    "key": null
   },
+  "way/1271362938": {
+   "cat": "stadium",
+   "date": "2026-11-02",
+   "key": "stadium:joe zimmerman stadium"
+  },
   "way/1283374861": {
    "cat": "golf",
    "date": "2026-10-31",
@@ -276,6 +293,11 @@
   "way/1441715492": {
    "cat": "cemetery",
    "date": "2026-10-24",
+   "key": null
+  },
+  "way/1451779264": {
+   "cat": "wastewater",
+   "date": "2026-11-02",
    "key": null
   },
   "way/1463232546": {
@@ -351,6 +373,11 @@
   "way/318631132": {
    "cat": "stadium",
    "date": "2026-11-01",
+   "key": null
+  },
+  "way/333979366": {
+   "cat": "runway",
+   "date": "2026-11-02",
    "key": null
   },
   "way/334324378": {
@@ -487,6 +514,11 @@
    "cat": "tennis",
    "date": "2026-10-27",
    "key": "tennis:tennis court"
+  },
+  "way/849758910": {
+   "cat": "roundabout",
+   "date": "2026-11-02",
+   "key": "roundabout:dawes road"
   },
   "way/857326540": {
    "cat": "golf",
