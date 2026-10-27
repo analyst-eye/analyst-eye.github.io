@@ -6,7 +6,8 @@ A daily aerial-imagery spotting game. Five overhead images a day, one target eac
 
 * **Static site** (GitHub Pages): `index.html` (full game) and `embed.html` (640×480 X player-card view)
 * **Fully automated content**: a nightly GitHub Action builds puzzles from **OpenStreetMap** targets and **USDA NAIP** imagery (public domain), commits them, and redeploys.
-* No servers, no accounts, no tracking. Stats and streaks live in the player's browser (localStorage).
+* No servers, no accounts. Stats and streaks live in the player's browser (localStorage).
+* Counts anonymous visits with [GoatCounter](https://www.goatcounter.com/) (no cookies, no personal data).
 
 Made by [@A_is_A](https://x.com/A_is_A). Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright). Imagery: USDA NAIP via USGS The National Map.
 
