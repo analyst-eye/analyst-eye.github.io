@@ -97,6 +97,13 @@
    "wastewater",
    "runway",
    "storage_tank"
+  ],
+  "2026-11-03": [
+   "pier",
+   "field",
+   "golf",
+   "water_tower",
+   "substation"
   ]
  },
  "used": {
@@ -199,6 +206,11 @@
    "cat": "substation",
    "date": "2026-10-25",
    "key": "substation:gulfstream substation"
+  },
+  "way/1151323562": {
+   "cat": "substation",
+   "date": "2026-11-03",
+   "key": null
   },
   "way/1157812263": {
    "cat": "solar",
@@ -305,6 +317,11 @@
    "date": "2026-10-27",
    "key": null
   },
+  "way/1471868451": {
+   "cat": "water_tower",
+   "date": "2026-11-03",
+   "key": null
+  },
   "way/1473932445": {
    "cat": "tennis",
    "date": "2026-10-29",
@@ -399,6 +416,11 @@
    "cat": "wastewater",
    "date": "2026-10-29",
    "key": "wastewater:carlos morris wastewater treatment facility"
+  },
+  "way/365269796": {
+   "cat": "pier",
+   "date": "2026-11-03",
+   "key": null
   },
   "way/36778915": {
    "cat": "stadium",
@@ -500,6 +522,11 @@
    "date": "2026-10-28",
    "key": null
   },
+  "way/687974492": {
+   "cat": "golf",
+   "date": "2026-11-03",
+   "key": null
+  },
   "way/705835950": {
    "cat": "storage_tank",
    "date": "2026-10-25",
@@ -528,6 +555,11 @@
   "way/895461714": {
    "cat": "runway",
    "date": "2026-10-22",
+   "key": null
+  },
+  "way/919459033": {
+   "cat": "field",
+   "date": "2026-11-03",
    "key": null
   },
   "way/919494020": {
