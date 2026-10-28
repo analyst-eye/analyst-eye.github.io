@@ -104,6 +104,13 @@
    "golf",
    "water_tower",
    "substation"
+  ],
+  "2026-11-04": [
+   "baseball",
+   "marina",
+   "storage_tank",
+   "golf",
+   "cemetery"
   ]
  },
  "used": {
@@ -477,6 +484,11 @@
    "date": "2026-10-30",
    "key": "marina:bay st louis municipal harbor"
   },
+  "way/479760904": {
+   "cat": "marina",
+   "date": "2026-11-04",
+   "key": null
+  },
   "way/544605821": {
    "cat": "roundabout",
    "date": "2026-10-20",
@@ -502,6 +514,11 @@
    "date": "2026-10-31",
    "key": "pool:east pool"
   },
+  "way/658644004": {
+   "cat": "golf",
+   "date": "2026-11-04",
+   "key": null
+  },
   "way/660444869": {
    "cat": "tennis",
    "date": "2026-10-28",
@@ -510,6 +527,11 @@
   "way/665823248": {
    "cat": "pier",
    "date": "2026-10-24",
+   "key": null
+  },
+  "way/666042859": {
+   "cat": "baseball",
+   "date": "2026-11-04",
    "key": null
   },
   "way/66869159": {
@@ -535,6 +557,16 @@
   "way/72108363": {
    "cat": "runway",
    "date": "2026-10-25",
+   "key": null
+  },
+  "way/800672469": {
+   "cat": "cemetery",
+   "date": "2026-11-04",
+   "key": "cemetery:evening star cemetery"
+  },
+  "way/829445484": {
+   "cat": "storage_tank",
+   "date": "2026-11-04",
    "key": null
   },
   "way/832844362": {
