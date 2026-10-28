@@ -136,7 +136,7 @@ NOTES = {
  "cemetery": ["A tidy lawn covered in tiny, evenly spaced dots: the headstones.", "Look for a grassy area with neat rows of little white specks."],
  "wastewater": ["Big round and square pools of water grouped together behind a fence.", "Several identical circles of water side by side, like giant coins."],
  "pier": ["A long, thin, straight walkway sticking out into the water.", "A straight pale line running from the shore out over the water."],
- "bridge": ["A road crossing over water or another road, with its shadow underneath.", "Look where a road keeps going straight across water."],
+ "bridge": ["A road crossing over water or another road, with its shadow underneath.", "Look for a road that runs straight over another road or water without touching it."],
  "roundabout": ["A small circle where several roads meet, with an island in the middle.", "Follow the roads until they meet at a ring."],
  "pool": ["A bright blue rectangle that stands out from everything around it.", "Look for a splash of bright blue among the roofs and grass."],
  "tennis": ["A small, flat court, often green or blue, with white lines.", "Look for small colored rectangles, often in a row behind a fence."],
