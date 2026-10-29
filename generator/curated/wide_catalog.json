@@ -385,8 +385,9 @@
 "size_m":36,
 "diff_add":0,
 "note":"A big jet with swept wings, parked nose-in beside the terminal's long finger of gates.",
-"status":"approved",
-"conf":0.97
+"status":"disabled",
+"conf":0.97,
+"hold":"safety sweep: hits: military=office node, 3.2 km away, outside the frame (office)"
 },
 {
 "id":"msyB1",
@@ -525,8 +526,9 @@
 "size_m":36,
 "diff_add":0,
 "note":"A big jet with swept wings, parked beside the terminal's long finger of gates.",
-"status":"approved",
-"conf":0.97
+"status":"disabled",
+"conf":0.97,
+"hold":"safety sweep: hits: military=office node, 3.2 km away, outside the frame (office)"
 },
 {
 "id":"msyE1",
@@ -553,8 +555,9 @@
 "size_m":36,
 "diff_add":0,
 "note":"A big jet with swept wings, parked beside the terminal's long finger of gates.",
-"status":"approved",
-"conf":0.97
+"status":"disabled",
+"conf":0.97,
+"hold":"safety sweep: hits: military=office node, 3.2 km away, outside the frame (office)"
 },
 {
 "id":"msyF2",
@@ -567,8 +570,9 @@
 "size_m":36,
 "diff_add":0,
 "note":"A big jet with swept wings, parked beside the terminal's long finger of gates.",
-"status":"approved",
-"conf":0.97
+"status":"disabled",
+"conf":0.97,
+"hold":"safety sweep: hits: military=office node, 3.2 km away, outside the frame (office)"
 },
 {
 "id":"msyF3",
@@ -581,8 +585,9 @@
 "size_m":36,
 "diff_add":0,
 "note":"A big jet with swept wings, parked beside the terminal's long finger of gates.",
-"status":"approved",
-"conf":0.97
+"status":"disabled",
+"conf":0.97,
+"hold":"safety sweep: hits: military=office node, 3.2 km away, outside the frame (office)"
 },
 {
 "id":"msyG1",
@@ -595,8 +600,9 @@
 "size_m":36,
 "diff_add":0,
 "note":"A big jet with swept wings, parked beside the terminal's long finger of gates.",
-"status":"approved",
-"conf":0.97
+"status":"disabled",
+"conf":0.97,
+"hold":"safety sweep: hits: military=office node, 3.2 km away, outside the frame (office)"
 },
 {
 "id":"msyG2",
@@ -609,8 +615,9 @@
 "size_m":36,
 "diff_add":0,
 "note":"A big jet with swept wings, parked beside the terminal's long finger of gates.",
-"status":"approved",
-"conf":0.97
+"status":"disabled",
+"conf":0.97,
+"hold":"safety sweep: hits: military=office node, 3.2 km away, outside the frame (office)"
 },
 {
 "id":"msyH1",
