@@ -449,6 +449,11 @@
    "date": "2026-10-25",
    "key": "cemetery:mcdonoghville cemetery"
   },
+  "way/405689852": {
+   "cat": "baseball",
+   "date": "2026-10-29",
+   "key": null
+  },
   "way/405695269": {
    "cat": "baseball",
    "date": "2026-10-27",
@@ -563,6 +568,11 @@
    "cat": "cemetery",
    "date": "2026-11-04",
    "key": "cemetery:evening star cemetery"
+  },
+  "way/828318102": {
+   "cat": "baseball",
+   "date": "2026-10-29",
+   "key": null
   },
   "way/829445484": {
    "cat": "storage_tank",
