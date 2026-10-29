@@ -21,7 +21,12 @@ from PIL import Image, ImageStat
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GEN = os.path.join(ROOT, "generator")
-PUZ = os.path.join(ROOT, "puzzles")
+SCRATCH = os.environ.get("AE_SCRATCH")   # dry run: write puzzles + history into this folder instead of the repo (nothing under puzzles/ or p/ is touched)
+PUZ = os.path.join(SCRATCH, "puzzles") if SCRATCH else os.path.join(ROOT, "puzzles")
+HIST = os.path.join(SCRATCH, "history.json") if SCRATCH else os.path.join(ROOT, "generator", "history.json")
+if SCRATCH:
+    os.makedirs(PUZ, exist_ok=True)
+    if not os.path.exists(HIST): import shutil; shutil.copy(os.path.join(ROOT, "generator", "history.json"), HIST)
 IMG = os.path.join(PUZ, "img")
 CACHE = os.path.join(GEN, ".cache")
 S = json.load(open(os.path.join(GEN, "settings.json")))
@@ -54,6 +59,25 @@ CATS = {
  "substation":   dict(sel=['way["power"="substation"]'], label="Power substation", task="Find a power substation.", gsd=0.6, r_m=15, diff=3),
  "slipway":      dict(sel=['nwr["leisure"="slipway"]'], label="Boat ramp", task="Find a boat ramp.", gsd=0.6, r_m=15, diff=3),
  "lighthouse":   dict(sel=['nwr["man_made"="lighthouse"]'], label="Lighthouse", task="Find a lighthouse.", gsd=0.6, r_m=15, diff=3),
+# ---- "wide" types (added Oct 29): landforms, aircraft, vehicles and other things readable from above.
+# Their candidates come from generator/curated/wide_catalog.json (vetted offline by tools/build_wide_catalog.py), not from the
+# nightly Overpass query: the catalog already carries each target's outline/point, scale (_gsd), accept radius (_r_m) and
+# sensitive-site screening. wide=True marks them for the "variety" preference in build_day.
+ "volcano":      dict(sel=[], label="Volcanic cone", task="Find the volcanic cone.", gsd=4.0, r_m=250, diff=2, wide=True),
+ "oxbow":        dict(sel=[], label="Oxbow lake", task="Find the oxbow lake.", gsd=2.0, r_m=40, diff=2, wide=True),
+ "dune":         dict(sel=[], label="Sand dunes", task="Find the sand dunes.", gsd=3.0, r_m=150, diff=2, wide=True),
+ "delta":        dict(sel=[], label="River delta", task="Find the river delta.", gsd=12.0, r_m=600, diff=3, wide=True),
+ "mesa":         dict(sel=[], label="Mesa or butte", task="Find the mesa or butte.", gsd=6.0, r_m=300, diff=2, wide=True),
+ "meander":      dict(sel=[], label="River bend", task="Find the tight river bend.", gsd=3.0, r_m=150, diff=2, wide=True),
+ "sandbar":      dict(sel=[], label="Barrier island", task="Find the long, thin barrier island.", gsd=2.0, r_m=60, diff=3, wide=True),
+ "airliner":     dict(sel=[], label="Airliner", task="Find the airliner.", gsd=0.5, r_m=30, diff=2, wide=True),
+ "plane_ramp":   dict(sel=[], label="Parked airplanes", task="Find the parked airplanes.", gsd=0.5, r_m=30, diff=1, wide=True),
+ "small_plane":  dict(sel=[], label="Small airplane", task="Find the small airplane.", gsd=0.4, r_m=10, diff=3, wide=True),
+ "parking_lot":  dict(sel=[], label="Parking lot", task="Find the busiest parking lot.", gsd=0.6, r_m=18, diff=1, wide=True),
+ "parking_garage": dict(sel=[], label="Parking garage", task="Find the parking garage.", gsd=0.6, r_m=15, diff=3, wide=True),
+ "quarry":       dict(sel=[], label="Quarry", task="Find the quarry.", gsd=1.2, r_m=40, diff=1, wide=True),
+ "railyard":     dict(sel=[], label="Rail yard", task="Find the rail yard.", gsd=1.0, r_m=40, diff=2, wide=True),
+ "silo":         dict(sel=[], label="Grain silos", task="Find the grain silos.", gsd=0.6, r_m=15, diff=2, wide=True),
  # decoy rounds only: a football field whose yard lines are verifiably visible, next to a soccer field (see yardlines())
  "football_field": dict(sel=[], label="Football field", task="Find the football field.", gsd=0.6, r_m=18, diff=2, decoy_only=True),
 }
@@ -71,6 +95,8 @@ DCLS = {
  # never a decoy: other big pitches (rugby, lacrosse, multi-use, untagged) that count as a "sports field"
  "pitch_other": dict(sel='way["leisure"="pitch"][!"sport"]', sel2='way["leisure"="pitch"]["sport"~"^(rugby|rugby_union|rugby_league|lacrosse|multi|field_hockey|cricket|kickball)$"]',
                      one="sports field", many="sports fields", r_m=16, size=(50, 250)),
+ # catalog decoys (generator/curated/wide_catalog.json "decoys"): a parking lot that is mostly empty
+ "empty_lot":  dict(one="mostly empty parking lot", many="mostly empty parking lots", r_m=18, size=(30, 400)),
  # these three come from the main candidate set
  "soccer":       dict(one="soccer field", many="soccer fields", r_m=16, size=(80, 170)),
  "storage_tank": dict(one="storage tank", many="storage tanks", r_m=8, size=(6, 50)),
@@ -82,6 +108,7 @@ DECOYS = {   # target category -> [(decoy class, max distance from target in m, 
  "golf": [("tee", 110, "That's a tee box, where each hole starts: a flat strip with straight edges. Putting greens are rounder, often hugged by sand traps.")],
  "runway": [("taxiway", 450, "That's a taxiway, the road planes use to reach the runway. The runway is wider, with white stripes and numbers at each end.")],
  "water_tower": [("storage_tank", 200, "That's a ground-level tank. A water tower stands tall, so look for its long shadow.")],
+ "parking_lot": [("empty_lot", 400, "That lot is nearly empty. The answer is the lot with the most parked cars.")],
  "football_field": [("soccer", 250, "That's a soccer field. Football fields have white yard lines striped across them every 5 yards.")],
 }
 DECOY_TARGET_SIZE = {"baseball": (110, 260)}   # decoy rounds only: a "baseball" target must be full-size to contrast with softball
@@ -89,11 +116,16 @@ MAX_DECOYS = 4
 
 # Families: types that read as "the same kind of thing" to a player. At most one per family per day.
 FAMILY = {"stadium": "sports", "baseball": "sports", "field": "sports", "track": "sports", "football_field": "sports",
-          "tennis": "sports", "water_tower": "tank", "storage_tank": "tank"}
+          "tennis": "sports", "water_tower": "tank", "storage_tank": "tank", "silo": "tank", "runway": "aircraft",
+          "volcano": "landform", "oxbow": "landform", "dune": "landform", "delta": "landform", "mesa": "landform",
+          "meander": "landform", "sandbar": "landform",
+          "airliner": "aircraft", "plane_ramp": "aircraft", "small_plane": "aircraft",
+          "parking_lot": "vehicles", "parking_garage": "vehicles"}
 def fam(c): return FAMILY.get(c, c)
 def fam_clash(c, chosen): return fam(c) in {fam(x) for x in chosen}
 
 def dclass_of(t):
+    if t.get("_dcls") in DCLS: return t["_dcls"]   # catalog decoys
     sport = t.get("sport"); lp = t.get("leisure") == "pitch"
     if lp and sport in ("basketball", "pickleball", "softball", "soccer"): return sport
     if lp and (not sport or sport in ("rugby", "rugby_union", "rugby_league", "lacrosse", "multi", "field_hockey", "cricket", "kickball")): return "pitch_other"
@@ -103,6 +135,7 @@ def dclass_of(t):
     return None
 
 def cat_of(t):
+    if t.get("_cat") in CATS: return t["_cat"]   # catalog candidates carry their category
     mm = t.get("man_made"); sport = t.get("sport")
     if t.get("leisure") == "stadium": return "stadium"
     if t.get("aeroway") == "runway": return "runway"
@@ -146,6 +179,21 @@ NOTES = {
  "substation": ["A fenced gravel yard packed with metal equipment where power lines meet.", "Follow the cleared power-line path through the trees to a yard full of gear."],
  "slipway": ["A short paved ramp running straight into the water, usually beside a parking lot.", "Look for a strip of pavement that dips right into the water."],
  "lighthouse": ["A small round tower by the water with a long, thin shadow.", "Look along the shore for a small tower and its long shadow."],
+ "volcano": ["A lone, round hill that rises on its own from flatter ground, often with a dark bowl at the top.", "Look for a smooth cone-shaped hill standing by itself, with a shadowed side and maybe a dent at the peak."],
+ "oxbow": ["A curved, crescent-shaped lake, cut off from the river it used to be part of.", "A bent strip of still water shaped like a horseshoe or a banana, near a winding river."],
+ "dune": ["Ripples and ridges of pale sand with sharp, curving crests and no buildings or roads.", "A sea of bare sand piled into curved ridges, with shadows on one side of every crest."],
+ "delta": ["Fingers of land and water fanning out where a river meets open water.", "A river splitting into many branches that spread out like the fingers of a hand."],
+ "mesa": ["A flat-topped rock tower or table with steep sides and a long shadow.", "Look for a steep-sided block of rock standing above the flat desert."],
+ "meander": ["A river that bends back on itself in a tight loop, like a horseshoe.", "Follow the river to the place it curls almost all the way around."],
+ "sandbar": ["A long, skinny ribbon of pale sand and low scrub lying out in open water, with shallow water on both sides.", "A thin curved strip of sand with no roads or buildings, separating the open sea from calmer shallow water."],
+ "airliner": ["A big jet with swept-back wings and a long body, parked beside a terminal.", "Look for a big white airplane shaped like a cross, parked at the airport's buildings."],
+ "plane_ramp": ["A paved parking area with several small airplanes parked in rows, each shaped like a tiny cross.", "Look for a patch of pavement beside an airfield where small airplanes are parked in a line."],
+ "small_plane": ["One small airplane parked on the pavement, shaped like a tiny cross with a shadow.", "A single little cross-shaped airplane parked on the pavement or grass beside an airfield."],
+ "parking_lot": ["A big paved lot with rows of tiny cars.", "Look for a wide gray area with painted lines and rows of colorful dots: parked cars."],
+ "parking_garage": ["A big, flat-topped block with rows of cars parked on its roof level.", "A large square building whose roof is striped with parking lines and dotted with cars."],
+ "quarry": ["A pale, bare pit cut into the ground, with stepped walls and gravel piles.", "A big scar in the land: light-colored rock and dirt with terraced edges."],
+ "railyard": ["Dozens of parallel train tracks fanning together and side by side.", "A wide stretch where many railroad tracks run in parallel and split apart."],
+ "silo": ["A cluster of round tops, with tall shadows, next to a long building or railroad tracks.", "Round white discs in a group with long thin shadows: grain storage towers."],
  "football_field": ["A green rectangle striped with white yard lines, with end zones at both ends.", "Look for the white lines running across the grass every few steps: that's a football field."],
 }
 
@@ -206,7 +254,44 @@ def overpass(q):
     raise RuntimeError("all Overpass mirrors failed")
 
 # ---------------------------------------------------------------- data fetch (cached ~20h)
+CATALOG = os.path.join(GEN, "curated", "wide_catalog.json")
+def load_catalog():
+    """Vetted 'wide' targets -> (candidate elements, sensitive features near them, decoy elements). Never fatal: a bad
+    catalog just means the original types are used. Only entries with status "approved" are used (aircraft labels in the
+    80-94% band stay "flagged" until AJ approves them)."""
+    try:
+        C = json.load(open(CATALOG)); out = []
+        for e in C["entries"]:
+            if e.get("status", "approved") not in ("approved", "alt") or e["cat"] not in CATS: continue
+            t = {"_cat": e["cat"]}
+            if e.get("name"): t["name"] = e["name"]
+            if e.get("note"): t["_note"] = e["note"]
+            x = {"id": "wide:" + e["id"], "tags": t}
+            if e.get("status") == "alt": x["_alt_only"] = True   # a real look-alike (accepted answer if in frame), never a target
+            if e.get("view"): x["_view"] = (e["view"][0], e["view"][1], e.get("jit", 0.08))   # vetted framing: photo centre (+/- jit of a frame width)
+            for k_src, k_dst in (("gsd", "_gsd"), ("r_m", "_r_m"), ("size_m", "_size_m"), ("diff_add", "_diff_add")):
+                if e.get(k_src) is not None: x[k_dst] = e[k_src]
+            if e.get("ring"):
+                x["type"] = "way"; x["geometry"] = [{"lat": la, "lon": lo} for la, lo in e["ring"]]
+                la0, lo0 = e["ring"][0]
+            else:
+                x["type"] = "node"; x["lat"], x["lon"] = e["lat"], e["lon"]; la0, lo0 = e["lat"], e["lon"]
+            x["_url"] = e.get("url") or f"https://www.openstreetmap.org/?mlat={la0:.5f}&mlon={lo0:.5f}#map=16/{la0:.5f}/{lo0:.5f}"
+            out.append(x)
+        return out, C.get("bad", []), C.get("decoys", [])
+    except Exception as ex:
+        log(f"  wide catalog unavailable ({ex}); original types only"); return [], [], []
+
 def fetch_osm(stale_ok=False):
+    """Original Overpass data (cached) + the vetted wide catalog (static file, merged in memory only)."""
+    data = fetch_osm_core(stale_ok)
+    cands, bad, dec = load_catalog()
+    data["cands"] = data["cands"] + cands
+    data["bad"] = data["bad"] + bad
+    data["dcands"] = data.get("dcands", []) + dec
+    return data
+
+def fetch_osm_core(stale_ok=False):
     os.makedirs(CACHE, exist_ok=True)
     cpath = os.path.join(CACHE, "overpass.json")
     if os.path.exists(cpath) and (stale_ok or time.time() - os.path.getmtime(cpath) < 20 * 3600):
@@ -383,6 +468,7 @@ SPORT_NOTES = {
 }
 
 def template_note(cat, t, rng, meta):
+    if t.get("_note"): return t["_note"]   # catalog entries carry a clue written from the actual photo
     sport = (t.get("sport") or "").split(";")[0]
     if cat == "stadium" and "dome" in (t.get("name") or "").lower(): return "A giant round white roof: this stadium has a lid on it."
     if cat == "stadium" and sport in SPORT_NOTES: return SPORT_NOTES[sport]
@@ -390,7 +476,7 @@ def template_note(cat, t, rng, meta):
 
 def grok_note(cat, t, base, meta):
     key = os.environ.get("XAI_API_KEY")
-    if not key: return None
+    if not key or t.get("_note"): return None   # vetted clues are never rewritten
     try:
         tags = {k: v for k, v in t.items() if k in ("name", "height", "operator", "surface", "ref", "capacity", "sport", "material", "content")}
         prompt = (f"You write the one-line clue for a daily aerial-imagery spotting game. Target type: {CATS[cat]['label']}. "
@@ -415,6 +501,7 @@ def _num(v):
     except Exception: return 0.0
 
 def extent_m(x):
+    if x.get("_size_m"): return float(x["_size_m"])   # catalog targets state their own size
     b = x.get("bounds")
     if not b: return 0.0
     proj = local_m(b["minlat"], b["minlon"]); X, Y = proj(b["maxlat"], b["maxlon"])
@@ -425,7 +512,7 @@ def extent_m(x):
 # (only a bounding box). Before Oct 21 such targets (e.g. Bear Point Harbor marina) were scored as a single point at
 # the bbox centre, which can sit on land next to the feature. Relations now get their real outer rings from the
 # OSM API (cached), and every area target is scored on its footprint.
-AREA_CATS = {"marina", "stadium", "wastewater", "solar", "cemetery"}   # a bare node can't say where these are
+AREA_CATS = {"dune", "marina", "stadium", "wastewater", "solar", "cemetery", "oxbow", "parking_lot", "parking_garage", "quarry", "railyard", "plane_ramp"}   # a bare node can't say where these are
 OSM_API = "https://api.openstreetmap.org/api/0.6"
 
 def stitch(segs):
@@ -539,26 +626,37 @@ def xor_pack(obj, date):
     return base64.b64encode(bytes(b ^ key[i % len(key)] for i, b in enumerate(raw))).decode()
 
 # ---------------------------------------------------------------- build one day
+def in_bbox(lat, lon):
+    s, w, n, e = S["region"]["bbox"]; return s <= lat <= n and w <= lon <= e
+
 def load_history():
-    p = os.path.join(GEN, "history.json")
+    p = HIST
     return json.load(open(p)) if os.path.exists(p) else {"used": {}, "days": {}}
 
 def save_history(h):
-    json.dump(h, open(os.path.join(GEN, "history.json"), "w"), indent=1, sort_keys=True)
+    json.dump(h, open(HIST, "w"), indent=1, sort_keys=True)
 
 def day_number(date):
     return (date - dt.date.fromisoformat(S["launch_date"])).days + 1
 
-def build_pool(data, hist):
+WIDE_COOLDOWN_DAYS = 45
+def build_pool(data, hist, ref_date=None):
     """Eligible candidates by category (applies size/tag filters, manual rejects and history dedupe)."""
     used = hist["used"]
+    if ref_date is None:
+        ds_ = sorted(hist.get("days", {})); ref_date = dt.date.fromisoformat(ds_[-1]) if ds_ else central_today()
     names_used = {v.get("key") for v in used.values()}
     pool = {}
     for x in data["cands"]:
         t = x.get("tags", {}); c = cat_of(t)
-        if not c: continue
+        if not c or x.get("_alt_only"): continue
         oid = f"{x['type']}/{x['id']}"
-        if oid in used or oid in BL.get("osm_ids", []): continue   # manual rejects
+        wide_x = str(x["id"]).startswith("wide:")
+        if wide_x:   # catalog targets are few: reusable after WIDE_COOLDOWN_DAYS (the photo framing is re-rolled each time)
+            u0 = used.get(oid)
+            if u0 and (not u0.get("date") or (ref_date - dt.date.fromisoformat(u0["date"])).days < WIDE_COOLDOWN_DAYS): continue
+            if oid in BL.get("osm_ids", []): continue
+        elif oid in used or oid in BL.get("osm_ids", []): continue   # manual rejects
         if re.search(BL["name_regex"], " ".join([t.get("name", ""), t.get("operator", "")])): continue
         if t.get("access") in ("private", "military", "no"): continue
         if c == "runway" and (t.get("surface") in ("grass", "dirt", "unpaved") or "water" in t.get("surface", "")): continue
@@ -574,13 +672,13 @@ def build_pool(data, hist):
         if c in ("tennis", "pool") and size_m < 20: continue
         if c == "golf" and not 12 <= size_m <= 80: continue                      # real putting greens only
         # fairness: a target whose outline spans most of the photo makes the round trivial
-        if c not in ("runway", "pier", "lighthouse", "water_tower") and size_m > 0.7 * SIZE * CATS[c]["gsd"]: continue
+        if c not in ("runway", "pier", "lighthouse", "water_tower") and size_m > 0.7 * SIZE * x.get("_gsd", CATS[c]["gsd"]): continue
         if c in ("storage_tank",) and x["type"] == "way" and size_m < 12: continue
         if c in AREA_CATS and x["type"] == "node": continue                        # a point can't mark a footprint
         if x["type"] == "relation" and not rings_of(x): continue                 # no usable outline: can't score fairly
         cen = feature_point(x, c)
         if not cen: continue
-        k = f"{c}:{t.get('name','').lower()}" if t.get("name") else None
+        k = f"{c}:{t.get('name','').lower()}" if t.get("name") and not wide_x else None   # catalog names (an airport, a park) repeat by design
         if k and k in names_used: continue
         pool.setdefault(c, []).append((x, cen, k))
         if c == "field" and t.get("sport") == "american_football":   # also a decoy-round football target
@@ -589,10 +687,19 @@ def build_pool(data, hist):
     for c in pool: pool[c].sort(key=lambda z: (z[0]["type"], z[0]["id"]))
     return pool, names_used, used
 
+WIDE_PER_DAY = 2
+WIDE_BONUS = 0.45
+def safe_make_round(ds, idx, c, cfg, x, cen, shapes, rng, *a, **kw):
+    """make_round, except that an unexpected error on a catalog ("wide") candidate only skips that candidate."""
+    if not cfg.get("wide"): return make_round(ds, idx, c, cfg, x, cen, shapes, rng, *a, **kw)
+    try: return make_round(ds, idx, c, cfg, x, cen, shapes, rng, *a, **kw)
+    except Exception as ex:
+        log(f"    skip {c} {x.get('id')}: {type(ex).__name__}: {ex}"); return None
+
 def build_day(date, data, shapes, hist):
     ds = date.isoformat()
     rng = random.Random(int(hashlib.sha256(f"analyst-eye/{ds}".encode()).hexdigest(), 16))
-    pool, names_used, used = build_pool(data, hist); cats = sorted(pool)
+    pool, names_used, used = build_pool(data, hist, date); cats = sorted(pool)
     log(f"[{ds}] pool: " + ", ".join(f"{c}={len(pool[c])}" for c in cats))
     # Ramp: rounds 1-2 easy, 3-4 medium, 5 hard (TIERS on the 0-100 difficulty score).
     # One round per type per day; each type at most max_per_week times in any 7 days (previous 6 days counted).
@@ -612,11 +719,15 @@ def build_day(date, data, shapes, hist):
             band = (max(0, lo - widen), min(100, hi + widen))
             ok_cats = [c for c in cats if recent.get(c, 0) < cap and not fam_clash(c, chosen) and not CATS[c].get("decoy_only")]
             rng.shuffle(ok_cats)   # likely types first (by prior), random within
-            ok_cats.sort(key=lambda c: abs((CATS[c]["diff"] - 1) / 2 - center[tier]) + rng.random() * 0.6)
+            nwide = sum(1 for c0 in chosen if CATS[c0].get("wide"))
+            def wide_bias(c):   # aim for ~2 "wide" (landform / aircraft / vehicle / other) rounds a day, never more than 3
+                if not CATS[c].get("wide"): return 0.0
+                return -WIDE_BONUS if nwide < WIDE_PER_DAY else (WIDE_BONUS if nwide >= WIDE_PER_DAY + 1 else 0.0)
+            ok_cats.sort(key=lambda c: abs((CATS[c]["diff"] - 1) / 2 - center[tier]) + rng.random() * 0.6 + wide_bias(c))
             for c in ok_cats:
                 cand_list = pool[c][:]; rng.shuffle(cand_list)
                 for x, cen, k in cand_list[:40]:
-                    r = make_round(ds, len(rounds) + 1, c, CATS[c], x, cen, shapes, rng, data, band, decoy=dmode and "attach")
+                    r = safe_make_round(ds, len(rounds) + 1, c, CATS[c], x, cen, shapes, rng, data, band, decoy=dmode and "attach")
                     if r:
                         got = r; used[f"{x['type']}/{x['id']}"] = {"date": ds, "key": k, "cat": c}
                         if k: names_used.add(k)
@@ -634,7 +745,9 @@ def build_day(date, data, shapes, hist):
         old = r["image"]; new = f"img/{ds}-{i}.jpg"
         os.replace(os.path.join(PUZ, old), os.path.join(PUZ, new))
         r["image"] = new; r["round"] = i; r.pop("_tie"); r.pop("_slot", None)
-    puzzle = {"date": ds, "number": day_number(date), "region": S["region"]["name"], "size": SIZE,
+    region = S["region"]["name"]
+    if any(not in_bbox(r["secret_plain"]["lat"], r["secret_plain"]["lon"]) for r in rounds): region = "United States"   # a wide-type round elsewhere
+    puzzle = {"date": ds, "number": day_number(date), "region": region, "size": SIZE,
               "rounds": [{k: v for k, v in r.items() if k != "secret_plain"} for r in rounds],
               "attribution": "Imagery: USDA NAIP via USGS The National Map (public domain). Targets: © OpenStreetMap contributors, ODbL.",
               "generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
@@ -664,7 +777,7 @@ def decoy_round(ds, idx, pool, recent, chosen, cap0, lo, hi, shapes, rng, data, 
             rng.shuffle(cand)
             for x, cen, k, near in cand[:25]:
                 if FETCHES[0] >= stop_at: log("  decoy photo budget used up; normal round instead"); return None
-                r = make_round(ds, idx, c, CATS[c], x, cen, shapes, rng, data, band, decoy="need", near=near)
+                r = safe_make_round(ds, idx, c, CATS[c], x, cen, shapes, rng, data, band, decoy="need", near=near)
                 if r:
                     used[f"{x['type']}/{x['id']}"] = {"date": ds, "key": k, "cat": c}
                     if k: names_used.add(k)
@@ -814,6 +927,7 @@ def alternates(data, c, x, px, gsd=0.6, also=True):
         pt = feature_point(y, cc)
         if not pt: continue
         a = px(pt["lat"], pt["lon"])
+        if not (-SIZE <= a[0] <= 2 * SIZE and -SIZE <= a[1] <= 2 * SIZE): continue   # nowhere near the frame: skip the geometry work
         geom, gtype, parts = target_shapes(y, c, px, gsd, data)
         pts = geom or [a]
         if not any(-8 <= u <= SIZE + 8 and -8 <= v <= SIZE + 8 for u, v in pts + [a]): continue
@@ -879,7 +993,7 @@ def pre_difficulty(c, x, gsd, alts, ans, n_look):
     bonus = min(0.2, 0.08 * (sites - 1))                     # more accepted targets = easier
     sub = SUBTLE.get(c, {})
     return {"size": size_t, "zoom": zoom_t, "distract": distr_t, "prior": (CATS[c]["diff"] - 1) / 2, "bonus": bonus,
-            "subtle": sub.get("add", 0) / 100, "floor": TIERS[sub["min_tier"]][0] if sub.get("min_tier") in TIERS else 0,
+            "subtle": (sub.get("add", 0) + x.get("_diff_add", 0)) / 100, "floor": TIERS[sub["min_tier"]][0] if sub.get("min_tier") in TIERS else 0,
             "size_m": round(size), "screen_px": round(screen_px), "lookalikes": n_look, "sites": sites}
 
 def visibility(img, ans, size_px, texture=True):
@@ -947,7 +1061,7 @@ def combine(parts, vis=None):
 def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None, decoy=None, near=None):
     """decoy: None (easy rounds), "attach" (mark any verified look-alikes that happen to be in frame) or
        "need" (frame the photo to include a look-alike; fail unless at least one verified decoy is in it)."""
-    lat, lon = cen["lat"], cen["lon"]; gsd = cfg["gsd"]
+    lat, lon = cen["lat"], cen["lon"]; gsd = x.get("_gsd", cfg["gsd"]); r_m = x.get("_r_m", cfg["r_m"])   # catalog targets set their own scale
     k = 1 / math.cos(math.radians(lat))
     half_merc = SIZE / 2 * gsd * k
     tx, ty = merc(lat, lon)
@@ -965,6 +1079,10 @@ def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None, decoy
         fx, fy = rng.uniform(ax_lo, ax_hi), rng.uniform(ay_lo, ay_hi)
     xmin = tx - fx * 2 * half_merc; xmax = xmin + 2 * half_merc
     ymax = ty + fy * 2 * half_merc; ymin = ymax - 2 * half_merc
+    if x.get("_view"):   # catalog landforms that fill the frame: keep the vetted view so the drawn outline covers what is visible
+        vx, vy = merc(x["_view"][0], x["_view"][1]); j = x["_view"][2]
+        xmin = vx - half_merc + rng.uniform(-j, j) * 2 * half_merc; xmax = xmin + 2 * half_merc
+        ymax = vy + half_merc + rng.uniform(-j, j) * 2 * half_merc; ymin = ymax - 2 * half_merc
     clat, clon = unmerc((xmin + xmax) / 2, (ymin + ymax) / 2)
     ok, why = chip_is_clear(shapes, clat, clon, SIZE / 2 * gsd, S["chip_margin_m"])
     if not ok:
@@ -987,7 +1105,7 @@ def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None, decoy
     parts = pre_difficulty(c, x, gsd, alts, ans, lookalikes(data, c, px) if data else 0)
     dgeo = []   # look-alikes that pass the geometry checks (in frame, plausible size, clearly apart from targets)
     if decoy:
-        R_t = cfg["r_m"] / gsd; hw_t = cfg.get("halfwidth_m", 0) / gsd
+        R_t = r_m / gsd; hw_t = cfg.get("halfwidth_m", 0) / gsd
         scoring = [{"answer": ans, "geom": geom, "gtype": gtype, "parts": tparts}] + alts
         for dc, y, pt, clue in near:
             if len(dgeo) >= MAX_DECOYS: break
@@ -1045,12 +1163,12 @@ def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None, decoy
     tmp = f"img/_tmp-{ds}-{idx}.jpg"
     os.makedirs(IMG, exist_ok=True)
     img.save(os.path.join(PUZ, tmp), quality=S["jpeg_quality"], optimize=True, progressive=True)
-    r_px = round(cfg["r_m"] / gsd, 1)
+    r_px = round(r_m / gsd, 1)
     hint = make_hint(ans, rng)
     secret = {"answer": ans, "geom": geom, "gtype": gtype, **({"parts": tparts} if tparts else {}),
               "halfwidth_px": round(cfg.get("halfwidth_m", 0) / gsd, 1), "hint": hint,
               "name": t.get("name"), "lat": round(lat, 5), "lon": round(lon, 5),
-              "osm": f"https://www.openstreetmap.org/{x['type']}/{x['id']}", "note": note,
+              "osm": x.get("_url") or f"https://www.openstreetmap.org/{x['type']}/{x['id']}", "note": note,
               "naip": meta, "alts": alts, "decoys": decs,
               "chip_merc": [round(v, 2) for v in (xmin, ymin, xmax, ymax)]}
     many = []
@@ -1149,7 +1267,7 @@ def refresh_day(ds, data):
         if math.dist(old, sp["answer"]) > 3 or not (sp["hint"][0] - sp["hint"][2] <= sp["answer"][0] <= sp["hint"][0] + sp["hint"][2]
                                                     and sp["hint"][1] - sp["hint"][2] <= sp["answer"][1] <= sp["hint"][1] + sp["hint"][2]):
             sp["hint"] = make_hint(sp["answer"], random.Random(f"hint/{ds}/{r['round']}"))
-        R_t = cfg["r_m"] / gsd; hw_t = sp.get("halfwidth_px", 0)
+        R_t = cfg["r_m"] / gsd; hw_t = sp.get("halfwidth_px", 0)   # (refresh_day only handles the original types)
         scoring = [sp] + sp["alts"]
         keep = [d0 for d0 in sp.get("decoys") or [] if not any(dist_target(d0["answer"], st, hw_t) <= R_t for st in scoring)]
         if len(keep) != len(sp.get("decoys") or []): log(f"[{ds}] round {r['round']}: dropped {len(sp['decoys']) - len(keep)} decoys that are now accepted")
@@ -1212,4 +1330,5 @@ def day_pages():
 
 if __name__ == "__main__":
     try: main()
-    finally: day_pages()
+    finally:
+        if not SCRATCH: day_pages()

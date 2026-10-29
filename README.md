@@ -98,6 +98,19 @@ Only the named type scores; a pin on a decoy scores 0 and shows a one-line clue.
 check as targets, a plausible-size check and a separation check. The search is capped at `decoy_photo_budget` photo
 fetches per round; if nothing qualifies, a normal round is used. Review with `python3 tools/contact_sheet.py --decoys`.
 
+### Wide catalog (landforms, aircraft, parking lots)
+Beyond the Gulf OSM query, `generator/curated/wide_catalog.json` holds hand-vetted targets anywhere in the US that NAIP
+covers: volcanoes, oxbow lakes, dunes, deltas, mesas/buttes, river bends, barrier islands, airliners at the civilian
+terminals of MSY, KNEW and PIB, small planes at GA fields, and busy parking lots. The nightly run reads it like any
+other candidates (ids `wide:<id>`, at most 2 a day, family/weekly/safety rules unchanged).
+* `status`: `approved` = usable; `flagged` = waiting for AJ's call (aircraft label 80-94% sure, or a weak view); `alt` =
+  a mapped parking lot that is never a target but counts as an accepted answer when it appears in a frame.
+* Rebuild with `python3 tools/build_wide_catalog.py --bulk raw/bulk.json --keep generator/curated/lots_ok.json`
+  (`tools/fetch_wide_bulk.py` pulls the raw OSM lots; `tools/curate_lots.py` scores them from NAIP so the keepers in
+  `lots_ok.json` can be eyeballed). Planes within 8 km of a military airfield are dropped; aircraft under 80% are dropped.
+* Not resolvable from 0.3-0.6 m aerial imagery, so not offered: people and single cars.
+* Each catalog id is used once (same history rule as everything else), so the catalog needs topping up over time.
+
 ### Curated aircraft (draft, disabled)
 `generator/curated/aircraft_draft.json` holds hand-checked aircraft labels (museum aircraft, confidence-ranked; >=95 only
 when a documented source and NAIP measurements agree). Nothing uses it while `curated_aircraft_enabled` is false.

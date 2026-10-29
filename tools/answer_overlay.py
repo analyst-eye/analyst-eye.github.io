@@ -6,7 +6,7 @@
 import base64, json, math, os, sys
 from PIL import Image, ImageDraw
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PUZ = os.path.join(ROOT, "puzzles"); OUT = os.path.join(ROOT, "screens", "answers"); os.makedirs(OUT, exist_ok=True)
+PUZ = os.environ.get("AE_PUZ") or os.path.join(ROOT, "puzzles"); OUT = os.environ.get("AE_OUT") or os.path.join(ROOT, "screens", "answers"); os.makedirs(OUT, exist_ok=True)   # AE_PUZ / AE_OUT: dry-run review
 
 def decode(sec, ds):
     key = f"analyst-eye:{ds}".encode()
