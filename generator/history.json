@@ -111,6 +111,13 @@
    "storage_tank",
    "golf",
    "cemetery"
+  ],
+  "2026-11-05": [
+   "field",
+   "wastewater",
+   "water_tower",
+   "pool",
+   "substation"
   ]
  },
  "used": {
@@ -168,6 +175,11 @@
    "cat": "stadium",
    "date": "2026-10-29",
    "key": "stadium:yulman stadium"
+  },
+  "way/1002198514": {
+   "cat": "water_tower",
+   "date": "2026-11-05",
+   "key": null
   },
   "way/1049911181": {
    "cat": "golf",
@@ -294,6 +306,11 @@
    "date": "2026-10-22",
    "key": null
   },
+  "way/1372413748": {
+   "cat": "pool",
+   "date": "2026-11-05",
+   "key": "pool:coastal curl"
+  },
   "way/1384204600": {
    "cat": "bridge",
    "date": "2026-10-28",
@@ -344,6 +361,11 @@
    "date": "2026-10-26",
    "key": null
   },
+  "way/1485090987": {
+   "cat": "substation",
+   "date": "2026-11-05",
+   "key": null
+  },
   "way/1489357817": {
    "cat": "pool",
    "date": "2026-10-22",
@@ -362,6 +384,11 @@
   "way/166307316": {
    "cat": "water_tower",
    "date": "2026-10-29",
+   "key": null
+  },
+  "way/178173782": {
+   "cat": "field",
+   "date": "2026-11-05",
    "key": null
   },
   "way/180798644": {
@@ -597,6 +624,11 @@
   "way/895461714": {
    "cat": "runway",
    "date": "2026-10-22",
+   "key": null
+  },
+  "way/910454879": {
+   "cat": "wastewater",
+   "date": "2026-11-05",
    "key": null
   },
   "way/919459033": {
