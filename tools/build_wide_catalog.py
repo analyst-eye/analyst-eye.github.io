@@ -88,8 +88,7 @@ planes("small_plane", "Louis Armstrong New Orleans International (cargo ramp)", 
        12, 15, 0.95, "A small white airplane, shaped like a cross, parked on a huge empty slab of concrete.", "msyC")
 PLANES.append(("msyC5", "small_plane", "Louis Armstrong New Orleans International (cargo ramp)", 29.997998, -90.264307, 0.4, 12, 15, 0.95,
                "A small white airplane, shaped like a cross, parked on a huge empty slab of concrete."))  # 5th plane on same ramp, found in overlay review
-planes("small_plane", "Lakefront Airport, New Orleans", 30.0395, -90.0215, 0.3, [(443,66),(331,96),(85,168),(110,346),(233,380)],
-       10, 13, 0.95, "A small white airplane, shaped like a cross, parked on the apron between taxiways.", "knew")
+# Lakefront Airport (KNEW) removed 2026-10-29: next to the UNO / NIWC Atlantic Navy area
 planes("small_plane", "Hattiesburg-Laurel Regional", 31.4690, -89.3335, 0.3, [(60,238),(55,300),(130,285),(130,333)],
        10, 12, 0.95, "A small white airplane, shaped like a cross, parked on the apron beside a hangar.", "pib")
 # every other airliner visible around the MSY terminal piers (768-px tiles, gsd 0.4): all of them are accepted answers
@@ -227,6 +226,13 @@ def main():
         if e["id"] in LOTS_UNSURE: e["status"] = "flagged"; e["hold"] = HOLD_NOTE
     for e in E:   # pins I looked at and am not sure show the feature at this scale: held back for AJ
         if e["id"] in HOLD: e["status"] = "flagged"
+    sp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "generator", "curated", "safety_sweep.json")
+    if os.path.exists(sp):   # OSM sweep for military / prison / refinery / nuclear features around each non-lot pin; only "clean" stays enabled
+        SW = json.load(open(sp))["entries"]
+        for e in E:
+            if e["cat"] == "parking_lot" or e.get("status") != "approved": continue
+            v = SW.get(e["id"], "not swept")
+            if v != "clean": e["status"] = "disabled"; e["hold"] = "safety sweep: " + v
     for e in E:   # no empty names/notes keys
         for k in ("note", "name"):
             if e.get(k) is None: e.pop(k, None)
