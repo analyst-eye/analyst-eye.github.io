@@ -240,3 +240,7 @@ body[data-mode=embed] .lnk{padding:3px 2px;font-size:13px}
 .vs{margin:-4px 0 10px;font-size:14px;color:var(--dim)}
 .vs b{color:var(--ink)}.vs.win b{color:var(--cyan)}.vs.lose b{color:var(--amber)}
 body[data-mode=embed] .vs{margin:-2px 0 6px;font-size:13px}
+
+/* weekly bonus banner (hidden.html) */
+.bonusbar{display:block;margin:10px 0;padding:10px 12px;border:1px solid var(--amber);border-radius:10px;background:rgba(255,176,46,.07);color:var(--ink);text-decoration:none}
+.bonusbar b{color:var(--amber)}.bonusbar span{display:block;font-size:13px;color:var(--dim)}

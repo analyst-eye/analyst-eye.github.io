@@ -83,7 +83,7 @@ jobs:
       - name: Stage site
         run: |
           mkdir _site
-          cp -r index.html embed.html config.js assets puzzles p .nojekyll _site/
+          cp -r index.html embed.html hidden.html config.js assets puzzles hidden p .nojekyll _site/
           rm -f _site/puzzles/*.json.bak
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa   # v3.0.1
         with: { path: _site }

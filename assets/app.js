@@ -175,6 +175,14 @@ function vsText(mine, theirs) {
   const d = mine - theirs;
   return d > 0 ? `You beat them by ${d}` : d < 0 ? `${-d} short` : "Tied";
 }
+/* weekly bonus ("Hidden", hidden.html): shown on the intro and results screens for 7 days from its Sunday */
+const HID = ((window.AE_HIDDEN_INDEX || {}).dates || []).filter(d => isDay(d) && d <= TODAY).sort();
+function bonusHTML() {
+  const d = HID[HID.length - 1];
+  if (EMBED || !d || (Date.parse(TODAY + "T12:00:00Z") - Date.parse(d + "T12:00:00Z")) / 864e5 > 6) return "";
+  const v = store.get("ae:hidden:" + d), played = v && typeof v.score === "number" && isFinite(v.score);
+  return `<a class="bonusbar" href="hidden.html"><b>Weekly bonus: Hidden</b>${played ? ` · you scored ${Math.round(num(v.score, 0, 100))}/100` : ""}<span>${played ? "See the reveal again" : "Something is under the trees. One photo, one tap, then the LiDAR reveal."}</span></a>`;
+}
 const dayPage = ds => `${SITE}p/${ds}.html`;
 
 async function init() {
@@ -406,6 +414,7 @@ function intro() {
        ${G.tier ? "" : `<ol class="lineup" aria-label="Rounds by difficulty">${lineup}</ol>`}
        ${tierPicker()}
        ${extras}
+       ${bonusHTML()}
        ${EMBED && G.practice ? `<a class="dim small" href="${esc(SITE)}" target="_blank" rel="noopener">Open full site ↗</a>` : ""}
      </div></div>`);
   app.classList.add("is-intro");
@@ -595,6 +604,7 @@ function end() {
         <button type="button" class="btn ghost iconcopy" id="copy" aria-label="Copy result" title="Copy result"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button></div>
       <div class="nav"><button type="button" class="lnk" id="homebtn">← Home</button>${again ? `<button type="button" class="lnk" id="again">↻ Play again${G.practice ? "" : " <small>(practice)</small>"}</button>` : ""}</div>
       <p class="quiet" id="stats">${stats}</p>
+      ${bonusHTML()}
       ${EMBED ? `<p class="quiet"><a href="${esc(SITE)}" target="_blank" rel="noopener">Past puzzles ↗</a></p>` : ""}
     </section>
     ${EMBED ? "" : `<div class="results more">${archiveHTML()}</div>`}`);

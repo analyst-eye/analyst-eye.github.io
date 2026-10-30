@@ -72,7 +72,7 @@ def play_rest(page, fr, tag, touch, first=2):
     return out
 
 with sync_playwright() as p:
-    b = p.chromium.launch()
+    CH = "/opt/ungoogled-chromium/chrome"; b = p.chromium.launch(executable_path=CH, args=["--no-sandbox"]) if os.path.exists(CH) else p.chromium.launch()
     # ---------- mobile: pinch zoom, one-finger pan (no guess), tap guess ----------
     ctx = b.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, has_touch=True, is_mobile=True)
     page = ctx.new_page(); page.on("pageerror", lambda e: errors.append("mobile: " + str(e)))
