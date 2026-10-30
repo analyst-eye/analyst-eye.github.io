@@ -118,6 +118,13 @@
    "water_tower",
    "pool",
    "substation"
+  ],
+  "2026-11-06": [
+   "marina",
+   "parking_lot",
+   "dune",
+   "tennis",
+   "slipway"
   ]
  },
  "used": {
@@ -140,6 +147,11 @@
    "cat": "lighthouse",
    "date": "2026-10-24",
    "key": "lighthouse:sand island lighthouse"
+  },
+  "node/6185314919": {
+   "cat": "slipway",
+   "date": "2026-11-06",
+   "key": null
   },
   "node/6632268918": {
    "cat": "water_tower",
@@ -165,6 +177,11 @@
    "cat": "stadium",
    "date": "2026-10-22",
    "key": "stadium:ocean springs greyhound stadium"
+  },
+  "relation/19307891": {
+   "cat": "marina",
+   "date": "2026-11-06",
+   "key": "marina:pier avenue boat launch"
   },
   "relation/20726498": {
    "cat": "marina",
@@ -329,6 +346,11 @@
   "way/1441715492": {
    "cat": "cemetery",
    "date": "2026-10-24",
+   "key": null
+  },
+  "way/1443939397": {
+   "cat": "tennis",
+   "date": "2026-11-06",
    "key": null
   },
   "way/1451779264": {
@@ -675,6 +697,16 @@
    "cat": "marina",
    "date": "2026-10-28",
    "key": "marina:lakeshore marina"
+  },
+  "way/wide:great_sand_dunes": {
+   "cat": "dune",
+   "date": "2026-11-06",
+   "key": null
+  },
+  "way/wide:parking_lot-w741164785": {
+   "cat": "parking_lot",
+   "date": "2026-11-06",
+   "key": null
   }
  }
 }
