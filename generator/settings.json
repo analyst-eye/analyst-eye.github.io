@@ -49,5 +49,52 @@
    "min_tier": "medium",
    "why": "paved square vs. a parking lot; only paving pattern and benches tell them apart"
   }
+ },
+ "tuning": {
+  "_comment": "2026-10-29: AJ said rounds 1-3 were a bit too easy. tiers = difficulty-score bands (contiguous). view_mult = ground-sample-distance multiplier per tier (wider photo, smaller target; scoring radius stays the same in metres). giants = types that are landmarks by size: +add points (0-100 scale) once the footprint exceeds above_m, full add at 2x. Only days generated after this change are affected.",
+  "tiers": {
+   "easy": [
+    10,
+    36
+   ],
+   "medium": [
+    37,
+    52
+   ],
+   "hard": [
+    53,
+    100
+   ]
+  },
+  "view_mult": {
+   "easy": 1.25,
+   "medium": 1.12
+  },
+  "giants": {
+   "runway": {
+    "above_m": 500,
+    "add": 16
+   },
+   "marina": {
+    "above_m": 120,
+    "add": 14
+   },
+   "bridge": {
+    "above_m": 120,
+    "add": 14
+   },
+   "stadium": {
+    "above_m": 140,
+    "add": 8
+   },
+   "quarry": {
+    "above_m": 300,
+    "add": 8
+   },
+   "wastewater": {
+    "above_m": 200,
+    "add": 6
+   }
+  }
  }
 }

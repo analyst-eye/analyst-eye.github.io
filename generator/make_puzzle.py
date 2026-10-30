@@ -711,10 +711,10 @@ def build_day(date, data, shapes, hist):
     rounds, chosen = [], set()
     center = {"easy": 0.0, "medium": 0.5, "hard": 1.0}
     for si, tier in enumerate(SLOTS):
-        lo, hi = TIERS[tier]; got = None
-        dmode = None if tier == "easy" else ("need" if si in NEED_DECOY else "attach")
+        lo, hi = TIERS[tier]; got = None; view = VIEW.get(tier, 1.0)
+        dmode = ("attach" if si in ATTACH_EASY else None) if tier == "easy" else ("need" if si in NEED_DECOY else "attach")
         if dmode == "need":   # first Medium and the Hard round: try a decoy round first, fall back to a normal one
-            got = decoy_round(ds, len(rounds) + 1, pool, recent, chosen, cap0, lo, hi, shapes, rng, data, used, names_used)
+            got = decoy_round(ds, len(rounds) + 1, pool, recent, chosen, cap0, lo, hi, shapes, rng, data, used, names_used, view)
         for cap, widen in (() if got else ((cap0, 0), (cap0, 5), (cap0 + 1, 5), (cap0 + 1, 10))):
             band = (max(0, lo - widen), min(100, hi + widen))
             ok_cats = [c for c in cats if recent.get(c, 0) < cap and not fam_clash(c, chosen) and not CATS[c].get("decoy_only")]
@@ -726,8 +726,10 @@ def build_day(date, data, shapes, hist):
             ok_cats.sort(key=lambda c: abs((CATS[c]["diff"] - 1) / 2 - center[tier]) + rng.random() * 0.6 + wide_bias(c))
             for c in ok_cats:
                 cand_list = pool[c][:]; rng.shuffle(cand_list)
+                if tier != "hard":   # prefer smaller / partial instances (noisy, so it's not always the smallest)
+                    cand_list.sort(key=lambda t: (extent_m(t[0]) or NODE_SIZE_M.get(c, 20)) * rng.uniform(0.6, 1.4))
                 for x, cen, k in cand_list[:40]:
-                    r = safe_make_round(ds, len(rounds) + 1, c, CATS[c], x, cen, shapes, rng, data, band, decoy=dmode and "attach")
+                    r = safe_make_round(ds, len(rounds) + 1, c, CATS[c], x, cen, shapes, rng, data, band, decoy=dmode and "attach", view=view)
                     if r:
                         got = r; used[f"{x['type']}/{x['id']}"] = {"date": ds, "key": k, "cat": c}
                         if k: names_used.add(k)
@@ -741,6 +743,8 @@ def build_day(date, data, shapes, hist):
     if len(rounds) < S["rounds_per_day"]:
         raise RuntimeError(f"only {len(rounds)} rounds for {ds}")
     rounds.sort(key=lambda r: (r["_slot"] // 2 if r["_slot"] < 4 else 2, r["dscore"]))   # tiers in order, easier first within a tier
+    m = min(range(3), key=lambda i: rounds[i]["dscore"])   # widened bands can overlap: Round 1 is always the easiest of rounds 1-3
+    if m: rounds[0], rounds[m] = rounds[m], rounds[0]
     for i, r in enumerate(rounds, 1):
         old = r["image"]; new = f"img/{ds}-{i}.jpg"
         os.replace(os.path.join(PUZ, old), os.path.join(PUZ, new))
@@ -760,8 +764,9 @@ def build_day(date, data, shapes, hist):
     return puzzle
 
 NEED_DECOY = {2, 4}   # slot indexes: first Medium round and the Hard round
+ATTACH_EASY = {1}     # slot 2 (the harder Easy) also marks look-alikes that happen to be in frame; slot 1 stays plain so Round 1 is the easiest
 
-def decoy_round(ds, idx, pool, recent, chosen, cap0, lo, hi, shapes, rng, data, used, names_used):
+def decoy_round(ds, idx, pool, recent, chosen, cap0, lo, hi, shapes, rng, data, used, names_used, view=1.0):
     """Try to build a 'find the X, not the look-alike' round. -> round dict or None (caller falls back)."""
     if not data: return None
     stop_at = FETCHES[0] + S.get("decoy_photo_budget", 14)   # photos this search may fetch: keeps the nightly run fast
@@ -777,7 +782,7 @@ def decoy_round(ds, idx, pool, recent, chosen, cap0, lo, hi, shapes, rng, data, 
             rng.shuffle(cand)
             for x, cen, k, near in cand[:25]:
                 if FETCHES[0] >= stop_at: log("  decoy photo budget used up; normal round instead"); return None
-                r = safe_make_round(ds, idx, c, CATS[c], x, cen, shapes, rng, data, band, decoy="need", near=near)
+                r = safe_make_round(ds, idx, c, CATS[c], x, cen, shapes, rng, data, band, decoy="need", near=near, view=view)
                 if r:
                     used[f"{x['type']}/{x['id']}"] = {"date": ds, "key": k, "cat": c}
                     if k: names_used.add(k)
@@ -958,7 +963,14 @@ LOOKALIKE = [{"baseball", "field", "track", "stadium", "tennis"}, {"storage_tank
              {"golf", "cemetery"}, {"roundabout", "storage_tank"}]
 NODE_SIZE_M = {"water_tower": 14, "lighthouse": 8, "storage_tank": 15, "slipway": 10, "marina": 80,
                "wastewater": 100, "stadium": 120, "solar": 60, "pool": 15}
-TIERS = {"easy": (0, 29), "medium": (30, 49), "hard": (50, 100)}   # calibrated on the Gulf Coast pool
+# Tuned 2026-10-29 (AJ: rounds 1-3 a bit too easy). Was easy 0-29 / medium 30-49 / hard 50-100. The easy floor stops
+# near-zero "can't miss it" rounds; the medium floor lifts round 3. Old days keep the dscore they were generated with.
+TUNE = S.get("tuning", {})
+TIERS = {k: tuple(v) for k, v in TUNE.get("tiers", {"easy": [0, 29], "medium": [30, 49], "hard": [50, 100]}).items()}
+VIEW = TUNE.get("view_mult", {})          # tier -> ground-sample-distance multiplier (>1 = wider view, smaller target)
+GIANTS = {k: v for k, v in TUNE.get("giants", {}).items() if not k.startswith("_")}   # big obvious types: extra difficulty above a size
+def tier_of(d):   # tiers are contiguous; thresholds on the upper edge so a score never falls between them
+    return "easy" if d <= TIERS["easy"][1] else "medium" if d <= TIERS["medium"][1] else "hard"
 SLOTS = ["easy", "easy", "medium", "medium", "hard"]
 W_SIZE, W_ZOOM, W_DISTR, W_VIS, W_PRIOR = .28, .18, .18, .16, .20
 W_DECOY = .16          # verified decoys in the photo make a round harder
@@ -992,8 +1004,11 @@ def pre_difficulty(c, x, gsd, alts, ans, n_look):
     sites, _ = ambiguity(ans, alts, gsd)
     bonus = min(0.2, 0.08 * (sites - 1))                     # more accepted targets = easier
     sub = SUBTLE.get(c, {})
+    g = GIANTS.get(c); giant = 0.0
+    if g and size > g["above_m"]:   # runway / big marina / long bridge: the whole thing is a landmark; ramps to full add at 2x the threshold
+        giant = g["add"] * clamp((size - g["above_m"]) / g["above_m"])
     return {"size": size_t, "zoom": zoom_t, "distract": distr_t, "prior": (CATS[c]["diff"] - 1) / 2, "bonus": bonus,
-            "subtle": (sub.get("add", 0) + x.get("_diff_add", 0)) / 100, "floor": TIERS[sub["min_tier"]][0] if sub.get("min_tier") in TIERS else 0,
+            "subtle": (sub.get("add", 0) + x.get("_diff_add", 0) + giant) / 100, "floor": TIERS[sub["min_tier"]][0] if sub.get("min_tier") in TIERS else 0,
             "size_m": round(size), "screen_px": round(screen_px), "lookalikes": n_look, "sites": sites}
 
 def visibility(img, ans, size_px, texture=True):
@@ -1058,10 +1073,11 @@ def combine(parts, vis=None):
     return max(parts.get("floor", 0), round(100 * clamp(v)))
    # more look-alikes than this in one photo = trivial round -> pick another chip
 
-def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None, decoy=None, near=None):
+def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None, decoy=None, near=None, view=1.0):
     """decoy: None (easy rounds), "attach" (mark any verified look-alikes that happen to be in frame) or
        "need" (frame the photo to include a look-alike; fail unless at least one verified decoy is in it)."""
     lat, lon = cen["lat"], cen["lon"]; gsd = x.get("_gsd", cfg["gsd"]); r_m = x.get("_r_m", cfg["r_m"])   # catalog targets set their own scale
+    if view != 1.0 and gsd < 2.0 and not x.get("_view"): gsd = round(gsd * view, 2)   # tier view multiplier: wider photo, same scoring radius in metres
     k = 1 / math.cos(math.radians(lat))
     half_merc = SIZE / 2 * gsd * k
     tx, ty = merc(lat, lon)
@@ -1177,7 +1193,7 @@ def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None, decoy
     extra = {"caution": f"Careful: {' or '.join(many)} don't count."} if decs else {}
     return {"round": idx, "category": c, "label": cfg["label"], "task": cfg["task"], "image": tmp, **extra,
             "gsd_m": gsd, "radius_px": r_px, "difficulty": cfg["diff"],
-            "dscore": dscore, "tier": next(k for k, (a, b) in TIERS.items() if a <= dscore <= b),
+            "dscore": dscore, "tier": tier_of(dscore),
             "dparts": {**{k: (round(v, 2) if isinstance(v, float) else v) for k, v in parts.items()}, "visibility": round(vis, 2), "distinct": dist_v, "decoys": len(decs)},
             "imagery_date": (meta or {}).get("acquired"), "secret_plain": secret, "_tie": rng.random()}
 
