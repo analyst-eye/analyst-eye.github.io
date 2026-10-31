@@ -125,6 +125,13 @@
    "dune",
    "tennis",
    "slipway"
+  ],
+  "2026-11-07": [
+   "track",
+   "parking_lot",
+   "pier",
+   "golf",
+   "small_plane"
   ]
  },
  "used": {
@@ -171,6 +178,11 @@
   "node/9910673055": {
    "cat": "mast",
    "date": "2026-10-20",
+   "key": null
+  },
+  "node/wide:pib1": {
+   "cat": "small_plane",
+   "date": "2026-11-07",
    "key": null
   },
   "relation/14470282": {
@@ -273,6 +285,11 @@
    "date": "2026-10-30",
    "key": null
   },
+  "way/1235137616": {
+   "cat": "track",
+   "date": "2026-11-07",
+   "key": null
+  },
   "way/1235293253": {
    "cat": "track",
    "date": "2026-10-31",
@@ -317,6 +334,11 @@
    "cat": "marina",
    "date": "2026-10-20",
    "key": "marina:river yacht basin marina"
+  },
+  "way/1311572991": {
+   "cat": "golf",
+   "date": "2026-11-07",
+   "key": null
   },
   "way/1334854646": {
    "cat": "roundabout",
@@ -563,6 +585,11 @@
    "date": "2026-10-20",
    "key": null
   },
+  "way/633806420": {
+   "cat": "pier",
+   "date": "2026-11-07",
+   "key": "pier:paddle boats"
+  },
   "way/636208316": {
    "cat": "pool",
    "date": "2026-10-31",
@@ -701,6 +728,11 @@
   "way/wide:great_sand_dunes": {
    "cat": "dune",
    "date": "2026-11-06",
+   "key": null
+  },
+  "way/wide:parking_lot-w215115539": {
+   "cat": "parking_lot",
+   "date": "2026-11-07",
    "key": null
   },
   "way/wide:parking_lot-w741164785": {
