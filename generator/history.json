@@ -145,6 +145,11 @@
    "date": "2026-10-26",
    "key": "lighthouse:tchefuncte river range rear light"
   },
+  "node/4285566122": {
+   "cat": "slipway",
+   "date": "2026-11-01",
+   "key": null
+  },
   "node/5121178537": {
    "cat": "slipway",
    "date": "2026-10-30",
@@ -379,6 +384,11 @@
    "cat": "wastewater",
    "date": "2026-11-02",
    "key": null
+  },
+  "way/1461799136": {
+   "cat": "cemetery",
+   "date": "2026-11-01",
+   "key": "cemetery:saint paul catholic cemetery"
   },
   "way/1463232546": {
    "cat": "solar",
