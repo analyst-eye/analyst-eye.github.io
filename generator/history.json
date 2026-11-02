@@ -139,9 +139,21 @@
    "bridge",
    "tennis",
    "lighthouse"
+  ],
+  "2026-11-09": [
+   "oxbow",
+   "baseball",
+   "roundabout",
+   "runway",
+   "slipway"
   ]
  },
  "used": {
+  "node/1121816573": {
+   "cat": "slipway",
+   "date": "2026-11-09",
+   "key": null
+  },
   "node/13408463512": {
    "cat": "storage_tank",
    "date": "2026-11-02",
@@ -477,6 +489,11 @@
    "date": "2026-10-31",
    "key": null
   },
+  "way/25529460": {
+   "cat": "runway",
+   "date": "2026-11-09",
+   "key": null
+  },
   "way/282571254": {
    "cat": "football_field",
    "date": "2026-10-24",
@@ -486,6 +503,11 @@
    "cat": "wastewater",
    "date": "2026-10-24",
    "key": null
+  },
+  "way/304400161": {
+   "cat": "roundabout",
+   "date": "2026-11-09",
+   "key": "roundabout:eastern shore court"
   },
   "way/318631132": {
    "cat": "stadium",
@@ -606,6 +628,11 @@
    "cat": "pool",
    "date": "2026-10-25",
    "key": "pool:one club gulf shores"
+  },
+  "way/622919502": {
+   "cat": "baseball",
+   "date": "2026-11-09",
+   "key": null
   },
   "way/625901824": {
    "cat": "storage_tank",
@@ -770,6 +797,11 @@
   "way/wide:great_sand_dunes": {
    "cat": "dune",
    "date": "2026-11-06",
+   "key": null
+  },
+  "way/wide:lake_providence": {
+   "cat": "oxbow",
+   "date": "2026-11-09",
    "key": null
   },
   "way/wide:parking_lot-w215115539": {
