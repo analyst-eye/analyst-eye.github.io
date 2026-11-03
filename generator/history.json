@@ -146,6 +146,13 @@
    "roundabout",
    "runway",
    "slipway"
+  ],
+  "2026-11-10": [
+   "meander",
+   "airliner",
+   "water_tower",
+   "tennis",
+   "golf"
   ]
  },
  "used": {
@@ -202,6 +209,16 @@
   "node/9910673055": {
    "cat": "mast",
    "date": "2026-10-20",
+   "key": null
+  },
+  "node/wide:horseshoe_bend": {
+   "cat": "meander",
+   "date": "2026-11-10",
+   "key": null
+  },
+  "node/wide:msyH1": {
+   "cat": "airliner",
+   "date": "2026-11-10",
    "key": null
   },
   "node/wide:pib1": {
@@ -314,6 +331,11 @@
    "date": "2026-10-30",
    "key": null
   },
+  "way/1211938426": {
+   "cat": "water_tower",
+   "date": "2026-11-10",
+   "key": null
+  },
   "way/1235137616": {
    "cat": "track",
    "date": "2026-11-07",
@@ -367,6 +389,11 @@
   "way/1311572991": {
    "cat": "golf",
    "date": "2026-11-07",
+   "key": null
+  },
+  "way/1331259624": {
+   "cat": "tennis",
+   "date": "2026-11-10",
    "key": null
   },
   "way/1334854646": {
@@ -677,6 +704,11 @@
   "way/687836720": {
    "cat": "field",
    "date": "2026-10-28",
+   "key": null
+  },
+  "way/687970288": {
+   "cat": "golf",
+   "date": "2026-11-10",
    "key": null
   },
   "way/687974492": {
