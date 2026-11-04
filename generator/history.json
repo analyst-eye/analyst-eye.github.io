@@ -153,6 +153,13 @@
    "water_tower",
    "tennis",
    "golf"
+  ],
+  "2026-11-11": [
+   "runway",
+   "stadium",
+   "marina",
+   "storage_tank",
+   "golf"
   ]
  },
  "used": {
@@ -245,6 +252,11 @@
    "cat": "stadium",
    "date": "2026-10-29",
    "key": "stadium:yulman stadium"
+  },
+  "relation/8837720": {
+   "cat": "marina",
+   "date": "2026-11-11",
+   "key": null
   },
   "way/1002198514": {
    "cat": "water_tower",
@@ -561,6 +573,11 @@
    "date": "2026-10-29",
    "key": null
   },
+  "way/355804855": {
+   "cat": "stadium",
+   "date": "2026-11-11",
+   "key": null
+  },
   "way/361476366": {
    "cat": "pier",
    "date": "2026-10-26",
@@ -646,6 +663,11 @@
    "date": "2026-11-08",
    "key": "lighthouse:middle bay lighthouse"
   },
+  "way/538906271": {
+   "cat": "runway",
+   "date": "2026-11-11",
+   "key": null
+  },
   "way/544605821": {
    "cat": "roundabout",
    "date": "2026-10-20",
@@ -701,6 +723,11 @@
    "date": "2026-11-04",
    "key": null
   },
+  "way/666393079": {
+   "cat": "golf",
+   "date": "2026-11-11",
+   "key": null
+  },
   "way/66869159": {
    "cat": "pool",
    "date": "2026-10-29",
@@ -719,6 +746,11 @@
   "way/687974492": {
    "cat": "golf",
    "date": "2026-11-03",
+   "key": null
+  },
+  "way/705834358": {
+   "cat": "storage_tank",
+   "date": "2026-11-11",
    "key": null
   },
   "way/705835950": {
