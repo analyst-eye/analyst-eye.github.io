@@ -117,7 +117,7 @@
    "wastewater",
    "water_tower",
    "pool",
-   "substation"
+   "small_plane"
   ],
   "2026-11-06": [
    "marina",
@@ -231,6 +231,11 @@
   "node/wide:pib1": {
    "cat": "small_plane",
    "date": "2026-11-07",
+   "key": null
+  },
+  "node/wide:pib2": {
+   "cat": "small_plane",
+   "date": "2026-11-05",
    "key": null
   },
   "relation/14470282": {
