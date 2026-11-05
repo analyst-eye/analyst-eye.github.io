@@ -160,6 +160,13 @@
    "marina",
    "storage_tank",
    "golf"
+  ],
+  "2026-11-12": [
+   "baseball",
+   "volcano",
+   "roundabout",
+   "cemetery",
+   "small_plane"
   ]
  },
  "used": {
@@ -221,6 +228,16 @@
   "node/wide:horseshoe_bend": {
    "cat": "meander",
    "date": "2026-11-10",
+   "key": null
+  },
+  "node/wide:lava_butte": {
+   "cat": "volcano",
+   "date": "2026-11-12",
+   "key": null
+  },
+  "node/wide:msyC4": {
+   "cat": "small_plane",
+   "date": "2026-11-12",
    "key": null
   },
   "node/wide:msyH1": {
@@ -466,6 +483,11 @@
   "way/1463232546": {
    "cat": "solar",
    "date": "2026-10-27",
+   "key": null
+  },
+  "way/1469983059": {
+   "cat": "baseball",
+   "date": "2026-11-12",
    "key": null
   },
   "way/1471868451": {
@@ -772,6 +794,16 @@
    "cat": "cemetery",
    "date": "2026-11-04",
    "key": "cemetery:evening star cemetery"
+  },
+  "way/812697514": {
+   "cat": "cemetery",
+   "date": "2026-11-12",
+   "key": "cemetery:waldheim cemetery"
+  },
+  "way/821739330": {
+   "cat": "roundabout",
+   "date": "2026-11-12",
+   "key": null
   },
   "way/828318102": {
    "cat": "baseball",
