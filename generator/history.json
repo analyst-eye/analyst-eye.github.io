@@ -167,6 +167,13 @@
    "roundabout",
    "cemetery",
    "small_plane"
+  ],
+  "2026-11-13": [
+   "airliner",
+   "marina",
+   "storage_tank",
+   "tennis",
+   "slipway"
   ]
  },
  "used": {
@@ -220,6 +227,11 @@
    "date": "2026-11-01",
    "key": null
   },
+  "node/9780285019": {
+   "cat": "slipway",
+   "date": "2026-11-13",
+   "key": null
+  },
   "node/9910673055": {
    "cat": "mast",
    "date": "2026-10-20",
@@ -233,6 +245,11 @@
   "node/wide:lava_butte": {
    "cat": "volcano",
    "date": "2026-11-12",
+   "key": null
+  },
+  "node/wide:msyA1": {
+   "cat": "airliner",
+   "date": "2026-11-13",
    "key": null
   },
   "node/wide:msyC4": {
@@ -264,6 +281,11 @@
    "cat": "marina",
    "date": "2026-11-06",
    "key": "marina:pier avenue boat launch"
+  },
+  "relation/19310140": {
+   "cat": "marina",
+   "date": "2026-11-13",
+   "key": "marina:grand hotel marina"
   },
   "relation/20726498": {
    "cat": "marina",
@@ -720,6 +742,11 @@
    "date": "2026-10-20",
    "key": null
   },
+  "way/626849752": {
+   "cat": "storage_tank",
+   "date": "2026-11-13",
+   "key": null
+  },
   "way/633806420": {
    "cat": "pier",
    "date": "2026-11-07",
@@ -803,6 +830,11 @@
   "way/821739330": {
    "cat": "roundabout",
    "date": "2026-11-12",
+   "key": null
+  },
+  "way/827568905": {
+   "cat": "tennis",
+   "date": "2026-11-13",
    "key": null
   },
   "way/828318102": {
