@@ -181,12 +181,24 @@
    "golf",
    "pier",
    "small_plane"
+  ],
+  "2026-11-15": [
+   "field",
+   "parking_lot",
+   "runway",
+   "water_tower",
+   "pier"
   ]
  },
  "used": {
   "node/1121816573": {
    "cat": "slipway",
    "date": "2026-11-09",
+   "key": null
+  },
+  "node/13156775345": {
+   "cat": "water_tower",
+   "date": "2026-11-15",
    "key": null
   },
   "node/13408463512": {
@@ -609,6 +621,11 @@
    "date": "2026-11-09",
    "key": null
   },
+  "way/266446769": {
+   "cat": "runway",
+   "date": "2026-11-15",
+   "key": null
+  },
   "way/282571254": {
    "cat": "football_field",
    "date": "2026-10-24",
@@ -724,6 +741,11 @@
    "date": "2026-10-30",
    "key": "marina:bay st louis municipal harbor"
   },
+  "way/479760450": {
+   "cat": "pier",
+   "date": "2026-11-15",
+   "key": "pier:money hill fishing pier"
+  },
   "way/479760904": {
    "cat": "marina",
    "date": "2026-11-04",
@@ -822,6 +844,11 @@
   "way/687974492": {
    "cat": "golf",
    "date": "2026-11-03",
+   "key": null
+  },
+  "way/689253076": {
+   "cat": "field",
+   "date": "2026-11-15",
    "key": null
   },
   "way/705834358": {
@@ -967,6 +994,11 @@
   "way/wide:lake_providence": {
    "cat": "oxbow",
    "date": "2026-11-09",
+   "key": null
+  },
+  "way/wide:parking_lot-w139530597": {
+   "cat": "parking_lot",
+   "date": "2026-11-15",
    "key": null
   },
   "way/wide:parking_lot-w215115539": {
