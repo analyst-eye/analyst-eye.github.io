@@ -188,6 +188,13 @@
    "runway",
    "water_tower",
    "pier"
+  ],
+  "2026-11-16": [
+   "volcano",
+   "track",
+   "runway",
+   "roundabout",
+   "slipway"
   ]
  },
  "used": {
@@ -254,6 +261,11 @@
   "node/9910673055": {
    "cat": "mast",
    "date": "2026-10-20",
+   "key": null
+  },
+  "node/wide:capulin": {
+   "cat": "volcano",
+   "date": "2026-11-16",
    "key": null
   },
   "node/wide:devils_tower": {
@@ -446,6 +458,11 @@
    "date": "2026-10-27",
    "key": null
   },
+  "way/1251799399": {
+   "cat": "track",
+   "date": "2026-11-16",
+   "key": null
+  },
   "way/1271362938": {
    "cat": "stadium",
    "date": "2026-11-02",
@@ -596,6 +613,11 @@
    "date": "2026-11-05",
    "key": null
   },
+  "way/180629058": {
+   "cat": "roundabout",
+   "date": "2026-11-16",
+   "key": "roundabout:wharf parkway"
+  },
   "way/180798644": {
    "cat": "runway",
    "date": "2026-10-30",
@@ -671,6 +693,11 @@
    "date": "2026-10-26",
    "key": null
   },
+  "way/361476377": {
+   "cat": "slipway",
+   "date": "2026-11-16",
+   "key": null
+  },
   "way/362632963": {
    "cat": "wastewater",
    "date": "2026-10-29",
@@ -695,6 +722,11 @@
    "cat": "runway",
    "date": "2026-10-23",
    "key": "runway:17/35"
+  },
+  "way/39616034": {
+   "cat": "runway",
+   "date": "2026-11-16",
+   "key": "runway:09/27"
   },
   "way/40038408": {
    "cat": "cemetery",
