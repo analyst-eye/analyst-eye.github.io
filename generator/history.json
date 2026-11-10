@@ -195,6 +195,13 @@
    "runway",
    "roundabout",
    "slipway"
+  ],
+  "2026-11-17": [
+   "mesa",
+   "airliner",
+   "cemetery",
+   "tennis",
+   "golf"
   ]
  },
  "used": {
@@ -268,6 +275,11 @@
    "date": "2026-11-16",
    "key": null
   },
+  "node/wide:courthouse_butte": {
+   "cat": "mesa",
+   "date": "2026-11-17",
+   "key": null
+  },
   "node/wide:devils_tower": {
    "cat": "mesa",
    "date": "2026-11-14",
@@ -291,6 +303,11 @@
   "node/wide:msyC4": {
    "cat": "small_plane",
    "date": "2026-11-12",
+   "key": null
+  },
+  "node/wide:msyE1": {
+   "cat": "airliner",
+   "date": "2026-11-17",
    "key": null
   },
   "node/wide:msyH1": {
@@ -468,6 +485,11 @@
    "date": "2026-11-02",
    "key": "stadium:joe zimmerman stadium"
   },
+  "way/1279786566": {
+   "cat": "golf",
+   "date": "2026-11-17",
+   "key": null
+  },
   "way/1283374861": {
    "cat": "golf",
    "date": "2026-10-31",
@@ -533,6 +555,11 @@
    "date": "2026-10-23",
    "key": null
   },
+  "way/1413086631": {
+   "cat": "cemetery",
+   "date": "2026-11-17",
+   "key": "cemetery:mormon cemetery"
+  },
   "way/1441715492": {
    "cat": "cemetery",
    "date": "2026-10-24",
@@ -571,6 +598,11 @@
   "way/1473932445": {
    "cat": "tennis",
    "date": "2026-10-29",
+   "key": null
+  },
+  "way/1474029878": {
+   "cat": "tennis",
+   "date": "2026-11-17",
    "key": null
   },
   "way/1474029971": {
