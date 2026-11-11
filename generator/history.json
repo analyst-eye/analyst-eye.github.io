@@ -202,6 +202,13 @@
    "cemetery",
    "tennis",
    "golf"
+  ],
+  "2026-11-18": [
+   "marina",
+   "track",
+   "water_tower",
+   "golf",
+   "substation"
   ]
  },
  "used": {
@@ -345,6 +352,11 @@
    "date": "2026-11-13",
    "key": "marina:grand hotel marina"
   },
+  "relation/20726372": {
+   "cat": "marina",
+   "date": "2026-11-18",
+   "key": "marina:romar marina"
+  },
   "relation/20726498": {
    "cat": "marina",
    "date": "2026-10-21",
@@ -363,6 +375,11 @@
   "way/1002198514": {
    "cat": "water_tower",
    "date": "2026-11-05",
+   "key": null
+  },
+  "way/1009406279": {
+   "cat": "golf",
+   "date": "2026-11-18",
    "key": null
   },
   "way/1049911181": {
@@ -463,6 +480,11 @@
   "way/1235293253": {
    "cat": "track",
    "date": "2026-10-31",
+   "key": null
+  },
+  "way/1235656075": {
+   "cat": "track",
+   "date": "2026-11-18",
    "key": null
   },
   "way/1251560570": {
@@ -575,6 +597,11 @@
    "date": "2026-11-02",
    "key": null
   },
+  "way/1460812096": {
+   "cat": "substation",
+   "date": "2026-11-18",
+   "key": null
+  },
   "way/1461799136": {
    "cat": "cemetery",
    "date": "2026-11-01",
@@ -664,6 +691,11 @@
    "cat": "runway",
    "date": "2026-11-01",
    "key": "runway:01/19"
+  },
+  "way/212448632": {
+   "cat": "water_tower",
+   "date": "2026-11-18",
+   "key": null
   },
   "way/251370422": {
    "cat": "lighthouse",
