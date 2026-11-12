@@ -209,6 +209,13 @@
    "water_tower",
    "golf",
    "substation"
+  ],
+  "2026-11-19": [
+   "stadium",
+   "volcano",
+   "runway",
+   "roundabout",
+   "substation"
   ]
  },
  "used": {
@@ -337,6 +344,11 @@
    "date": "2026-11-14",
    "key": null
   },
+  "node/wide:sunset_crater": {
+   "cat": "volcano",
+   "date": "2026-11-19",
+   "key": null
+  },
   "relation/14470282": {
    "cat": "stadium",
    "date": "2026-10-22",
@@ -431,6 +443,11 @@
    "cat": "substation",
    "date": "2026-10-25",
    "key": "substation:gulfstream substation"
+  },
+  "way/1151207655": {
+   "cat": "substation",
+   "date": "2026-11-19",
+   "key": null
   },
   "way/1151323562": {
    "cat": "substation",
@@ -657,6 +674,11 @@
    "date": "2026-10-22",
    "key": "pool:uno aquatic center"
   },
+  "way/1514264461": {
+   "cat": "roundabout",
+   "date": "2026-11-19",
+   "key": null
+  },
   "way/1514264545": {
    "cat": "roundabout",
    "date": "2026-10-22",
@@ -702,6 +724,11 @@
    "date": "2026-11-18",
    "key": null
   },
+  "way/25018948": {
+   "cat": "runway",
+   "date": "2026-11-19",
+   "key": null
+  },
   "way/251370422": {
    "cat": "lighthouse",
    "date": "2026-10-31",
@@ -731,6 +758,11 @@
    "cat": "roundabout",
    "date": "2026-11-09",
    "key": "roundabout:eastern shore court"
+  },
+  "way/318631131": {
+   "cat": "stadium",
+   "date": "2026-11-19",
+   "key": null
   },
   "way/318631132": {
    "cat": "stadium",
