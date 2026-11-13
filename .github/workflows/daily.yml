@@ -12,6 +12,13 @@ on:
         description: "Regenerate even if the puzzle exists"
         type: boolean
         default: false
+      replace:
+        description: "Swap one round, DATE:N (e.g. 2026-11-13:3). Add the bad OSM id to generator/blocklist.json first."
+        required: false
+      any_type:
+        description: "With replace: allow any type"
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths-ignore: ["README.md"]
@@ -39,8 +46,14 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}   # optional; leave unset to use template notes
           IN_DATE: ${{ inputs.date }}
           IN_FORCE: ${{ inputs.force }}
+          IN_REPLACE: ${{ inputs.replace }}
+          IN_ANY: ${{ inputs.any_type }}
         run: |
-          if [ -n "$IN_DATE" ]; then
+          if [ -n "$IN_REPLACE" ]; then
+            [[ "$IN_REPLACE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}:[1-9]$ ]] || { echo "replace must be YYYY-MM-DD:N"; exit 1; }
+            if [ "$IN_ANY" = "true" ]; then python generator/make_puzzle.py --replace "$IN_REPLACE" --any
+            else python generator/make_puzzle.py --replace "$IN_REPLACE"; fi
+          elif [ -n "$IN_DATE" ]; then
             [[ "$IN_DATE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || { echo "date must be YYYY-MM-DD"; exit 1; }
             if [ "$IN_FORCE" = "true" ]; then python generator/make_puzzle.py --date "$IN_DATE" --force
             else python generator/make_puzzle.py --date "$IN_DATE"; fi
