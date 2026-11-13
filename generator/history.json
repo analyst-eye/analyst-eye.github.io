@@ -216,6 +216,13 @@
    "runway",
    "roundabout",
    "substation"
+  ],
+  "2026-11-20": [
+   "marina",
+   "stadium",
+   "cemetery",
+   "storage_tank",
+   "small_plane"
   ]
  },
  "used": {
@@ -319,6 +326,11 @@
    "date": "2026-11-13",
    "key": null
   },
+  "node/wide:msyC2": {
+   "cat": "small_plane",
+   "date": "2026-11-20",
+   "key": null
+  },
   "node/wide:msyC4": {
    "cat": "small_plane",
    "date": "2026-11-12",
@@ -378,6 +390,11 @@
    "cat": "marina",
    "date": "2026-10-21",
    "key": "marina:bear point harbor"
+  },
+  "relation/21281604": {
+   "cat": "marina",
+   "date": "2026-11-20",
+   "key": "marina:pirate's cove"
   },
   "relation/4577032": {
    "cat": "stadium",
@@ -609,6 +626,11 @@
    "date": "2026-11-17",
    "key": "cemetery:mormon cemetery"
   },
+  "way/1413087994": {
+   "cat": "cemetery",
+   "date": "2026-11-20",
+   "key": "cemetery:big point cemetery"
+  },
   "way/1441715492": {
    "cat": "cemetery",
    "date": "2026-10-24",
@@ -692,6 +714,11 @@
   "way/1551336384": {
    "cat": "golf",
    "date": "2026-10-24",
+   "key": null
+  },
+  "way/1571872703": {
+   "cat": "stadium",
+   "date": "2026-11-20",
    "key": null
   },
   "way/166307316": {
@@ -947,6 +974,11 @@
   "way/660444869": {
    "cat": "tennis",
    "date": "2026-10-28",
+   "key": null
+  },
+  "way/660641829": {
+   "cat": "storage_tank",
+   "date": "2026-11-20",
    "key": null
   },
   "way/665823248": {
