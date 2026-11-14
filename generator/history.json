@@ -223,6 +223,13 @@
    "cemetery",
    "storage_tank",
    "small_plane"
+  ],
+  "2026-11-21": [
+   "dune",
+   "airliner",
+   "bridge",
+   "tennis",
+   "golf"
   ]
  },
  "used": {
@@ -324,6 +331,11 @@
   "node/wide:msyA1": {
    "cat": "airliner",
    "date": "2026-11-13",
+   "key": null
+  },
+  "node/wide:msyB1": {
+   "cat": "airliner",
+   "date": "2026-11-21",
    "key": null
   },
   "node/wide:msyC2": {
@@ -711,6 +723,11 @@
    "date": "2026-10-22",
    "key": null
   },
+  "way/1531679552": {
+   "cat": "tennis",
+   "date": "2026-11-21",
+   "key": null
+  },
   "way/1551336384": {
    "cat": "golf",
    "date": "2026-10-24",
@@ -936,6 +953,11 @@
    "date": "2026-10-20",
    "key": null
   },
+  "way/547559777": {
+   "cat": "bridge",
+   "date": "2026-11-21",
+   "key": null
+  },
   "way/547559778": {
    "cat": "bridge",
    "date": "2026-10-21",
@@ -1086,6 +1108,11 @@
    "date": "2026-10-28",
    "key": null
   },
+  "way/857326554": {
+   "cat": "golf",
+   "date": "2026-11-21",
+   "key": null
+  },
   "way/862978175": {
    "cat": "runway",
    "date": "2026-11-08",
@@ -1189,6 +1216,11 @@
   "way/wide:parking_lot-w741164785": {
    "cat": "parking_lot",
    "date": "2026-11-06",
+   "key": null
+  },
+  "way/wide:sleeping_bear": {
+   "cat": "dune",
+   "date": "2026-11-21",
    "key": null
   }
  }
