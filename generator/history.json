@@ -926,6 +926,11 @@
    "date": "2026-11-11",
    "key": null
   },
+  "way/543018851": {
+   "cat": "pier",
+   "date": "2026-11-14",
+   "key": "pier:ocean springs fishing pier"
+  },
   "way/544605821": {
    "cat": "roundabout",
    "date": "2026-10-20",
