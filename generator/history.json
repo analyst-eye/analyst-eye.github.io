@@ -828,6 +828,11 @@
    "date": "2026-11-01",
    "key": null
   },
+  "way/342214678": {
+   "cat": "field",
+   "date": "2026-11-15",
+   "key": "field:behrman stadium"
+  },
   "way/352602637": {
    "cat": "baseball",
    "date": "2026-10-29",
