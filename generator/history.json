@@ -237,6 +237,13 @@
    "runway",
    "storage_tank",
    "slipway"
+  ],
+  "2026-11-23": [
+   "baseball",
+   "wastewater",
+   "runway",
+   "water_tower",
+   "slipway"
   ]
  },
  "used": {
@@ -450,6 +457,11 @@
    "date": "2026-10-27",
    "key": null
   },
+  "way/1064934514": {
+   "cat": "wastewater",
+   "date": "2026-11-23",
+   "key": null
+  },
   "way/1088042257": {
    "cat": "tennis",
    "date": "2026-10-27",
@@ -538,6 +550,11 @@
   "way/1211938426": {
    "cat": "water_tower",
    "date": "2026-11-10",
+   "key": null
+  },
+  "way/1212150694": {
+   "cat": "water_tower",
+   "date": "2026-11-23",
    "key": null
   },
   "way/1235137616": {
@@ -630,6 +647,11 @@
    "date": "2026-10-22",
    "key": null
   },
+  "way/13589410": {
+   "cat": "runway",
+   "date": "2026-11-23",
+   "key": null
+  },
   "way/13592969": {
    "cat": "roundabout",
    "date": "2026-11-16",
@@ -664,6 +686,11 @@
    "cat": "cemetery",
    "date": "2026-11-20",
    "key": "cemetery:big point cemetery"
+  },
+  "way/1413961932": {
+   "cat": "baseball",
+   "date": "2026-11-23",
+   "key": null
   },
   "way/1441715492": {
    "cat": "cemetery",
@@ -878,6 +905,11 @@
   "way/361476377": {
    "cat": "slipway",
    "date": "2026-11-16",
+   "key": null
+  },
+  "way/361476378": {
+   "cat": "slipway",
+   "date": "2026-11-23",
    "key": null
   },
   "way/362632963": {
