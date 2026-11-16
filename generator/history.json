@@ -630,6 +630,11 @@
    "date": "2026-10-22",
    "key": null
   },
+  "way/13592969": {
+   "cat": "roundabout",
+   "date": "2026-11-16",
+   "key": null
+  },
   "way/1372413748": {
    "cat": "pool",
    "date": "2026-11-05",
@@ -668,6 +673,11 @@
   "way/1443939397": {
    "cat": "tennis",
    "date": "2026-11-06",
+   "key": null
+  },
+  "way/1446458356": {
+   "cat": "roundabout",
+   "date": "2026-11-16",
    "key": null
   },
   "way/1451779264": {
