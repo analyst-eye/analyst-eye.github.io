@@ -244,6 +244,13 @@
    "runway",
    "water_tower",
    "slipway"
+  ],
+  "2026-11-24": [
+   "field",
+   "airliner",
+   "golf",
+   "roundabout",
+   "cemetery"
   ]
  },
  "used": {
@@ -350,6 +357,11 @@
   "node/wide:msyA1": {
    "cat": "airliner",
    "date": "2026-11-13",
+   "key": null
+  },
+  "node/wide:msyA2": {
+   "cat": "airliner",
+   "date": "2026-11-24",
    "key": null
   },
   "node/wide:msyB1": {
@@ -642,10 +654,20 @@
    "date": "2026-11-10",
    "key": null
   },
+  "way/1332700158": {
+   "cat": "field",
+   "date": "2026-11-24",
+   "key": null
+  },
   "way/1334854646": {
    "cat": "roundabout",
    "date": "2026-10-22",
    "key": null
+  },
+  "way/13495351": {
+   "cat": "roundabout",
+   "date": "2026-11-24",
+   "key": "roundabout:lobel court"
   },
   "way/13589410": {
    "cat": "runway",
@@ -717,6 +739,11 @@
    "date": "2026-11-18",
    "key": null
   },
+  "way/1461799135": {
+   "cat": "cemetery",
+   "date": "2026-11-24",
+   "key": "cemetery:baptist cemetery"
+  },
   "way/1461799136": {
    "cat": "cemetery",
    "date": "2026-11-01",
@@ -725,6 +752,11 @@
   "way/1463232546": {
    "cat": "solar",
    "date": "2026-10-27",
+   "key": null
+  },
+  "way/1466621900": {
+   "cat": "golf",
+   "date": "2026-11-24",
    "key": null
   },
   "way/1469983059": {
