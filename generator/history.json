@@ -207,8 +207,8 @@
    "marina",
    "track",
    "water_tower",
-   "golf",
-   "substation"
+   "substation",
+   "golf"
   ],
   "2026-11-19": [
    "stadium",
@@ -513,6 +513,11 @@
    "cat": "roundabout",
    "date": "2026-10-23",
    "key": null
+  },
+  "way/1151207650": {
+   "cat": "substation",
+   "date": "2026-11-18",
+   "key": "substation:coden substation"
   },
   "way/1151207652": {
    "cat": "substation",
