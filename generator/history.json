@@ -251,9 +251,21 @@
    "golf",
    "roundabout",
    "cemetery"
+  ],
+  "2026-11-25": [
+   "track",
+   "marina",
+   "pier",
+   "water_tower",
+   "small_plane"
   ]
  },
  "used": {
+  "node/10981037023": {
+   "cat": "water_tower",
+   "date": "2026-11-25",
+   "key": null
+  },
   "node/1121816573": {
    "cat": "slipway",
    "date": "2026-11-09",
@@ -399,6 +411,11 @@
    "date": "2026-11-05",
    "key": null
   },
+  "node/wide:pib3": {
+   "cat": "small_plane",
+   "date": "2026-11-25",
+   "key": null
+  },
   "node/wide:pib4": {
    "cat": "small_plane",
    "date": "2026-11-14",
@@ -418,6 +435,11 @@
    "cat": "stadium",
    "date": "2026-10-22",
    "key": "stadium:ocean springs greyhound stadium"
+  },
+  "relation/19288325": {
+   "cat": "marina",
+   "date": "2026-11-25",
+   "key": "marina:lake forest marina"
   },
   "relation/19307891": {
    "cat": "marina",
@@ -577,6 +599,11 @@
   "way/1235137616": {
    "cat": "track",
    "date": "2026-11-07",
+   "key": null
+  },
+  "way/1235192325": {
+   "cat": "track",
+   "date": "2026-11-25",
    "key": null
   },
   "way/1235287758": {
@@ -758,6 +785,11 @@
    "cat": "solar",
    "date": "2026-10-27",
    "key": null
+  },
+  "way/1466182508": {
+   "cat": "pier",
+   "date": "2026-11-25",
+   "key": "pier:bisso marine co."
   },
   "way/1466621900": {
    "cat": "golf",
