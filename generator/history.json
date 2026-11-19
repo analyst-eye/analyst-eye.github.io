@@ -556,6 +556,11 @@
    "date": "2026-11-03",
    "key": null
   },
+  "way/1151430680": {
+   "cat": "substation",
+   "date": "2026-11-19",
+   "key": "substation:church street substation"
+  },
   "way/1154887962": {
    "cat": "golf",
    "date": "2026-11-14",
@@ -846,6 +851,11 @@
    "date": "2026-10-22",
    "key": null
   },
+  "way/1514264546": {
+   "cat": "roundabout",
+   "date": "2026-11-19",
+   "key": null
+  },
   "way/1531679552": {
    "cat": "tennis",
    "date": "2026-11-21",
@@ -891,6 +901,11 @@
    "date": "2026-11-01",
    "key": "runway:01/19"
   },
+  "way/191760762": {
+   "cat": "roundabout",
+   "date": "2026-11-19",
+   "key": "roundabout:bridgeport drive"
+  },
   "way/212448632": {
    "cat": "water_tower",
    "date": "2026-11-18",
@@ -909,6 +924,16 @@
   "way/25529460": {
    "cat": "runway",
    "date": "2026-11-09",
+   "key": null
+  },
+  "way/262766647": {
+   "cat": "substation",
+   "date": "2026-11-19",
+   "key": null
+  },
+  "way/262766648": {
+   "cat": "substation",
+   "date": "2026-11-19",
    "key": null
   },
   "way/266446769": {
@@ -1184,6 +1209,11 @@
   "way/689253076": {
    "cat": "field",
    "date": "2026-11-15",
+   "key": null
+  },
+  "way/697889252": {
+   "cat": "roundabout",
+   "date": "2026-11-19",
    "key": null
   },
   "way/705834356": {
