@@ -156,6 +156,19 @@ def cat_of(t):
     # masts / towers / chimneys / flagpoles are deliberately excluded: too thin to see at 0.6 m and OSM points drift
     return None
 
+def is_plant_area(t):
+    """Industrial plant / works area (not a puzzle candidate). Used to keep substations out of plant yards."""
+    if t.get("landuse") == "industrial": return True
+    if t.get("man_made") == "works": return True
+    ind = t.get("industrial")
+    return bool(ind) and ind != "no"
+
+# Substations inside a plant yard often have no visible gear and can sit on a near-sensitive site.
+# Screen them against industrial areas fetched with the sensitive-site query (no extra Overpass call on a fresh fetch).
+PLANT_MARGIN_M = 100
+PLANT_BBOX_PAD = 0.002   # ~200 m, so a candidate on the region edge still sees a nearby works
+PLANT_SELS = ['nwr["landuse"="industrial"]', 'nwr["man_made"="works"]', 'nwr["industrial"]']
+
 # ---------------------------------------------------------------- analyst notes (templates)
 # One short, plain-English clue per round (no jargon). Two variants each, picked at random.
 NOTES = {
@@ -302,18 +315,27 @@ def fetch_osm_core(stale_ok=False):
             extra = fetch_other_pitches()
             if extra is not None:
                 data["dcands"] += extra; data["pitch_other"] = True; json.dump(data, open(cpath, "w"))
+        if not data.get("plants_ok"):   # cache from before substations were screened against industrial plant areas
+            extra = fetch_plant_areas()
+            if extra is not None:
+                data["plants"] = extra; data["plants_ok"] = True; json.dump(data, open(cpath, "w"))
+            else:
+                data["plants"] = []; data["plants_ok"] = False   # fail safe: do not persist; retry next run
         return data
     s, w, n, e = S["region"]["bbox"]
     slices = S.get("query_slices", 3); step = (e - w) / slices
     els, seen = [], set()
     for i in range(slices):      # smaller tiles keep each query light for the public servers
         bb = f"({s},{w + i * step:.4f},{n},{w + (i + 1) * step:.4f})"
+        pad = PLANT_BBOX_PAD   # plant areas just outside the region can still sit within 100 m of an edge candidate
+        bbp = f"({s - pad},{w + i * step - pad:.4f},{n + pad},{w + (i + 1) * step + pad:.4f})"
         cand = "".join(f"{sel}{bb};" for c in CATS.values() for sel in c["sel"])
+        plant = "".join(f"{sel}{bbp};" for sel in PLANT_SELS)
         q = f"""[out:json][timeout:180];
 ( {cand} )->.cand;
 ( nwr["landuse"="military"]{bb}; nwr["military"]{bb}; nwr["amenity"="prison"]{bb};
   nwr["power"="plant"]["plant:source"="nuclear"]{bb}; nwr["industrial"="refinery"]{bb};
-  nwr["aeroway"="aerodrome"]{bb}; )->.bad;
+  nwr["aeroway"="aerodrome"]{bb}; {plant} )->.bad;
 .cand out tags center geom;
 .bad out tags geom;"""
         log(f"  tile {i + 1}/{slices} {bb}")
@@ -326,7 +348,7 @@ def fetch_osm_core(stale_ok=False):
             if key not in seen: seen.add(key); els.append(x)
         time.sleep(3)
     # the two result sets are concatenated; split by tags
-    cands, bad = [], []
+    cands, bad, plants = [], [], []
     rx = re.compile(BL["name_regex"])
     for x in els:
         t = x.get("tags", {})
@@ -336,10 +358,11 @@ def fetch_osm_core(stale_ok=False):
             sensitive = sensitive or bool(rx.search(" ".join([t.get("name", ""), t.get("operator", ""), t.get("operator:type", "")])))
         if sensitive: bad.append(x)
         elif cat_of(t): cands.append(x)
+        elif is_plant_area(t): plants.append(x)
     data = {"fetched": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "cands": cands, "bad": bad,
-            "dcands": fetch_decoys(), "pitch_other": True}
+            "plants": plants, "plants_ok": True, "dcands": fetch_decoys(), "pitch_other": True}
     json.dump(data, open(cpath, "w"))
-    log(f"  OSM: {len(cands)} candidates, {len(bad)} sensitive features, {len(data['dcands'])} decoy features")
+    log(f"  OSM: {len(cands)} candidates, {len(bad)} sensitive features, {len(plants)} industrial plant areas, {len(data['dcands'])} decoy features")
     return data
 
 def fetch_decoys():
@@ -367,6 +390,25 @@ def fetch_other_pitches():
         out = [x for x in overpass(q) if dclass_of(x.get("tags", {})) == "pitch_other"]
     except Exception as ex:
         log(f"  other-pitch fetch failed ({ex})"); return None
+    return out
+
+def fetch_plant_areas():
+    """Industrial plant/works areas (old-cache backfill). None on failure so the substation filter can fail safe."""
+    s, w, n, e = S["region"]["bbox"]
+    pad = PLANT_BBOX_PAD; slices = S.get("query_slices", 3); step = (e - w) / slices
+    out, seen = [], set()
+    try:
+        for i in range(slices):
+            bb = f"({s - pad},{w + i * step - pad:.4f},{n + pad},{w + (i + 1) * step + pad:.4f})"
+            q = "[out:json][timeout:180];\n( " + "".join(f"{sel}{bb};" for sel in PLANT_SELS) + " );\nout tags geom;"
+            for x in overpass(q):
+                key = (x["type"], x["id"])
+                if key in seen or cat_of(x.get("tags", {})) or not is_plant_area(x.get("tags", {})): continue
+                seen.add(key); out.append(x)
+            time.sleep(3)
+    except Exception as ex:
+        log(f"  plant-area fetch failed ({ex})"); return None
+    log(f"  plant areas: {len(out)}")
     return out
 
 def bad_shapes(bad):
@@ -405,6 +447,35 @@ def chip_is_clear(shapes, lat_c, lon_c, half_m, margin_m):
                 for i in range(k + 1):
                     x = a[0] + (b[0] - a[0]) * i / k; y = a[1] + (b[1] - a[1]) * i / k
                     if abs(x) <= lim and abs(y) <= lim: return False, name
+    return True, None
+
+def plant_shapes(data):
+    """Industrial plant area shapes, or None if the check could not be performed (callers must fail safe)."""
+    if not data or not data.get("plants_ok"): return None
+    out = []
+    for b in data.get("plants") or []:
+        t = b.get("tags", {})
+        name = t.get("name") or t.get("industrial") or t.get("man_made") or t.get("landuse") or "industrial"
+        rings, pts = [], []
+        if b["type"] == "node":
+            pts.append((b["lat"], b["lon"]))
+        elif b["type"] == "way" and b.get("geometry"):
+            rings.append([(p["lat"], p["lon"]) for p in b["geometry"]])
+        elif b["type"] == "relation":
+            for m in b.get("members", []):
+                if m.get("geometry"): rings.append([(p["lat"], p["lon"]) for p in m["geometry"]])
+        if rings or pts: out.append((name, rings, pts))
+    return out
+
+def substation_clear_of_plants(data, x, cen):
+    """True, None if usable; False, reason if the site is inside/near a plant or the check failed."""
+    t = x.get("tags", {})
+    if t.get("substation") == "industrial":
+        return False, t.get("name") or t.get("operator") or "substation=industrial"
+    shapes = plant_shapes(data)
+    if shapes is None: return False, "industrial check unavailable"
+    ok, why = chip_is_clear(shapes, cen["lat"], cen["lon"], (extent_m(x) or 0) / 2, PLANT_MARGIN_M)
+    if not ok: return False, why
     return True, None
 
 # ---------------------------------------------------------------- imagery
@@ -678,6 +749,9 @@ def build_pool(data, hist, ref_date=None):
         if x["type"] == "relation" and not rings_of(x): continue                 # no usable outline: can't score fairly
         cen = feature_point(x, c)
         if not cen: continue
+        if c == "substation":
+            okp, _whyp = substation_clear_of_plants(data, x, cen)
+            if not okp: continue   # fail safe: reject when the industrial check can't run
         k = f"{c}:{t.get('name','').lower()}" if t.get("name") and not wide_x else None   # catalog names (an airport, a park) repeat by design
         if k and k in names_used: continue
         pool.setdefault(c, []).append((x, cen, k))
@@ -1100,6 +1174,10 @@ def make_round(ds, idx, c, cfg, x, cen, shapes, rng, data=None, band=None, decoy
         xmin = vx - half_merc + rng.uniform(-j, j) * 2 * half_merc; xmax = xmin + 2 * half_merc
         ymax = vy + half_merc + rng.uniform(-j, j) * 2 * half_merc; ymin = ymax - 2 * half_merc
     clat, clon = unmerc((xmin + xmax) / 2, (ymin + ymax) / 2)
+    if c == "substation":
+        okp, whyp = substation_clear_of_plants(data, x, {"lat": lat, "lon": lon})
+        if not okp:
+            log(f"    skip {c} {x['type']}/{x['id']}: inside industrial '{whyp}'"); return None
     ok, why = chip_is_clear(shapes, clat, clon, SIZE / 2 * gsd, S["chip_margin_m"])
     if not ok:
         log(f"    skip {c} {x['type']}/{x['id']}: near sensitive '{why}'"); return None
