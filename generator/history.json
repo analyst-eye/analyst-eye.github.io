@@ -258,6 +258,13 @@
    "pier",
    "water_tower",
    "small_plane"
+  ],
+  "2026-11-26": [
+   "field",
+   "pier",
+   "golf",
+   "roundabout",
+   "substation"
   ]
  },
  "used": {
@@ -521,6 +528,11 @@
    "date": "2026-10-23",
    "key": null
   },
+  "way/1118266789": {
+   "cat": "roundabout",
+   "date": "2026-11-26",
+   "key": "roundabout:state highway 59"
+  },
   "way/1118446617": {
    "cat": "field",
    "date": "2026-10-21",
@@ -769,6 +781,11 @@
   "way/1451779264": {
    "cat": "wastewater",
    "date": "2026-11-02",
+   "key": null
+  },
+  "way/1460812091": {
+   "cat": "substation",
+   "date": "2026-11-26",
    "key": null
   },
   "way/1460812096": {
@@ -1126,6 +1143,11 @@
    "date": "2026-10-25",
    "key": "pool:one club gulf shores"
   },
+  "way/604645747": {
+   "cat": "pier",
+   "date": "2026-11-26",
+   "key": "pier:causeway park long pier"
+  },
   "way/622919502": {
    "cat": "baseball",
    "date": "2026-11-09",
@@ -1189,6 +1211,11 @@
   "way/668736265": {
    "cat": "runway",
    "date": "2026-11-22",
+   "key": null
+  },
+  "way/687836685": {
+   "cat": "field",
+   "date": "2026-11-26",
    "key": null
   },
   "way/687836720": {
@@ -1304,6 +1331,11 @@
   "way/895461714": {
    "cat": "runway",
    "date": "2026-10-22",
+   "key": null
+  },
+  "way/903103970": {
+   "cat": "golf",
+   "date": "2026-11-26",
    "key": null
   },
   "way/910454879": {
