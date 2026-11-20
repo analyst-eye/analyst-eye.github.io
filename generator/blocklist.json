@@ -1,170 +1,171 @@
 {
-  "_comment": "Manual exclusions on top of OSM military/prison/nuclear/refinery tags. Boxes are approximate [south, west, north, east] and padded generously. Add anything you'd rather never show.",
-  "name_regex": "(?i)\\b(naval|navy|nas\\b|jrb|air force|afb|army|marine corps|coast guard|uscg|national guard|ang\\b|armory|military|keesler|stennis|michoud|ingalls|austal|correctional|detention|jail|prison|penitentiary|nuclear|refinery|lng)\\b",
-  "osm_ids_comment": "Individual OSM features to never use (e.g. bad mapping, not visible in NAIP). Format type/id.",
-  "osm_ids": [
-    "node/13125388101",
-    "way/851921749",
-    "way/1382012924",
-    "way/134910578",
-    "way/633806410",
-    "way/1289220425",
-    "node/6632268918",
-    "way/625901824",
-    "way/1514264545",
-    "way/43243373",
-    "way/982459657",
-    "way/352602637",
-    "way/828318102",
-    "way/447159770",
-    "node/7774917786",
-    "way/479760904",
-    "way/1485090987",
-    "way/1235137616",
-    "way/1235137617",
-    "way/1235137622",
-    "way/1469983059",
-    "way/626849752",
-    "way/965058967",
-    "way/479226774",
-    "way/689253076",
-    "way/180629058",
-    "way/1446458356",
-    "way/1413086631",
-    "way/1460812096",
-    "way/1514264461",
-    "way/1151207655",
-    "way/1514264546",
-    "way/191760762",
-    "way/262766647",
-    "way/262766648"
-  ],
-  "bboxes": [
-    {
-      "name": "Stennis Space Center / buffer zone core",
-      "bbox": [
-        30.3,
-        -89.72,
-        30.47,
-        -89.52
-      ]
-    },
-    {
-      "name": "NASA Michoud Assembly Facility",
-      "bbox": [
-        29.99,
-        -89.95,
-        30.05,
-        -89.88
-      ]
-    },
-    {
-      "name": "Ingalls Shipbuilding, Pascagoula",
-      "bbox": [
-        30.33,
-        -88.59,
-        30.38,
-        -88.54
-      ]
-    },
-    {
-      "name": "Naval Station Pascagoula (Singing River Is.)",
-      "bbox": [
-        30.33,
-        -88.59,
-        30.37,
-        -88.55
-      ]
-    },
-    {
-      "name": "Chevron Pascagoula Refinery",
-      "bbox": [
-        30.31,
-        -88.54,
-        30.37,
-        -88.46
-      ]
-    },
-    {
-      "name": "Keesler AFB, Biloxi",
-      "bbox": [
-        30.39,
-        -88.95,
-        30.43,
-        -88.89
-      ]
-    },
-    {
-      "name": "NCBC Gulfport (Seabee base)",
-      "bbox": [
-        30.37,
-        -89.16,
-        30.4,
-        -89.1
-      ]
-    },
-    {
-      "name": "Gulfport-Biloxi Airport ANG / CRTC",
-      "bbox": [
-        30.39,
-        -89.09,
-        30.43,
-        -89.04
-      ]
-    },
-    {
-      "name": "Austal USA shipyard, Mobile",
-      "bbox": [
-        30.67,
-        -88.05,
-        30.71,
-        -88.02
-      ]
-    },
-    {
-      "name": "USCG Aviation Training Center Mobile (Brookley)",
-      "bbox": [
-        30.61,
-        -88.09,
-        30.66,
-        -88.04
-      ]
-    },
-    {
-      "name": "NAS JRB New Orleans, Belle Chasse",
-      "bbox": [
-        29.79,
-        -90.06,
-        29.86,
-        -89.98
-      ]
-    },
-    {
-      "name": "Jackson Barracks / LA National Guard HQ",
-      "bbox": [
-        29.94,
-        -90.02,
-        29.96,
-        -89.99
-      ]
-    },
-    {
-      "name": "Lakefront Airport (KNEW) / UNO campus / NIWC Atlantic New Orleans",
-      "bbox": [
-        30.02,
-        -90.075,
-        30.05,
-        -90.02
-      ]
-    },
-    {
-      "name": "Petrochemical/tank-farm complex near 29.961,-90.271 (Nov 5 R5 substation sat inside it)",
-      "bbox": [
-        29.945,
-        -90.29,
-        29.975,
-        -90.25
-      ]
-    }
-  ]
+ "_comment": "Manual exclusions on top of OSM military/prison/nuclear/refinery tags. Boxes are approximate [south, west, north, east] and padded generously. Add anything you'd rather never show.",
+ "name_regex": "(?i)\\b(naval|navy|nas\\b|jrb|air force|afb|army|marine corps|coast guard|uscg|national guard|ang\\b|armory|military|keesler|stennis|michoud|ingalls|austal|correctional|detention|jail|prison|penitentiary|nuclear|refinery|lng)\\b",
+ "osm_ids_comment": "Individual OSM features to never use (e.g. bad mapping, not visible in NAIP). Format type/id.",
+ "osm_ids": [
+  "node/13125388101",
+  "way/851921749",
+  "way/1382012924",
+  "way/134910578",
+  "way/633806410",
+  "way/1289220425",
+  "node/6632268918",
+  "way/625901824",
+  "way/1514264545",
+  "way/43243373",
+  "way/982459657",
+  "way/352602637",
+  "way/828318102",
+  "way/447159770",
+  "node/7774917786",
+  "way/479760904",
+  "way/1485090987",
+  "way/1235137616",
+  "way/1235137617",
+  "way/1235137622",
+  "way/1469983059",
+  "way/626849752",
+  "way/965058967",
+  "way/479226774",
+  "way/689253076",
+  "way/180629058",
+  "way/1446458356",
+  "way/1413086631",
+  "way/1460812096",
+  "way/1514264461",
+  "way/1151207655",
+  "way/1514264546",
+  "way/191760762",
+  "way/262766647",
+  "way/262766648",
+  "way/660641829"
+ ],
+ "bboxes": [
+  {
+   "name": "Stennis Space Center / buffer zone core",
+   "bbox": [
+    30.3,
+    -89.72,
+    30.47,
+    -89.52
+   ]
+  },
+  {
+   "name": "NASA Michoud Assembly Facility",
+   "bbox": [
+    29.99,
+    -89.95,
+    30.05,
+    -89.88
+   ]
+  },
+  {
+   "name": "Ingalls Shipbuilding, Pascagoula",
+   "bbox": [
+    30.33,
+    -88.59,
+    30.38,
+    -88.54
+   ]
+  },
+  {
+   "name": "Naval Station Pascagoula (Singing River Is.)",
+   "bbox": [
+    30.33,
+    -88.59,
+    30.37,
+    -88.55
+   ]
+  },
+  {
+   "name": "Chevron Pascagoula Refinery",
+   "bbox": [
+    30.31,
+    -88.54,
+    30.37,
+    -88.46
+   ]
+  },
+  {
+   "name": "Keesler AFB, Biloxi",
+   "bbox": [
+    30.39,
+    -88.95,
+    30.43,
+    -88.89
+   ]
+  },
+  {
+   "name": "NCBC Gulfport (Seabee base)",
+   "bbox": [
+    30.37,
+    -89.16,
+    30.4,
+    -89.1
+   ]
+  },
+  {
+   "name": "Gulfport-Biloxi Airport ANG / CRTC",
+   "bbox": [
+    30.39,
+    -89.09,
+    30.43,
+    -89.04
+   ]
+  },
+  {
+   "name": "Austal USA shipyard, Mobile",
+   "bbox": [
+    30.67,
+    -88.05,
+    30.71,
+    -88.02
+   ]
+  },
+  {
+   "name": "USCG Aviation Training Center Mobile (Brookley)",
+   "bbox": [
+    30.61,
+    -88.09,
+    30.66,
+    -88.04
+   ]
+  },
+  {
+   "name": "NAS JRB New Orleans, Belle Chasse",
+   "bbox": [
+    29.79,
+    -90.06,
+    29.86,
+    -89.98
+   ]
+  },
+  {
+   "name": "Jackson Barracks / LA National Guard HQ",
+   "bbox": [
+    29.94,
+    -90.02,
+    29.96,
+    -89.99
+   ]
+  },
+  {
+   "name": "Lakefront Airport (KNEW) / UNO campus / NIWC Atlantic New Orleans",
+   "bbox": [
+    30.02,
+    -90.075,
+    30.05,
+    -90.02
+   ]
+  },
+  {
+   "name": "Petrochemical/tank-farm complex near 29.961,-90.271 (Nov 5 R5 substation sat inside it)",
+   "bbox": [
+    29.945,
+    -90.29,
+    29.975,
+    -90.25
+   ]
+  }
+ ]
 }
