@@ -265,6 +265,13 @@
    "golf",
    "roundabout",
    "substation"
+  ],
+  "2026-11-27": [
+   "track",
+   "marina",
+   "cemetery",
+   "substation",
+   "small_plane"
   ]
  },
  "used": {
@@ -393,6 +400,11 @@
    "date": "2026-11-20",
    "key": null
   },
+  "node/wide:msyC3": {
+   "cat": "small_plane",
+   "date": "2026-11-27",
+   "key": null
+  },
   "node/wide:msyC4": {
    "cat": "small_plane",
    "date": "2026-11-12",
@@ -462,6 +474,11 @@
    "cat": "marina",
    "date": "2026-11-18",
    "key": "marina:romar marina"
+  },
+  "relation/20726495": {
+   "cat": "marina",
+   "date": "2026-11-27",
+   "key": "marina:sportsman marina"
   },
   "relation/20726498": {
    "cat": "marina",
@@ -641,6 +658,11 @@
   "way/1251560570": {
    "cat": "track",
    "date": "2026-10-24",
+   "key": null
+  },
+  "way/1251788398": {
+   "cat": "track",
+   "date": "2026-11-27",
    "key": null
   },
   "way/1251788401": {
@@ -1073,6 +1095,11 @@
    "date": "2026-10-22",
    "key": null
   },
+  "way/408441914": {
+   "cat": "substation",
+   "date": "2026-11-27",
+   "key": null
+  },
   "way/43243373": {
    "cat": "wastewater",
    "date": "2026-10-22",
@@ -1272,6 +1299,11 @@
    "cat": "cemetery",
    "date": "2026-11-12",
    "key": "cemetery:waldheim cemetery"
+  },
+  "way/812996695": {
+   "cat": "cemetery",
+   "date": "2026-11-27",
+   "key": "cemetery:joiner cemetery"
   },
   "way/816637174": {
    "cat": "cemetery",
