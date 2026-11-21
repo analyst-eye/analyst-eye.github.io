@@ -272,6 +272,13 @@
    "cemetery",
    "substation",
    "small_plane"
+  ],
+  "2026-11-28": [
+   "solar",
+   "stadium",
+   "golf",
+   "delta",
+   "small_plane"
   ]
  },
  "used": {
@@ -395,6 +402,11 @@
    "date": "2026-11-21",
    "key": null
   },
+  "node/wide:msyC1": {
+   "cat": "small_plane",
+   "date": "2026-11-28",
+   "key": null
+  },
   "node/wide:msyC2": {
    "cat": "small_plane",
    "date": "2026-11-20",
@@ -448,6 +460,11 @@
   "node/wide:sunset_crater": {
    "cat": "volcano",
    "date": "2026-11-19",
+   "key": null
+  },
+  "node/wide:wax_lake": {
+   "cat": "delta",
+   "date": "2026-11-28",
    "key": null
   },
   "relation/14470282": {
@@ -593,6 +610,11 @@
   "way/1154887962": {
    "cat": "golf",
    "date": "2026-11-14",
+   "key": null
+  },
+  "way/1157812262": {
+   "cat": "solar",
+   "date": "2026-11-28",
    "key": null
   },
   "way/1157812263": {
@@ -1005,6 +1027,11 @@
    "date": "2026-11-01",
    "key": null
   },
+  "way/327443126": {
+   "cat": "stadium",
+   "date": "2026-11-28",
+   "key": "stadium:fogelman arena"
+  },
   "way/333979366": {
    "cat": "runway",
    "date": "2026-11-02",
@@ -1294,6 +1321,11 @@
    "cat": "cemetery",
    "date": "2026-11-04",
    "key": "cemetery:evening star cemetery"
+  },
+  "way/801424945": {
+   "cat": "golf",
+   "date": "2026-11-28",
+   "key": null
   },
   "way/812697514": {
    "cat": "cemetery",
