@@ -279,6 +279,13 @@
    "golf",
    "delta",
    "small_plane"
+  ],
+  "2026-11-29": [
+   "runway",
+   "baseball",
+   "cemetery",
+   "water_tower",
+   "slipway"
   ]
  },
  "used": {
@@ -355,6 +362,11 @@
   "node/9780285019": {
    "cat": "slipway",
    "date": "2026-11-13",
+   "key": null
+  },
+  "node/9816323110": {
+   "cat": "slipway",
+   "date": "2026-11-29",
    "key": null
   },
   "node/9910673055": {
@@ -1007,6 +1019,11 @@
    "date": "2026-11-15",
    "key": null
   },
+  "way/27713749": {
+   "cat": "runway",
+   "date": "2026-11-29",
+   "key": "runway:closed runway"
+  },
   "way/282571254": {
    "cat": "football_field",
    "date": "2026-10-24",
@@ -1055,6 +1072,16 @@
   "way/352602637": {
    "cat": "baseball",
    "date": "2026-10-29",
+   "key": null
+  },
+  "way/352859857": {
+   "cat": "baseball",
+   "date": "2026-11-29",
+   "key": null
+  },
+  "way/353938109": {
+   "cat": "water_tower",
+   "date": "2026-11-29",
    "key": null
   },
   "way/355804855": {
@@ -1331,6 +1358,11 @@
    "cat": "golf",
    "date": "2026-11-28",
    "key": null
+  },
+  "way/812688337": {
+   "cat": "cemetery",
+   "date": "2026-11-29",
+   "key": "cemetery:harrison cemetery"
   },
   "way/812697514": {
    "cat": "cemetery",
