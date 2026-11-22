@@ -932,6 +932,11 @@
    "date": "2026-11-20",
    "key": null
   },
+  "way/166082083": {
+   "cat": "storage_tank",
+   "date": "2026-11-22",
+   "key": null
+  },
   "way/166307316": {
    "cat": "water_tower",
    "date": "2026-10-29",
