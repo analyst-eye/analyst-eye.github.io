@@ -286,9 +286,21 @@
    "cemetery",
    "water_tower",
    "slipway"
+  ],
+  "2026-11-30": [
+   "runway",
+   "stadium",
+   "roundabout",
+   "water_tower",
+   "slipway"
   ]
  },
  "used": {
+  "node/10974620331": {
+   "cat": "water_tower",
+   "date": "2026-11-30",
+   "key": null
+  },
   "node/10981037023": {
    "cat": "water_tower",
    "date": "2026-11-25",
@@ -919,6 +931,11 @@
    "date": "2026-11-19",
    "key": null
   },
+  "way/1514264544": {
+   "cat": "roundabout",
+   "date": "2026-11-30",
+   "key": null
+  },
   "way/1514264545": {
    "cat": "roundabout",
    "date": "2026-10-22",
@@ -1028,6 +1045,11 @@
    "cat": "football_field",
    "date": "2026-10-24",
    "key": null
+  },
+  "way/28348996": {
+   "cat": "stadium",
+   "date": "2026-11-30",
+   "key": "stadium:kirsch-rooney stadium"
   },
   "way/300593903": {
    "cat": "wastewater",
@@ -1198,6 +1220,11 @@
    "cat": "lighthouse",
    "date": "2026-11-08",
    "key": "lighthouse:middle bay lighthouse"
+  },
+  "way/534387710": {
+   "cat": "slipway",
+   "date": "2026-11-30",
+   "key": null
   },
   "way/538906271": {
    "cat": "runway",
@@ -1408,6 +1435,11 @@
    "cat": "baseball",
    "date": "2026-11-22",
    "key": "baseball:batting cage"
+  },
+  "way/83571362": {
+   "cat": "runway",
+   "date": "2026-11-30",
+   "key": null
   },
   "way/849758910": {
    "cat": "roundabout",
