@@ -293,6 +293,13 @@
    "roundabout",
    "water_tower",
    "slipway"
+  ],
+  "2026-12-01": [
+   "bridge",
+   "baseball",
+   "golf",
+   "storage_tank",
+   "slipway"
   ]
  },
  "used": {
@@ -586,6 +593,11 @@
    "date": "2026-10-23",
    "key": null
   },
+  "way/1114974351": {
+   "cat": "baseball",
+   "date": "2026-12-01",
+   "key": null
+  },
   "way/1118266789": {
    "cat": "roundabout",
    "date": "2026-11-26",
@@ -594,6 +606,11 @@
   "way/1118446617": {
    "cat": "field",
    "date": "2026-10-21",
+   "key": null
+  },
+  "way/1137499006": {
+   "cat": "bridge",
+   "date": "2026-12-01",
    "key": null
   },
   "way/1137503028": {
@@ -744,6 +761,11 @@
   "way/1283477708": {
    "cat": "golf",
    "date": "2026-10-21",
+   "key": null
+  },
+  "way/1286572123": {
+   "cat": "golf",
+   "date": "2026-12-01",
    "key": null
   },
   "way/1289220425": {
@@ -949,6 +971,11 @@
   "way/1531679552": {
    "cat": "tennis",
    "date": "2026-11-21",
+   "key": null
+  },
+  "way/1547304817": {
+   "cat": "slipway",
+   "date": "2026-12-01",
    "key": null
   },
   "way/1551336384": {
@@ -1524,6 +1551,11 @@
   "way/972361155": {
    "cat": "baseball",
    "date": "2026-10-20",
+   "key": null
+  },
+  "way/974827582": {
+   "cat": "storage_tank",
+   "date": "2026-12-01",
    "key": null
   },
   "way/979399126": {
