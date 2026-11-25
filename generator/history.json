@@ -300,6 +300,13 @@
    "golf",
    "storage_tank",
    "slipway"
+  ],
+  "2026-12-02": [
+   "bridge",
+   "track",
+   "roundabout",
+   "marina",
+   "small_plane"
   ]
  },
  "used": {
@@ -453,6 +460,11 @@
    "date": "2026-11-12",
    "key": null
   },
+  "node/wide:msyC5": {
+   "cat": "small_plane",
+   "date": "2026-12-02",
+   "key": null
+  },
   "node/wide:msyE1": {
    "cat": "airliner",
    "date": "2026-11-17",
@@ -542,6 +554,11 @@
    "cat": "stadium",
    "date": "2026-10-29",
    "key": "stadium:yulman stadium"
+  },
+  "relation/7765336": {
+   "cat": "marina",
+   "date": "2026-12-02",
+   "key": "marina:gcrl harbor"
   },
   "relation/8837720": {
    "cat": "marina",
@@ -736,6 +753,11 @@
   "way/1251799399": {
    "cat": "track",
    "date": "2026-11-16",
+   "key": null
+  },
+  "way/1251814378": {
+   "cat": "track",
+   "date": "2026-12-02",
    "key": null
   },
   "way/1271362938": {
@@ -1278,6 +1300,11 @@
    "date": "2026-10-21",
    "key": null
   },
+  "way/548224647": {
+   "cat": "bridge",
+   "date": "2026-12-02",
+   "key": null
+  },
   "way/566827228": {
    "cat": "pool",
    "date": "2026-10-25",
@@ -1496,6 +1523,11 @@
   "way/903103970": {
    "cat": "golf",
    "date": "2026-11-26",
+   "key": null
+  },
+  "way/904031371": {
+   "cat": "roundabout",
+   "date": "2026-12-02",
    "key": null
   },
   "way/910454879": {
