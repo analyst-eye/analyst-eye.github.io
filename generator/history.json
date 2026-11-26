@@ -307,9 +307,21 @@
    "roundabout",
    "marina",
    "small_plane"
+  ],
+  "2026-12-03": [
+   "field",
+   "wastewater",
+   "substation",
+   "golf",
+   "water_tower"
   ]
  },
  "used": {
+  "node/10220872427": {
+   "cat": "water_tower",
+   "date": "2026-12-03",
+   "key": null
+  },
   "node/10974620331": {
    "cat": "water_tower",
    "date": "2026-11-30",
@@ -660,6 +672,11 @@
    "date": "2026-11-03",
    "key": null
   },
+  "way/1151416807": {
+   "cat": "substation",
+   "date": "2026-12-03",
+   "key": null
+  },
   "way/1151430680": {
    "cat": "substation",
    "date": "2026-11-19",
@@ -768,6 +785,11 @@
   "way/1279786566": {
    "cat": "golf",
    "date": "2026-11-17",
+   "key": null
+  },
+  "way/1279817877": {
+   "cat": "golf",
+   "date": "2026-12-03",
    "key": null
   },
   "way/1283374861": {
@@ -1320,6 +1342,11 @@
    "date": "2026-11-09",
    "key": null
   },
+  "way/622919503": {
+   "cat": "field",
+   "date": "2026-12-03",
+   "key": null
+  },
   "way/625901824": {
    "cat": "storage_tank",
    "date": "2026-10-20",
@@ -1548,6 +1575,11 @@
   "way/919494020": {
    "cat": "field",
    "date": "2026-10-26",
+   "key": null
+  },
+  "way/923167539": {
+   "cat": "wastewater",
+   "date": "2026-12-03",
    "key": null
   },
   "way/929034250": {
