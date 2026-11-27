@@ -314,6 +314,13 @@
    "substation",
    "golf",
    "water_tower"
+  ],
+  "2026-12-04": [
+   "field",
+   "marina",
+   "cemetery",
+   "substation",
+   "roundabout"
   ]
  },
  "used": {
@@ -557,6 +564,11 @@
    "date": "2026-10-21",
    "key": "marina:bear point harbor"
   },
+  "relation/21280122": {
+   "cat": "marina",
+   "date": "2026-12-04",
+   "key": "marina:the launch at cr6"
+  },
   "relation/21281604": {
    "cat": "marina",
    "date": "2026-11-20",
@@ -670,6 +682,11 @@
   "way/1151323562": {
    "cat": "substation",
    "date": "2026-11-03",
+   "key": null
+  },
+  "way/1151323566": {
+   "cat": "substation",
+   "date": "2026-12-04",
    "key": null
   },
   "way/1151416807": {
@@ -840,6 +857,11 @@
   "way/1331259624": {
    "cat": "tennis",
    "date": "2026-11-10",
+   "key": null
+  },
+  "way/1332700155": {
+   "cat": "field",
+   "date": "2026-12-04",
    "key": null
   },
   "way/1332700158": {
@@ -1467,6 +1489,11 @@
    "date": "2026-10-25",
    "key": null
   },
+  "way/751876490": {
+   "cat": "roundabout",
+   "date": "2026-12-04",
+   "key": null
+  },
   "way/800672469": {
    "cat": "cemetery",
    "date": "2026-11-04",
@@ -1591,6 +1618,11 @@
    "cat": "cemetery",
    "date": "2026-10-20",
    "key": "cemetery:spring hill memorial gardens"
+  },
+  "way/929034259": {
+   "cat": "cemetery",
+   "date": "2026-12-04",
+   "key": "cemetery:cold springs cemetery"
   },
   "way/937491302": {
    "cat": "water_tower",
