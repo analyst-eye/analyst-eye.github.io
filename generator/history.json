@@ -268,7 +268,7 @@
   ],
   "2026-11-27": [
    "track",
-   "marina",
+   "solar",
    "cemetery",
    "substation",
    "small_plane"
@@ -716,6 +716,11 @@
    "cat": "bridge",
    "date": "2026-10-30",
    "key": null
+  },
+  "way/1176577573": {
+   "cat": "solar",
+   "date": "2026-11-27",
+   "key": "solar:tci alvar solar farm"
   },
   "way/1211938426": {
    "cat": "water_tower",
