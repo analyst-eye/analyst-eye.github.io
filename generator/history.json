@@ -278,7 +278,7 @@
    "stadium",
    "golf",
    "delta",
-   "small_plane"
+   "lighthouse"
   ],
   "2026-11-29": [
    "runway",
@@ -1183,6 +1183,11 @@
    "cat": "roundabout",
    "date": "2026-11-01",
    "key": null
+  },
+  "way/335046004": {
+   "cat": "lighthouse",
+   "date": "2026-11-28",
+   "key": "lighthouse:biloxi lighthouse"
   },
   "way/342214678": {
    "cat": "field",
